@@ -3,6 +3,7 @@ import {isVideoBroadcasting, presenterDeskshareHasEnded,
   presenterDeskshareHasStarted} from './service';
 import { createContainer } from 'meteor/react-meteor-data';
 import DeskshareComponent from './component';
+import DeskshareService from '/imports/ui/components/deskshare/service';
 
 class DeskshareContainer extends React.Component {
   render() {
@@ -18,12 +19,11 @@ class DeskshareContainer extends React.Component {
 }
 
 export default createContainer(() => {
-  const data = {
+  DeskshareService.init();
+  return {
     isVideoBroadcasting,
     presenterDeskshareHasStarted,
     presenterDeskshareHasEnded,
   };
-
-  return data;
 }, DeskshareContainer);
 

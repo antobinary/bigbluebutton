@@ -1,8 +1,29 @@
 import Deskshare from '/imports/api/deskshare';
-import VertoBridge from '/imports/api/deskshare/client/bridge/verto';
+import DeskshareManager from '/imports/api/deskshare/client/manager';
 import Auth from '/imports/ui/services/auth';
 
-const vertoBridge = new VertoBridge();
+let deskshareManager = undefined;
+
+const init = () => {
+  const userId = Auth.userID;
+  const User = Users.findOne({ userId });
+  const username = User.user.name;
+
+  const Meeting = Meetings.findOne(); //TODO test this with Breakouts
+  const turns = Meeting.turns;
+  const stuns = Meeting.stuns;
+  const voiceBridge = Meeting.voiceConf;
+
+  const userData = {
+    userId,
+    username,
+    turns,
+    stuns,
+    voiceBridge,
+  };
+
+  deskshareManager = new DeskshareManager(userData);
+};
 
 // when the meeting information has been updated check to see if it was
 // desksharing. If it has changed either trigger a call to receive video
@@ -20,14 +41,14 @@ function isVideoBroadcasting() {
 function presenterDeskshareHasEnded() {
   // references a functiion in the global namespace inside verto_extension.js
   // that we load dynamically
-  vertoBridge.vertoExitVideo();
+  deskshareManager.vertoExitVideo();
 };
 
 // if remote deskshare has been started connect and display the video stream
 function presenterDeskshareHasStarted() {
   // references a functiion in the global namespace inside verto_extension.js
   // that we load dynamically
-  vertoBridge.vertoWatchVideo();
+  deskshareManager.vertoWatchVideo();
 };
 
 export {
