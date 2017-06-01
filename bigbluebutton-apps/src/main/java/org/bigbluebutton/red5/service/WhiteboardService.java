@@ -19,15 +19,14 @@
 package org.bigbluebutton.red5.service;
 
 import java.util.Map;
-
 import org.bigbluebutton.red5.BigBlueButtonSession;
 import org.bigbluebutton.red5.Constants;
-import org.red5.logging.Red5LoggerFactory;
 import org.red5.server.api.Red5;
+import org.red5.server.api.scope.IScope;
 import org.slf4j.Logger;
 
 public class WhiteboardService {
-	private static Logger log = Red5LoggerFactory.getLogger(WhiteboardService.class, "bigbluebutton");
+
 	private WhiteboardApplication application;
 	
 	 private final static String TYPE = "type";
@@ -36,7 +35,6 @@ public class WhiteboardService {
 	 private final static String WB_ID = "whiteboardId";
 	
 	public void setWhiteboardApplication(WhiteboardApplication a){
-		log.debug("Setting whiteboard application instance");
 		this.application = a;
 	}
 		
@@ -47,19 +45,6 @@ public class WhiteboardService {
 		return false;
 	}
 	public void sendAnnotation(Map<String, Object> annotation) {
-//		for (Map.Entry<String, Object> entry : annotation.entrySet()) {
-//		    String key = entry.getKey();
-//		    Object value = entry.getValue();
-		    
-//		    if (key.equals("points")) {
-//		    	String points = "points=[";
-//		    	ArrayList<Double> v = (ArrayList<Double>) value;
-//		    	log.debug(points + pointsToString(v) + "]");
-//		    } else {
-//		    	log.debug(key + "=[" + value + "]");
-//		    }
-//		}
-			
 		String meetingID = getMeetingId();
 		String requesterID = getBbbSession().getInternalUserID();
 		
@@ -68,21 +53,31 @@ public class WhiteboardService {
 		}		
 	}
 	
-	/*private String pointsToString(ArrayList<Double> points){
-    	String datapoints = "";
-    	for (Double i : points) {
-    		datapoints += i + ",";
-    	}
-    	// Trim the trailing comma
-//    	log.debug("Data Point = " + datapoints);
-    	return datapoints.substring(0, datapoints.length() - 1);
+	public void sendCursorPosition(Map<String, Object> msg) {
+		String meetingID = getMeetingId();
+		String requesterID = getBbbSession().getInternalUserID();
+		
+		Double xPercent;
+		if (msg.get("xPercent") instanceof Integer) {
+			Integer tempXOffset = (Integer) msg.get("xPercent");
+			xPercent = tempXOffset.doubleValue();
+		} else {
+			xPercent = (Double) msg.get("xPercent");
+		}
 
-//		application.sendShape(shape, type, color, thickness, fill, fillColor, transparency, id, status);
+		Double yPercent;
 
-	}*/
+		if (msg.get("yPercent") instanceof Integer) {
+			Integer tempYOffset = (Integer) msg.get("yPercent");
+			yPercent = tempYOffset.doubleValue();
+		} else {
+			yPercent = (Double) msg.get("yPercent");
+		}
+
+		application.sendCursorPosition(meetingID, requesterID, xPercent, yPercent);
+	}
 	
 	public void requestAnnotationHistory(Map<String, Object> message) {
-		log.info("WhiteboardApplication - requestAnnotationHistory");
 		
 		String meetingID = getMeetingId();
 		String requesterID = getBbbSession().getInternalUserID();
@@ -93,7 +88,6 @@ public class WhiteboardService {
 	}
 		
 	public void clear(Map<String, Object> message) {
-		log.info("WhiteboardApplication - Clearing board");
 
 		String meetingID = getMeetingId();
 		String requesterID = getBbbSession().getInternalUserID();
@@ -104,7 +98,6 @@ public class WhiteboardService {
 	}
 	
 	public void undo(Map<String, Object> message) {
-		log.info("WhiteboardApplication - Deleting last graphic");
 		
 		String meetingID = getMeetingId();
 		String requesterID = getBbbSession().getInternalUserID();
@@ -115,24 +108,23 @@ public class WhiteboardService {
 	}
 	
 	public void toggleGrid() {
-		log.info("WhiteboardApplication - Toggling grid mode");
+
 		//application.toggleGrid();
 	}
 		
-	public void enableWhiteboard(Map<String, Object> message) {
-		log.info("WhiteboardApplication - Setting whiteboard enabled: " + (Boolean)message.get("enabled"));
+	public void modifyWhiteboardAccess(Map<String, Object> message) {
 
 		String meetingID = getMeetingId();
 		String requesterID = getBbbSession().getInternalUserID();
-		Boolean enable = (Boolean)message.get("enabled");
+		Boolean multiUser = (Boolean)message.get("multiUser");
 		
-		application.setWhiteboardEnable(meetingID, requesterID, enable);
+		application.modifyWhiteboardAccess(meetingID, requesterID, multiUser);
 	}
 	
-	public void isWhiteboardEnabled() {
+	public void getWhiteboardAccess() {
 		String meetingID = getMeetingId();
 		String requesterID = getBbbSession().getInternalUserID();		
-		application.setIsWhiteboardEnabled(meetingID, requesterID);
+		application.getWhiteboardAccess(meetingID, requesterID);
 	}
 	
 	private BigBlueButtonSession getBbbSession() {
