@@ -3,6 +3,7 @@ import { check } from 'meteor/check';
 import RedisPubSub from '/imports/startup/server/redis';
 import Logger from '/imports/startup/server/logger';
 import Users from '/imports/api/users';
+import ClientConnections from '/imports/startup/server/ClientConnections';
 
 export default function userLeaving(meetingId, userId, connectionId) {
   const REDIS_CONFIG = Meteor.settings.private.redis;
@@ -10,6 +11,8 @@ export default function userLeaving(meetingId, userId, connectionId) {
   const EVENT_NAME = 'UserLeaveReqMsg';
 
   check(userId, String);
+  // connection got disconnected. Remove from ClientConnections
+  ClientConnections.removeConnection(`${meetingId}--${userId}`, connectionId);
 
   const selector = {
     meetingId,

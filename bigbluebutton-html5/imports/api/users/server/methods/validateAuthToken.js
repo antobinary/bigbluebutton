@@ -4,6 +4,7 @@ import Logger from '/imports/startup/server/logger';
 import Users from '/imports/api/users';
 import createDummyUser from '../modifiers/createDummyUser';
 import setConnectionIdAndAuthToken from '../modifiers/setConnectionIdAndAuthToken';
+import ClientConnections from '/imports/startup/server/ClientConnections';
 
 export default function validateAuthToken(meetingId, requesterUserId, requesterToken) {
   const REDIS_CONFIG = Meteor.settings.private.redis;
@@ -11,6 +12,7 @@ export default function validateAuthToken(meetingId, requesterUserId, requesterT
   const EVENT_NAME = 'ValidateAuthTokenReqMsg';
 
   const sessionId = `${meetingId}--${requesterUserId}`;
+  ClientConnections.addConnection(sessionId, this.connection);
   this.setUserId(sessionId);
 
   const User = Users.findOne({
