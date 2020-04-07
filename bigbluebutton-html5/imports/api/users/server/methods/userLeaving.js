@@ -2,7 +2,6 @@ import { Meteor } from 'meteor/meteor';
 import { check } from 'meteor/check';
 import RedisPubSub from '/imports/startup/server/redis';
 import Logger from '/imports/startup/server/logger';
-import Users from '/imports/api/users';
 import ClientConnections from '/imports/startup/server/ClientConnections';
 
 export default function userLeaving(meetingId, userId, connectionId) {
@@ -14,34 +13,11 @@ export default function userLeaving(meetingId, userId, connectionId) {
   // connection got disconnected. Remove from ClientConnections
   ClientConnections.removeConnection(`${meetingId}--${userId}`, connectionId);
 
-  const selector = {
-    meetingId,
-    userId,
-  };
-
-  const User = Users.findOne(selector);
-
-  if (!User) {
-    return Logger.info(`Skipping userLeaving. Could not find ${userId} in ${meetingId}`);
-  }
-
-  // If the current user connection is not the same that triggered the leave we skip
-  if (User.connectionId !== connectionId) {
-    return false;
-  }
-
-  const modifier = {
-    $set: {
-      connectionId: false,
-    },
-  };
-  Users.upsert(selector, modifier);
-
   const payload = {
     userId,
     sessionId: meetingId,
   };
 
-  Logger.info(`User '${userId}' is leaving meeting '${meetingId}'`);
+  Logger.info(`User '${userId}' is leaving meeting '${meetingId}' (userLeaving method triggered on disconnect)`);
   return RedisPubSub.publishUserMessage(CHANNEL, EVENT_NAME, meetingId, userId, payload);
 }

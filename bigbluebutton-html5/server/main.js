@@ -1,6 +1,7 @@
 import '/imports/startup/server';
 
 // 2x
+import '/imports/api/auth-token-validation/server';
 import '/imports/api/meetings/server';
 import '/imports/api/users/server';
 import '/imports/api/annotations/server';

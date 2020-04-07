@@ -80,7 +80,7 @@ export default function handlePresentationConversionUpdate({ body }, meetingId) 
 
     const { insertedId } = numChanged;
     if (insertedId) {
-      return Logger.info(`Updated presentation conversion status=${status} id=${presentationId} meeting=${meetingId}`);
+      return Logger.debug(`Updated presentation conversion status=${status} id=${presentationId} meeting=${meetingId}`);
     }
 
     return Logger.debug(`Upserted presentation conversion status=${status} id=${presentationId} meeting=${meetingId}`);

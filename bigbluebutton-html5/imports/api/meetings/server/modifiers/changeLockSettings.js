@@ -57,10 +57,10 @@ export default function changeLockSettings(meetingId, payload) {
     }
 
     if (!numChanged) {
-      return Logger.info(`meeting={${meetingId}} lock settings were not updated`);
+      return Logger.debug(`meeting={${meetingId}} lock settings were not updated`);
     }
 
-    return Logger.info(`Changed meeting={${meetingId}} updated lock settings`);
+    return Logger.debug(`Changed meeting={${meetingId}} updated lock settings`);
   };
 
   return Meetings.upsert(selector, modifier, cb);

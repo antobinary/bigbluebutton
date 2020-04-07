@@ -163,11 +163,11 @@ export default function addMeeting(meeting) {
     } = numChanged;
 
     if (insertedId) {
-      Logger.info(`Added record prop id=${meetingId}`);
+      Logger.debug(`Added record prop id=${meetingId}`);
     }
 
     if (numChanged) {
-      Logger.info(`Upserted record prop id=${meetingId}`);
+      Logger.debug(`Upserted record prop id=${meetingId}`);
     }
   };
 

@@ -9,7 +9,7 @@ function note() {
   }
   const { meetingId, requesterUserId } = extractCredentials(this.userId);
 
-  Logger.info(`Publishing note for ${meetingId} ${requesterUserId}`);
+  Logger.debug(`Publishing note for ${meetingId} ${requesterUserId}`);
 
   return Note.find({ meetingId });
 }

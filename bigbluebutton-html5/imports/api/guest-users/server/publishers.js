@@ -10,7 +10,7 @@ function guestUsers() {
 
   const { meetingId, requesterUserId } = extractCredentials(this.userId);
 
-  Logger.info(`Publishing Slides for ${meetingId} ${requesterUserId}`);
+  Logger.debug(`Publishing Slides for ${meetingId} ${requesterUserId}`);
 
   return GuestUsers.find({ meetingId });
 }

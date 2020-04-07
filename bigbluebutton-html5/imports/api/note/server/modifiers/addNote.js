@@ -25,10 +25,10 @@ export default function addNote(meetingId, noteId, readOnlyNoteId) {
     }
 
     if (numChanged) {
-      return Logger.info(`Added note id=${noteId} readOnlyId=${readOnlyNoteId} meeting=${meetingId}`);
+      return Logger.debug(`Added note id=${noteId} readOnlyId=${readOnlyNoteId} meeting=${meetingId}`);
     }
 
-    return Logger.info(`Upserted note id=${noteId} readOnlyId=${readOnlyNoteId} meeting=${meetingId}`);
+    return Logger.debug(`Upserted note id=${noteId} readOnlyId=${readOnlyNoteId} meeting=${meetingId}`);
   };
 
   return Note.upsert(selector, modifier, cb);

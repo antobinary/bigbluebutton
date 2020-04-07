@@ -4,6 +4,7 @@ import { Tracker } from 'meteor/tracker';
 import Storage from '/imports/ui/services/storage/session';
 
 import Users from '/imports/api/users';
+import AuthTokenValidation, { ValidationStates } from '/imports/api/auth-token-validation';
 import logger from '/imports/startup/client/logger';
 import { makeCall } from '/imports/ui/services/api';
 import { initAnnotationsStreamListener } from '/imports/ui/components/whiteboard/service';
@@ -218,41 +219,46 @@ class Auth {
         });
       }, CONNECTION_TIMEOUT);
 
+      Meteor.subscribe('authtokenvalidation', { meetingId: this.meetingID, userId: this.userID });
+
+      makeCall('validateAuthToken', this.meetingID, this.userID, this.token);
+
       Tracker.autorun((c) => {
         computation = c;
-        makeCall('validateAuthToken', this.meetingID, this.userID, this.token);
-        Meteor.subscribe('current-user');
+        const AuthenticationTokenValidation = AuthTokenValidation.findOne();
+        console.error('autorun', AuthenticationTokenValidation)
 
-        const selector = { meetingId: this.meetingID, userId: this.userID };
-        const fields = {
-          intId: 1, ejected: 1, validated: 1, connectionStatus: 1, userId: 1,
-        };
-        const User = Users.findOne(selector, { fields });
-        // Skip in case the user is not in the collection yet or is a dummy user
-        if (!User || !('intId' in User)) {
-          logger.info({ logCode: 'auth_service_resend_validateauthtoken' }, 're-send validateAuthToken for delayed authentication');
-          makeCall('validateAuthToken', this.meetingID, this.userID, this.token);
+        if (!AuthenticationTokenValidation) return;
+        console.error(AuthenticationTokenValidation.validationStatus)
 
-          return;
+        switch (AuthenticationTokenValidation.validationStatus) {
+          case ValidationStates.INVALID:
+            reject({ error: 401, description: 'User has been ejected.' });
+            break;
+          case ValidationStates.VALIDATED:
+            logger.info({ logCode: 'auth_service_init_streamers', extraInfo: { userId: this.userID } }, 'Calling init streamers functions');
+            computation.stop();
+            initCursorStreamListener();
+            initAnnotationsStreamListener();
+            clearTimeout(validationTimeout);
+            // setTimeout to prevent race-conditions with subscription
+            // setTimeout(() => resolve(true), 100);
+            resolve(true);
+            break;
+          case ValidationStates.VALIDATING:
+            console.log('validating')
+            // computation.stop();
+            // return;
+            break;
+          case ValidationStates.NOT_VALIDATED:
+            console.log('not validated')
+
+            return;
+          default:
+            console.error(`001 WAITING ${AuthenticationTokenValidation.validationStatus}`, AuthenticationTokenValidation);
+            return;
         }
-
-        if (User.ejected) {
-          reject({
-            error: 401,
-            description: 'User has been ejected.',
-          });
-          return;
-        }
-
-        if (User.validated === true && User.connectionStatus === 'online') {
-          logger.info({ logCode: 'auth_service_init_streamers', extraInfo: { userId: User.userId } }, 'Calling init streamers functions');
-          initCursorStreamListener();
-          initAnnotationsStreamListener();
-          computation.stop();
-          clearTimeout(validationTimeout);
-          // setTimeout to prevent race-conditions with subscription
-          setTimeout(() => resolve(true), 100);
-        }
+        console.error('now what')
       });
     });
   }
@@ -272,3 +278,45 @@ class Auth {
 
 const AuthSingleton = new Auth();
 export default AuthSingleton;
+
+
+// validateAuthToken() {
+//   return new Promise((resolve, reject) => {
+//     let computation = null;
+//
+//     const validationTimeout = setTimeout(() => {
+//       computation.stop();
+//       reject({
+//         error: 401,
+//         description: 'Authentication timeout.',
+//       });
+//     }, CONNECTION_TIMEOUT);
+//
+//     Meteor.subscribe('current-user');
+//     makeCall('validateAuthToken', this.meetingID, this.userID, this.token);
+//
+//     Tracker.autorun((c) => {
+//       computation = c;
+//
+//       const selector = { meetingId: this.meetingID, userId: this.userID };
+//       const fields = {
+//         intId: 1, ejected: 1, validated: 1, connectionStatus: 1, userId: 1,
+//       };
+//       const User = Users.findOne(selector, { fields });
+//       // Wait in case the user is not in the collection yet or is a dummy user
+//       if (!User || !('intId' in User)) {
+//         return;
+//       }
+//
+//       if (User.validated === true && User.connectionStatus === 'online') {
+//         logger.info({ logCode: 'auth_service_init_streamers', extraInfo: { userId: User.userId } }, 'Calling init streamers functions');
+//         initCursorStreamListener();
+//         initAnnotationsStreamListener();
+//         computation.stop();
+//         clearTimeout(validationTimeout);
+//         // setTimeout to prevent race-conditions with subscription
+//         setTimeout(() => resolve(true), 100);
+//       }
+//     });
+//   });
+// }
