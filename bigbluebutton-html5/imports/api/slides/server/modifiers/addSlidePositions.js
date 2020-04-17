@@ -50,10 +50,10 @@ export default function addSlidePositions(
     const { insertedId } = numChanged;
 
     if (insertedId) {
-      return Logger.info(`Added slide position id=${slideId} pod=${podId} presentation=${presentationId}`);
+      return Logger.debug(`Added slide position id=${slideId} pod=${podId} presentation=${presentationId}`);
     }
 
-    return Logger.info(`Upserted slide position id=${slideId} pod=${podId} presentation=${presentationId}`);
+    return Logger.debug(`Upserted slide position id=${slideId} pod=${podId} presentation=${presentationId}`);
   };
 
   return SlidePositions.upsert(selector, modifier, cb);

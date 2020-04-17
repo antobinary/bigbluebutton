@@ -87,11 +87,11 @@ export default injectIntl(withModalMounter(withTracker(({ intl, baseControls }) 
   }
 
   // Check if user is removed out of the session
-  Users.find({ userId: Auth.userID }, { fields: { connectionId: 1, ejected: 1 } }).observeChanges({
+  Users.find({ userId: Auth.userID }, { fields: { ejected: 1 } }).observeChanges({
     changed(id, fields) {
-      const hasNewConnection = 'connectionId' in fields && (fields.connectionId !== Meteor.connection._lastSessionId);
+      // const hasNewConnection = 'connectionId' in fields && (fields.connectionId !== Meteor.connection._lastSessionId);
 
-      if (fields.ejected || hasNewConnection) {
+      if (fields.ejected) {
         endMeeting('403');
       }
     },

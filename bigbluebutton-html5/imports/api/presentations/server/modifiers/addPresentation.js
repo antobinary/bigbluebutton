@@ -79,10 +79,11 @@ export default function addPresentation(meetingId, podId, presentation) {
         setCurrentPresentation(meetingId, podId, presentation.id);
       }
 
-      return Logger.info(`Added presentation id=${presentation.id} meeting=${meetingId}`);
+      return; // Logger.info(`Added presentation id=${presentation.id} meeting=${meetingId}`);
+      // return Logger.info(`Added presentation id=${presentation.id} meeting=${meetingId}`);
     }
 
-    return Logger.info(`Upserted presentation id=${presentation.id} meeting=${meetingId}`);
+    return Logger.debug(`Upserted presentation id=${presentation.id} meeting=${meetingId}`);
   };
 
   return Presentations.upsert(selector, modifier, cb);

@@ -37,10 +37,11 @@ export default function addPresentationPod(meetingId, pod, presentations = undef
     }
 
     if (numChanged) {
-      return Logger.info(`Added presentation pod id=${podId} meeting=${meetingId}`);
+      // return Logger.info(`Added presentation pod id=${podId} meeting=${meetingId}`);
     }
 
-    return Logger.info(`Upserted presentation pod id=${podId} meeting=${meetingId}`);
+    // Logger.info(`Upserted presentation pod id=${podId} meeting=${meetingId}`);
+    // return Logger.info(`Upserted presentation pod id=${podId} meeting=${meetingId}`);
   };
 
   return PresentationPods.upsert(selector, modifier, cb);

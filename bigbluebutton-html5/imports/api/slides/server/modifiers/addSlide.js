@@ -101,10 +101,10 @@ export default function addSlide(meetingId, podId, presentationId, slide) {
     requestWhiteboardHistory(meetingId, slideId);
 
     if (insertedId) {
-      return Logger.info(`Added slide id=${slideId} pod=${podId} presentation=${presentationId}`);
+      return Logger.debug(`Added slide id=${slideId} pod=${podId} presentation=${presentationId}`);
     }
 
-    return Logger.info(`Upserted slide id=${slideId} pod=${podId} presentation=${presentationId}`);
+    return Logger.debug(`Upserted slide id=${slideId} pod=${podId} presentation=${presentationId}`);
   };
 
   const imageSizeUri = (loadSlidesFromHttpAlways ? imageUri.replace(/^https/i, 'http') : imageUri);

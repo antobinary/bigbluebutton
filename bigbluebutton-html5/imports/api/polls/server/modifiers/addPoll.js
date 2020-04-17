@@ -47,10 +47,10 @@ export default function addPoll(meetingId, requesterId, poll) {
 
     const { insertedId } = numChanged;
     if (insertedId) {
-      return Logger.info(`Added Poll id=${poll.id}`);
+      return Logger.debug(`Added Poll id=${poll.id}`);
     }
 
-    return Logger.info(`Upserted Poll id=${poll.id}`);
+    return Logger.debug(`Upserted Poll id=${poll.id}`);
   };
 
   return Polls.upsert(selector, modifier, cb);

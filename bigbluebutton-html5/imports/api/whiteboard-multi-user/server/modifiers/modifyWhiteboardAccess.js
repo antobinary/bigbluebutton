@@ -27,10 +27,10 @@ export default function modifyWhiteboardAccess(meetingId, whiteboardId, multiUse
 
     const { insertedId } = numChanged;
     if (insertedId) {
-      return Logger.info(`Added multiUser flag=${multiUser} meetingId=${meetingId} whiteboardId=${whiteboardId}`);
+      return Logger.debug(`Added multiUser flag=${multiUser} meetingId=${meetingId} whiteboardId=${whiteboardId}`);
     }
 
-    return Logger.info(`Upserted multiUser flag=${multiUser} meetingId=${meetingId} whiteboardId=${whiteboardId}`);
+    return Logger.debug(`Upserted multiUser flag=${multiUser} meetingId=${meetingId} whiteboardId=${whiteboardId}`);
   };
 
   return WhiteboardMultiUser.upsert(selector, modifier, cb);

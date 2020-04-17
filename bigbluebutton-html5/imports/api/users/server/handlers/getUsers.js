@@ -10,6 +10,9 @@ export default function handleGetUsers({ body }, meetingId) {
   check(users, Array);
 
   const usersIds = users.map(m => m.intId);
+  users.forEach((user) => {
+    console.error(` ---------------gerUsers-------- ${user.name}   ${user.intId}`);
+  });
 
   const usersToRemove = Users.find({
     meetingId,

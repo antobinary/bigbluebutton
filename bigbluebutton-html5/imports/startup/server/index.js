@@ -73,27 +73,27 @@ Meteor.startup(() => {
 
   setMinBrowserVersions();
 
-  Meteor.setInterval(() => {
-    const currentTime = Date.now();
-    Logger.info('Checking for inactive users');
-    const users = Users.find({
-      connectionStatus: 'online',
-      clientType: 'HTML5',
-      lastPing: {
-        $lt: (currentTime - INTERVAL_TIME), // get user who has not pinged in the last 10 seconds
-      },
-      loginTime: {
-        $lt: (currentTime - INTERVAL_TIME),
-      },
-    }).fetch();
-    if (!users.length) return Logger.info('No inactive users');
-    Logger.info('Removing inactive users');
-    users.forEach((user) => {
-      Logger.info(`Detected inactive user, userId:${user.userId}, meetingId:${user.meetingId}`);
-      return userLeaving(user.meetingId, user.userId, user.connectionId);
-    });
-    return Logger.info('All inactive users have been removed');
-  }, INTERVAL_TIME);
+  // Meteor.setInterval(() => {
+  //   const currentTime = Date.now();
+  //   Logger.info('Checking for inactive users');
+  //   const users = Users.find({
+  //     connectionStatus: 'online',
+  //     clientType: 'HTML5',
+  //     lastPing: {
+  //       $lt: (currentTime - INTERVAL_TIME), // get user who has not pinged in the last 10 seconds
+  //     },
+  //     loginTime: {
+  //       $lt: (currentTime - INTERVAL_TIME),
+  //     },
+  //   }).fetch();
+  //   if (!users.length) return Logger.info('No inactive users');
+  //   Logger.info('Removing inactive users');
+  //   users.forEach((user) => {
+  //     Logger.info(`Detected inactive user, userId:${user.userId}, meetingId:${user.meetingId}`);
+  //     return userLeaving(user.meetingId, user.userId, user.connectionId);
+  //   });
+  //   return Logger.info('All inactive users have been removed');
+  // }, INTERVAL_TIME);
 
   Logger.warn(`SERVER STARTED.\nENV=${env},\nnodejs version=${process.version}\nCDN=${CDN_URL}\n`, APP_CONFIG);
 });
@@ -110,7 +110,9 @@ WebApp.connectHandlers.use('/locale', (req, res) => {
   const APP_CONFIG = Meteor.settings.public.app;
   const fallback = APP_CONFIG.defaultSettings.application.fallbackLocale;
   const override = APP_CONFIG.defaultSettings.application.overrideLocale;
-  const browserLocale = override ? override.split(/[-_]/g) : req.query.locale.split(/[-_]/g);
+  const browserLocale = override && req.query.init === 'true'
+    ? override.split(/[-_]/g) : req.query.locale.split(/[-_]/g);
+
   const localeList = [fallback];
 
   const usableLocales = AVAILABLE_LOCALES

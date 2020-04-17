@@ -18,6 +18,7 @@ const COLOR_LIST = [
 export default function addUser(meetingId, user) {
   check(meetingId, String);
 
+  console.error('JAJA addUser');
   check(user, {
     intId: String,
     extId: String,
@@ -50,6 +51,7 @@ export default function addUser(meetingId, user) {
     $set: Object.assign(
       {
         meetingId,
+        userId,
         connectionStatus: 'online',
         sortName: user.name.trim().toLowerCase(),
         color,
@@ -61,6 +63,8 @@ export default function addUser(meetingId, user) {
         inactivityCheck: false,
         responseDelay: 0,
         loggedOut: false,
+        clientType: 'HTML5',
+        approved: true, // TODO handle guests waiting
       },
       flat(user),
     ),

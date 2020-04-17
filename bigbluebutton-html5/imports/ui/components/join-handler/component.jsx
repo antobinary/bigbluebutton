@@ -108,11 +108,11 @@ class JoinHandler extends Component {
         location: window.location.href,
       };
 
-      logger.info({
-        logCode: 'joinhandler_component_clientinfo',
-        extraInfo: { clientInfo },
-      },
-      'Log information about the client');
+      // logger.info({
+      //   logCode: 'joinhandler_component_clientinfo',
+      //   extraInfo: { clientInfo },
+      // },
+      // 'Log information about the client');
     };
 
     const setAuth = (resp) => {
@@ -174,12 +174,12 @@ class JoinHandler extends Component {
 
       await setCustomData(response);
 
-      logger.info({
-        logCode: 'joinhandler_component_joinroutehandler_success',
-        extraInfo: {
-          response,
-        },
-      }, 'User successfully went through main.joinRouteHandler');
+      // logger.info({
+      //   logCode: 'joinhandler_component_joinroutehandler_success',
+      //   extraInfo: {
+      //     response,
+      //   },
+      // }, 'User successfully went through main.joinRouteHandler');
     } else {
       const e = new Error(response.message);
       if (!Session.get('codeError')) Session.set('errorMessageDescription', response.message);
