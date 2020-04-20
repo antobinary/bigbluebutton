@@ -35,6 +35,7 @@ export default function addGroupChatMsg(meetingId, chatId, msg) {
     chatId,
     message: parseMessage(msg.message),
     sender: msg.sender.id,
+    name: msg.sender.name,
   };
 
   const selector = {

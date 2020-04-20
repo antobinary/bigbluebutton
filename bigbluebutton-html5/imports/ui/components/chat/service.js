@@ -20,6 +20,7 @@ const PUBLIC_CHAT_USER_ID = CHAT_CONFIG.system_userid;
 const PUBLIC_CHAT_CLEAR = CHAT_CONFIG.system_messages_keys.chat_clear;
 
 const ROLE_MODERATOR = Meteor.settings.public.user.role_moderator;
+const ROLE_VIEWER = Meteor.settings.public.user.role_viewer;
 
 const CONNECTION_STATUS_ONLINE = 'online';
 
@@ -41,26 +42,27 @@ const mapGroupMessage = (message) => {
     content: message.content,
     time: message.timestamp || message.time,
     sender: null,
+    name: message.name,
   };
 
   if (message.sender && message.sender !== SYSTEM_CHAT_TYPE) {
     const sender = Users.findOne({ userId: message.sender },
       {
         fields: {
-          color: 1, role: 1, name: 1, connectionStatus: 1,
+          color: 1, role: 1, connectionStatus: 1,
         },
       });
+    const senderObject = sender || { color: '#7b1fa2', role: ROLE_VIEWER, connectionStatus: 'offline' };
     const {
       color,
       role,
-      name,
       connectionStatus,
-    } = sender;
+    } = senderObject;
 
     const mappedSender = {
       color,
       isModerator: role === ROLE_MODERATOR,
-      name,
+      name: mappedMessage.name,
       isOnline: connectionStatus === CONNECTION_STATUS_ONLINE,
     };
 

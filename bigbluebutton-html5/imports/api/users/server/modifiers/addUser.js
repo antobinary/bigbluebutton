@@ -18,7 +18,6 @@ const COLOR_LIST = [
 export default function addUser(meetingId, user) {
   check(meetingId, String);
 
-  console.error('JAJA addUser');
   check(user, {
     intId: String,
     extId: String,
@@ -63,8 +62,10 @@ export default function addUser(meetingId, user) {
         inactivityCheck: false,
         responseDelay: 0,
         loggedOut: false,
-        clientType: 'HTML5',
         approved: true, // TODO handle guests waiting
+        validated: true, // TODO replace this with the authTokenValidate collection
+        // approved: !waitForApproval, // TODO
+        loginTime: Date.now(),
       },
       flat(user),
     ),
