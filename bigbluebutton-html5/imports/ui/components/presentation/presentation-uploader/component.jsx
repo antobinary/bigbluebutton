@@ -453,10 +453,11 @@ class PresentationUploader extends Component {
 
   handleConfirm(hasNewUpload) {
     const {
-      handleSave, selectedToBeNextCurrent, persistPresentation,
+      handleSave, persistPresentation,
     } = this.props;
     const { presentations } = this.state;
     const presentationsToSave = presentations.filter(p => p.file && p.upload.progress === 0);
+    const presentationsToUpdate = presentations.filter(p => !p.file && p.conversion.done);
 
     if (hasNewUpload) {
       this.toastId = toast.info(this.renderToastList(), {
@@ -471,9 +472,9 @@ class PresentationUploader extends Component {
     }
 
     if (this.toastId) Session.set('UploadPresentationToastId', this.toastId);
-
     Session.set('showUploadPresentationView', false);
-    return presentationsToSave.forEach(p => persistPresentation(p));
+    presentationsToSave.forEach(p => persistPresentation(p));
+    return handleSave(presentationsToUpdate);
   }
 
   deepMergeUpdateFileKey(id, key, value) {
