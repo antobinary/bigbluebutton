@@ -518,19 +518,27 @@ class PresentationUploader extends Component {
     });
   }
 
-  handleRemove(item, withErr = false) {
-    if (withErr) {
+  handleRemove(item, hasError = false) {
+    const { removePresentation } = this.props;
+    if (hasError) {
       const { presentations } = this.props;
       this.hasError = false;
       return this.setState({
         presentations,
-        disableActions: false,
       });
     }
 
-    const { presentations } = this.state;
+    const { presentations, numToUpload } = this.state;
     const toRemoveIndex = presentations.indexOf(item);
+    let notUploaded = true;
+    if (!item.id.includes(item.filename)) {
+      notUploaded = false;
+      removePresentation(item.id);
+    }
+
     return this.setState({
+      numToUpload: notUploaded ? numToUpload - 1 : numToUpload,
+      numProcessed: notUploaded ? numToUpload - 1 : numToUpload,
       presentations: update(presentations, {
         $splice: [[toRemoveIndex, 1]],
       }),

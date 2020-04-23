@@ -276,4 +276,5 @@ export default {
   setPresentation,
   persistPresentation,
   uploadAndConvertPres,
+  removePresentation,
 };

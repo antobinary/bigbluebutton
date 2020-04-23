@@ -34,6 +34,10 @@ export default withTracker(() => {
       PRESENTATION_CONFIG.uploadEndpoint,
       'DEFAULT_PRESENTATION_POD',
     ),
+    removePresentation: presentation => Service.removePresentation(
+      presentation,
+      'DEFAULT_PRESENTATION_POD',
+    ),
     dispatchDisableDownloadable,
     dispatchEnableDownloadable,
     dispatchTogglePresentationDownloadable,
