@@ -29,6 +29,11 @@ export default withTracker(() => {
       PRESENTATION_CONFIG.uploadEndpoint,
       'DEFAULT_PRESENTATION_POD',
     ),
+    persistPresentation: presentation => Service.persistPresentation(
+      presentation,
+      PRESENTATION_CONFIG.uploadEndpoint,
+      'DEFAULT_PRESENTATION_POD',
+    ),
     dispatchDisableDownloadable,
     dispatchEnableDownloadable,
     dispatchTogglePresentationDownloadable,

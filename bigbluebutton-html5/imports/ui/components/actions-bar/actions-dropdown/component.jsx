@@ -202,7 +202,7 @@ class ActionsDropdown extends PureComponent {
         className={cx(itemStyles)}
         icon="file"
         iconRight={p.current ? 'check' : null}
-        label={p.name}
+        label={p.name || p.filename}
         description="uploaded presentation file"
         key={`uploaded-presentation-${p.id}`}
         onClick={() => {
@@ -232,7 +232,7 @@ class ActionsDropdown extends PureComponent {
 
     const availableActions = this.getAvailableActions();
     const availablePresentations = this.makePresentationItems();
-    const children = availablePresentations.length > 2 && amIPresenter
+    const children = amIPresenter
       ? availablePresentations.concat(availableActions) : availableActions;
 
     if ((!amIPresenter && !amIModerator)

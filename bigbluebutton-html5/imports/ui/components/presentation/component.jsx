@@ -422,7 +422,8 @@ class PresentationArea extends PureComponent {
     } = slidePosition;
 
     const {
-      imageUri,
+      // imageUri,
+      urls,
     } = currentSlide;
 
     let viewBoxPosition;
@@ -480,7 +481,7 @@ class PresentationArea extends PureComponent {
           </defs>
           <g clipPath="url(#viewBox)">
             <Slide
-              imageUri={imageUri}
+              imageUri={urls.svg || urls.png}
               svgWidth={width}
               svgHeight={height}
             />
@@ -721,7 +722,12 @@ PresentationArea.propTypes = {
     current: PropTypes.bool.isRequired,
     num: PropTypes.number.isRequired,
     id: PropTypes.string.isRequired,
-    imageUri: PropTypes.string.isRequired,
+    urls: PropTypes.shape({
+      text: PropTypes.string.isRequired,
+      svg: PropTypes.string.isRequired,
+      png: PropTypes.string.isRequired,
+      swf: PropTypes.string.isRequired,
+    }),
   }),
   slidePosition: PropTypes.shape({
     x: PropTypes.number.isRequired,

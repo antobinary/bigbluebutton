@@ -30,7 +30,7 @@ const propTypes = {
   fileValidMimeTypes: PropTypes.arrayOf(PropTypes.object).isRequired,
   presentations: PropTypes.arrayOf(PropTypes.shape({
     id: PropTypes.string.isRequired,
-    filename: PropTypes.string.isRequired,
+    filename: PropTypes.string,
     isCurrent: PropTypes.bool.isRequired,
     conversion: PropTypes.object,
     upload: PropTypes.object,
@@ -204,7 +204,6 @@ class PresentationUploader extends Component {
 
     this.state = {
       presentations: [],
-      disableActions: false,
       toUploadCount: 0,
     };
 
@@ -454,12 +453,10 @@ class PresentationUploader extends Component {
 
   handleConfirm(hasNewUpload) {
     const {
-      handleSave, selectedToBeNextCurrent,
+      handleSave, selectedToBeNextCurrent, persistPresentation,
     } = this.props;
-    const { disableActions, presentations } = this.state;
-    const presentationsToSave = presentations;
-
-    this.setState({ disableActions: true });
+    const { presentations } = this.state;
+    const presentationsToSave = presentations.filter(p => p.file && p.upload.progress === 0);
 
     if (hasNewUpload) {
       this.toastId = toast.info(this.renderToastList(), {
@@ -475,28 +472,16 @@ class PresentationUploader extends Component {
 
     if (this.toastId) Session.set('UploadPresentationToastId', this.toastId);
 
-    if (!disableActions) {
-      Session.set('showUploadPresentationView', false);
-      return handleSave(presentationsToSave)
+
+    Session.set('showUploadPresentationView', false);
+    return presentationsToSave.forEach((p) => {
+      persistPresentation(p)
         .then(() => {
-          const hasError = presentations.some(p => p.upload.error || p.conversion.error);
-          if (!hasError) {
-            this.setState({
-              disableActions: false,
-              toUploadCount: 0,
-            });
-            return;
-          }
-          // if there's error we don't want to close the modal
+          const { numToUpload, numProcessed } = this.state;
+          const shouldReset = numProcessed === 1;
           this.setState({
-            disableActions: true,
-            // preventClosing: true,
-          }, () => {
-            // if the selected current has error we revert back to the old one
-            const newCurrent = presentations.find(p => p.isCurrent);
-            if (newCurrent.upload.error || newCurrent.conversion.error) {
-              this.handleCurrentChange(selectedToBeNextCurrent);
-            }
+            numToUpload: shouldReset ? 0 : numToUpload,
+            numProcessed: numProcessed - 1,
           });
         })
         .catch((error) => {
@@ -505,10 +490,7 @@ class PresentationUploader extends Component {
             extraInfo: { error },
           }, 'Presentation uploader catch error on confirm');
         });
-    }
-
-    Session.set('showUploadPresentationView', false);
-    return null;
+    });
   }
 
   deepMergeUpdateFileKey(id, key, value) {
@@ -674,6 +656,13 @@ class PresentationUploader extends Component {
     const isConverting = !item.conversion.done && item.upload.done;
     const hasError = item.conversion.error || item.upload.error;
     const isProcessing = (isUploading || isConverting) && !hasError;
+
+
+    console.log(item);
+    console.log(`isUploading: ${isUploading}`);
+    console.log(`isConverting: ${isConverting}`);
+    // console.log(isUploading)
+    // console.log(isUploading)
 
     if (!stateError && hasError) {
       this.hasError = true;
@@ -928,7 +917,6 @@ class PresentationUploader extends Component {
                 className={styles.confirm}
                 color="primary"
                 onClick={() => this.handleConfirm(hasNewUpload)}
-                disabled={disableActions}
                 label={hasNewUpload
                   ? intl.formatMessage(intlMessages.uploadLabel)
                   : intl.formatMessage(intlMessages.confirmLabel)

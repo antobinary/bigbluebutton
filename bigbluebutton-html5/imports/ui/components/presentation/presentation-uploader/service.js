@@ -241,9 +241,38 @@ const persistPresentationChanges = (oldState, newState, uploadEndpoint, podId) =
     .then(removePresentations.bind(null, presentationsToRemove, podId));
 };
 
+const persistPresentation = (presentation, uploadEndpoint, podId) => {
+  const presentationToUpload = presentation;
+  return uploadAndConvertPres(presentationToUpload, Auth.meetingID, podId, uploadEndpoint)
+    .then((p) => {
+      if (!p) return Promise.resolve();
+      // Update the presentation with it's new id
+      presentationsToUpload.onDone(p.id);
+      return Promise.resolve(p);
+    })
+    .then((p) => {
+      if (presentationsToUpload.isCurrent) return setPresentation(p.id, podId);
+    });
+};
+
+const uploadAndConvertPres = (
+  presentation,
+  meetingId,
+  podId,
+  uploadEndpoint,
+) => {
+  console.log(presentation);
+  return uploadAndConvertPresentation(
+    presentation.file, presentation.isDownloadable, podId, meetingId, uploadEndpoint,
+    presentation.onUpload, presentation.onProgress, presentation.onConversion,
+  );
+};
+
 export default {
   getPresentations,
   persistPresentationChanges,
   dispatchTogglePresentationDownloadable,
   setPresentation,
+  persistPresentation,
+  uploadAndConvertPres,
 };
