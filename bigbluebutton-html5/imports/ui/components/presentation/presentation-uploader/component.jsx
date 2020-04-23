@@ -367,7 +367,7 @@ class PresentationUploader extends Component {
 
     return (
       <div
-        key={item.id}
+        key={_.uniqueId(item.id)}
         className={styles.uploadRow}
         onClick={() => {
           if (hasError || isProcessing) Session.set('showUploadPresentationView', true);
@@ -472,25 +472,8 @@ class PresentationUploader extends Component {
 
     if (this.toastId) Session.set('UploadPresentationToastId', this.toastId);
 
-
     Session.set('showUploadPresentationView', false);
-    return presentationsToSave.forEach((p) => {
-      persistPresentation(p)
-        .then(() => {
-          const { numToUpload, numProcessed } = this.state;
-          const shouldReset = numProcessed === 1;
-          this.setState({
-            numToUpload: shouldReset ? 0 : numToUpload,
-            numProcessed: numProcessed - 1,
-          });
-        })
-        .catch((error) => {
-          logger.error({
-            logCode: 'presentationuploader_component_save_error',
-            extraInfo: { error },
-          }, 'Presentation uploader catch error on confirm');
-        });
-    });
+    return presentationsToSave.forEach(p => persistPresentation(p));
   }
 
   deepMergeUpdateFileKey(id, key, value) {
@@ -657,13 +640,6 @@ class PresentationUploader extends Component {
     const hasError = item.conversion.error || item.upload.error;
     const isProcessing = (isUploading || isConverting) && !hasError;
 
-
-    console.log(item);
-    console.log(`isUploading: ${isUploading}`);
-    console.log(`isConverting: ${isConverting}`);
-    // console.log(isUploading)
-    // console.log(isUploading)
-
     if (!stateError && hasError) {
       this.hasError = true;
     }
@@ -689,7 +665,7 @@ class PresentationUploader extends Component {
 
     return (
       <tr
-        key={item.id}
+        key={_.uniqueId(item.id)}
         className={cx(itemClassName)}
       >
         <td className={styles.tableItemIcon}>
@@ -848,6 +824,9 @@ class PresentationUploader extends Component {
   }
 
   renderPresentationItemStatus(item) {
+    // console.log('renderPresentationItemStatus')
+    // console.log(item)
+
     const { intl } = this.props;
     if (!item.upload.done && item.upload.progress === 0) {
       return intl.formatMessage(intlMessages.fileToUpload);

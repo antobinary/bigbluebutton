@@ -237,8 +237,8 @@ const persistPresentationChanges = (oldState, newState, uploadEndpoint, podId) =
       }
 
       return setPresentation(currentPresentation.id, podId);
-    })
-    .then(removePresentations.bind(null, presentationsToRemove, podId));
+    });
+  // .then(removePresentations.bind(null, presentationsToRemove, podId));
 };
 
 const persistPresentation = (presentation, uploadEndpoint, podId) => {
@@ -247,11 +247,12 @@ const persistPresentation = (presentation, uploadEndpoint, podId) => {
     .then((p) => {
       if (!p) return Promise.resolve();
       // Update the presentation with it's new id
-      presentationsToUpload.onDone(p.id);
+      presentationToUpload.onDone(p.id);
       return Promise.resolve(p);
     })
     .then((p) => {
-      if (presentationsToUpload.isCurrent) return setPresentation(p.id, podId);
+      if (presentationToUpload.isCurrent) setPresentation(p.id, podId);
+      return Promise.resolve(p);
     });
 };
 
