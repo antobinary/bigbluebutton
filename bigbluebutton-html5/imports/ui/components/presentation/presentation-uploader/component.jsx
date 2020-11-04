@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { intlShape, injectIntl, defineMessages } from 'react-intl';
+import { defineMessages, injectIntl } from 'react-intl';
 import cx from 'classnames';
 import Button from '/imports/ui/components/button/component';
 import Checkbox from '/imports/ui/components/checkbox/component';
@@ -21,7 +21,8 @@ const isMobileBrowser = (BROWSER_RESULTS ? BROWSER_RESULTS.mobile : false)
     : false);
 
 const propTypes = {
-  intl: intlShape.isRequired,
+  intl: PropTypes.object.isRequired,
+  mountModal: PropTypes.func.isRequired,
   defaultFileName: PropTypes.string.isRequired,
   fileSizeMin: PropTypes.number.isRequired,
   fileSizeMax: PropTypes.number.isRequired,
@@ -104,6 +105,18 @@ const intlMessages = defineMessages({
   413: {
     id: 'app.presentationUploder.upload.413',
     description: 'error that file exceed the size limit',
+  },
+  408: {
+    id: 'app.presentationUploder.upload.408',
+    description: 'error for token request timeout',
+  },
+  404: {
+    id: 'app.presentationUploder.upload.404',
+    description: 'error not found',
+  },
+  401: {
+    id: 'app.presentationUploder.upload.401',
+    description: 'error for failed upload token request.',
   },
   conversionProcessingSlides: {
     id: 'app.presentationUploder.conversion.conversionProcessingSlides',
@@ -489,7 +502,6 @@ class PresentationUploader extends Component {
 
     const currentIndex = presentations.findIndex(p => p.isCurrent);
     const newCurrentIndex = presentations.findIndex(p => p.id === id);
-
     const commands = {};
 
     // we can end up without a current presentation
@@ -512,11 +524,7 @@ class PresentationUploader extends Component {
     };
 
     const presentationsUpdated = update(presentations, commands);
-
-    this.setState({
-      presentations: presentationsUpdated,
-      currentIdChange: id,
-    });
+    this.setState({ presentations: presentationsUpdated });
   }
 
   handleRemove(item, hasError = false) {
@@ -543,6 +551,25 @@ class PresentationUploader extends Component {
       presentations: update(presentations, {
         $splice: [[toRemoveIndex, 1]],
       }),
+    }, () => {
+      const { presentations: updatedPresentations, oldCurrentId } = this.state;
+      const currentIndex = updatedPresentations.findIndex(p => p.isCurrent);
+      const actualCurrentIndex = updatedPresentations.findIndex(p => p.id === oldCurrentId);
+
+      if (currentIndex === -1 && updatedPresentations.length > 0) {
+        const commands = {};
+        const newCurrentIndex = actualCurrentIndex === -1 ? 0 : actualCurrentIndex;
+        commands[newCurrentIndex] = {
+          $apply: (presentation) => {
+            const p = presentation;
+            p.isCurrent = true;
+            return p;
+          },
+        };
+
+        const updatedCurrent = update(updatedPresentations, commands);
+        this.setState({ presentations: updatedCurrent });
+      }
     });
   }
 
@@ -817,10 +844,11 @@ class PresentationUploader extends Component {
         accept="image/*"
         minSize={fileSizeMin}
         maxSize={fileSizeMax}
-        disablePreview
+        disablepreview="true"
+        data-test="fileUploadDropZone"
         onDrop={this.handleFiledrop}
       >
-        <Icon className={styles.dropzoneIcon} data-test="fileUploadDropZone" iconName="upload" />
+        <Icon className={styles.dropzoneIcon} iconName="upload" />
         <p className={styles.dropzoneMessage}>
           {intl.formatMessage(intlMessages.dropzoneImagesLabel)}
           &nbsp;

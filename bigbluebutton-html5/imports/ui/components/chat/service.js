@@ -7,6 +7,7 @@ import UnreadMessages from '/imports/ui/services/unread-messages';
 import Storage from '/imports/ui/services/storage/session';
 import { makeCall } from '/imports/ui/services/api';
 import _ from 'lodash';
+import { meetingIsBreakout } from '/imports/ui/components/app/service';
 
 const CHAT_CONFIG = Meteor.settings.public.chat;
 const GROUPING_MESSAGES_WINDOW = CHAT_CONFIG.grouping_messages_window;
@@ -30,7 +31,12 @@ const UnsentMessagesCollection = new Mongo.Collection(null);
 // session for closed chat list
 const CLOSED_CHAT_LIST_KEY = 'closedChatList';
 
+const POLL_MESSAGE_PREFIX = 'bbb-published-poll-<br/>';
+
 const getUser = userId => Users.findOne({ userId });
+
+const getPrivateChatByUsers = userId => GroupChat
+  .findOne({ users: { $all: [userId, Auth.userID] } });
 
 const getWelcomeProp = () => Meetings.findOne({ meetingId: Auth.meetingID },
   { fields: { welcomeProp: 1 } });
@@ -43,25 +49,15 @@ const mapGroupMessage = (message) => {
     sender: null,
   };
 
-  if (message.sender && message.sender !== SYSTEM_CHAT_TYPE) {
-    const sender = Users.findOne({ userId: message.sender },
-      {
-        fields: {
-          color: 1, role: 1, name: 1, connectionStatus: 1,
-        },
-      });
-    const {
-      color,
-      role,
-      name,
-      connectionStatus,
-    } = sender;
+  if (message.sender && message.sender.id !== SYSTEM_CHAT_TYPE) {
+    const sender = Users.findOne({ userId: message.sender.id }, { fields: { avatar: 1, role: 1 } });
 
     const mappedSender = {
-      color,
-      isModerator: role === ROLE_MODERATOR,
-      name,
-      isOnline: connectionStatus === CONNECTION_STATUS_ONLINE,
+      avatar: sender?.avatar,
+      color: message.color,
+      isModerator: sender?.role === ROLE_MODERATOR,
+      name: message.sender.name,
+      isOnline: !!sender,
     };
 
     mappedMessage.sender = mappedSender;
@@ -77,16 +73,21 @@ const reduceGroupMessages = (previous, current) => {
     id: current.id,
     text: current.message,
     time: current.timestamp,
+    color: current.color,
   }];
   if (!lastMessage || !currentMessage.chatId === PUBLIC_GROUP_CHAT_ID) {
     return previous.concat(currentMessage);
   }
   // Check if the last message is from the same user and time discrepancy
-  // between the two messages exceeds window and then group current message
-  // with the last one
+  // between the two messages exceeds window and then group current
+  // message with the last one
   const timeOfLastMessage = lastMessage.content[lastMessage.content.length - 1].time;
-  if (lastMessage.sender === currentMessage.sender
-    && (currentMessage.timestamp - timeOfLastMessage) <= GROUPING_MESSAGES_WINDOW) {
+  const isOrWasPoll = currentMessage.message.includes(POLL_MESSAGE_PREFIX)
+    || lastMessage.message.includes(POLL_MESSAGE_PREFIX);
+  const groupingWindow = isOrWasPoll ? 0 : GROUPING_MESSAGES_WINDOW;
+
+  if (lastMessage.sender.id === currentMessage.sender.id
+    && (currentMessage.timestamp - timeOfLastMessage) <= groupingWindow) {
     lastMessage.content.push(currentMessage.content.pop());
     return previous;
   }
@@ -136,14 +137,18 @@ const getPrivateGroupMessages = () => {
 
 const isChatLocked = (receiverID) => {
   const isPublic = receiverID === PUBLIC_CHAT_ID;
-
   const meeting = Meetings.findOne({ meetingId: Auth.meetingID },
-    { fields: { 'lockSettingsProps.disablePublicChat': 1 } });
+    { fields: { 'lockSettingsProps.disablePublicChat': 1, 'lockSettingsProps.disablePrivateChat': 1 } });
   const user = Users.findOne({ meetingId: Auth.meetingID, userId: Auth.userID },
     { fields: { locked: 1, role: 1 } });
   const receiver = Users.findOne({ meetingId: Auth.meetingID, userId: receiverID },
     { fields: { role: 1 } });
   const isReceiverModerator = receiver && receiver.role === ROLE_MODERATOR;
+
+  // disable private chat in breakouts
+  if (meetingIsBreakout()) {
+    return !isPublic;
+  }
 
   if (meeting.lockSettingsProps !== undefined) {
     if (user.locked && user.role !== ROLE_MODERATOR) {
@@ -191,8 +196,10 @@ const sendGroupMessage = (message) => {
     }
   }
 
+  const userAvatarColor = Users.findOne({ userId: senderUserId }, { fields: { color: 1 } });
+
   const payload = {
-    color: '0',
+    color: userAvatarColor?.color || '0',
     correlationId: `${senderUserId}-${Date.now()}`,
     sender: {
       id: senderUserId,
@@ -275,7 +282,10 @@ const exportChat = (messageList) => {
       timestamp: loginTime,
       message: welcomeMsg,
       type: SYSTEM_CHAT_TYPE,
-      sender: PUBLIC_CHAT_USER_ID,
+      sender: {
+        id: PUBLIC_CHAT_USER_ID,
+        name: ''
+      },
     });
   }
 
@@ -289,16 +299,16 @@ const exportChat = (messageList) => {
     if (message.type === SYSTEM_CHAT_TYPE) {
       return `${hourMin} ${message.message}`;
     }
-    const userName = message.sender === PUBLIC_CHAT_USER_ID
+    const userName = message.sender.id === PUBLIC_CHAT_USER_ID
       ? ''
-      : `${getUser(message.sender).name} :`;
+      : `${message.sender.name} :`;
     return `${hourMin} ${userName} ${htmlDecode(message.message)}`;
   }).join('\n');
 };
 
 const getAllMessages = (chatID) => {
   const filter = {
-    sender: { $ne: Auth.userID },
+    'sender.id': { $ne: Auth.userID },
   };
   if (chatID === PUBLIC_GROUP_CHAT_ID) {
     filter.chatId = { $eq: chatID };
@@ -331,6 +341,7 @@ export default {
   getPublicGroupMessages,
   getPrivateGroupMessages,
   getUser,
+  getPrivateChatByUsers,
   getWelcomeProp,
   getScrollPosition,
   hasUnreadMessages,

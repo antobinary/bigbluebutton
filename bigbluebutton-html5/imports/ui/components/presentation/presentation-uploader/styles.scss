@@ -1,5 +1,6 @@
-@import "/imports/ui/stylesheets/variables/_all";
 @import "/imports/ui/stylesheets/mixins/_scrollable";
+@import "/imports/ui/stylesheets/variables/placeholders";
+@import "/imports/ui/stylesheets/variables/breakpoints";
 
 :root {
   --uploadIconSize: 2.286rem;
@@ -180,6 +181,7 @@
 }
 
 .itemAction {
+  margin-left: var(--sm-padding-x);
   div > i {
     margin-top: .25rem;
   }
@@ -211,7 +213,6 @@
   & > i:focus,
   & > i:hover {
     color: var(--color-danger) !important;
-    background-color: transparent;
   }
 
   &[aria-disabled="true"] {
