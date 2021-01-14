@@ -500,6 +500,7 @@ private:
     host: 127.0.0.1
     localesUrl: /locales
     pencilChunkLength: 100
+    cursorUpdateDelay: 66
     loadSlidesFromHttpAlways: false
   etherpad:
     apikey: ETHERPAD_APIKEY

@@ -5,7 +5,7 @@ import _ from 'lodash';
 
 const { streamerLog } = Meteor.settings.private.serverLog;
 
-const CURSOR_PROCCESS_INTERVAL = 30;
+const CURSOR_PROCCESS_INTERVAL = Meteor.settings.private.app.cursorUpdateDelay || 66;
 
 const cursorQueue = {};
 
@@ -13,7 +13,12 @@ const proccess = _.throttle(() => {
   try {
     Object.keys(cursorQueue).forEach((meetingId) => {
       try {
-        const cursors = cursorQueue[meetingId];
+        const cursors = [];
+        for (let userId in cursorQueue[meetingId]){
+            cursorQueue[meetingId][userId].userId = userId;
+            cursors.push(cursorQueue[meetingId][userId]);
+          }
+        // const cursors = cursorQueue[meetingId];
         delete cursorQueue[meetingId];
         CursorStreamer(meetingId).emit('message', { meetingId, cursors });
 
