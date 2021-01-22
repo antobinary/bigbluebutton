@@ -1,4 +1,4 @@
-import { makeCall } from '/imports/ui/services/api';
+import { makeCallLW as makeCall } from '/imports/ui/services/api';
 import Users from '/imports/api/users';
 import Auth from '/imports/ui/services/auth';
 import Polls from '/imports/api/polls';

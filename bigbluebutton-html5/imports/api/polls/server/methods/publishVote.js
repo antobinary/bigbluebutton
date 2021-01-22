@@ -13,7 +13,9 @@ export default function publishVote(pollId, pollAnswerId) {
   check(pollAnswerId, Number);
   check(pollId, String);
 
-  const allowedToVote = Polls.findOne({ id: pollId, users: { $in: [requesterUserId] } }, {
+  const currentSelector = doc => doc.meetingId === meetingId && doc.users.includes(requesterUserId) && doc.id === id; // && doc.answers.some((answer) => answer.id===pollAnswerId)
+
+  const allowedToVote = Polls.findOne(currentSelector, {
     fields: {
       users: 1,
     },
@@ -24,11 +26,7 @@ export default function publishVote(pollId, pollAnswerId) {
     return null;
   }
 
-  const selector = {
-    users: requesterUserId,
-    meetingId,
-    'answers.id': pollAnswerId,
-  };
+  const selector = doc => doc.meetingId === meetingId && doc.users.includes(requesterUserId); // && doc.answers.some((answer) => answer.id===pollAnswerId)
 
   const payload = {
     requesterId: requesterUserId,
@@ -42,11 +40,7 @@ export default function publishVote(pollId, pollAnswerId) {
    was started. The poll is published to them only.
    Once they vote - their ID is removed and they cannot see the poll anymore
   */
-  const modifier = {
-    $pull: {
-      users: requesterUserId,
-    },
-  };
+  const modifier = doc => ({ users: doc.users.filter(user => user !== requesterUserId) });
 
   try {
     const numberAffected = Polls.update(selector, modifier);

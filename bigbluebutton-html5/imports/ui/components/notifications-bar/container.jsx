@@ -1,3 +1,4 @@
+import { LWMeteor } from '/imports/startup/lightwire';
 import { Meteor } from 'meteor/meteor';
 import { withTracker } from 'meteor/react-meteor-data';
 import React, { Fragment } from 'react';
@@ -127,11 +128,11 @@ const startCounter = (sec, set, get, interval) => {
 };
 
 const reconnect = () => {
-  Meteor.reconnect();
+  LWMeteor.reconnect();
 };
 
 export default injectIntl(withTracker(({ intl }) => {
-  const { status, connected, retryTime } = Meteor.status();
+  const { status, connected, retryTime } = LWMeteor.status();
   const data = {};
 
   const user = Users.findOne({ userId: Auth.userID }, { fields: { effectiveConnectionType: 1 } });

@@ -1,16 +1,17 @@
 import Logger from '/imports/startup/server/logger';
 import { extractCredentials } from '/imports/api/common/server/helpers';
+import { LWMeteor } from '/imports/startup/lightwire';
 import publishCursorUpdate from './methods/publishCursorUpdate';
 
 const { streamerLog } = Meteor.settings.private.serverLog;
 
 export function removeCursorStreamer(meetingId) {
   Logger.info(`Removing Cursor streamer object for meeting ${meetingId}`);
-  delete Meteor.StreamerCentral.instances[`cursor-${meetingId}`];
+  delete LWMeteor.StreamerCentral.instances[`cursor-${meetingId}`];
 }
 
 export function addCursorStreamer(meetingId) {
-  const streamer = new Meteor.Streamer(`cursor-${meetingId}`, { retransmit: false });
+  const streamer = new LWMeteor.Streamer(`cursor-${meetingId}`, { retransmit: false });
   if (streamerLog) {
     Logger.debug('Cursor streamer created', { meetingId });
   }
@@ -29,10 +30,9 @@ export function addCursorStreamer(meetingId) {
   streamer.on('publish', function (message) {
     const { requesterUserId } = extractCredentials(this.userId);
     publishCursorUpdate(meetingId, requesterUserId, message);
-
   });
 }
 
 export default function get(meetingId) {
-  return Meteor.StreamerCentral.instances[`cursor-${meetingId}`];
+  return LWMeteor.StreamerCentral.instances[`cursor-${meetingId}`];
 }

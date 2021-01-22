@@ -9,6 +9,8 @@ export default function createDummyUser(meetingId, userId, authToken) {
   check(authToken, String);
 
   const User = Users.findOne({ meetingId, userId });
+  Logger.info(`createDummyUser:${JSON.stringify(User)}`);
+
   if (User) {
     throw new Meteor.Error('existing-user', 'Tried to create a dummy user for an existing user');
   }

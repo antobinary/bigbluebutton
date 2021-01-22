@@ -1,4 +1,4 @@
-import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 import { check } from 'meteor/check';
 import PresentationUploadToken from '/imports/api/presentation-upload-token';
 import Logger from '/imports/startup/server/logger';
@@ -34,4 +34,4 @@ function publish(...args) {
   return boundPresentationUploadToken(...args);
 }
 
-Meteor.publish('presentation-upload-token', publish);
+LWMeteor.publish('presentation-upload-token', publish);

@@ -1,5 +1,5 @@
 import Captions from '/imports/api/captions';
-import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 import Logger from '/imports/startup/server/logger';
 import AuthTokenValidation, { ValidationStates } from '/imports/api/auth-token-validation';
 
@@ -22,4 +22,4 @@ function publish(...args) {
   return boundCaptions(...args);
 }
 
-Meteor.publish('captions', publish);
+LWMeteor.publish('captions', publish);

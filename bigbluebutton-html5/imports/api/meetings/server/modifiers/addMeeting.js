@@ -10,6 +10,7 @@ import createNote from '/imports/api/note/server/methods/createNote';
 import createCaptions from '/imports/api/captions/server/methods/createCaptions';
 import { addAnnotationsStreamer } from '/imports/api/annotations/server/streamer';
 import { addCursorStreamer } from '/imports/api/cursor/server/streamer';
+import { addLightWireMeeting } from '/imports/startup/server/lightwire-server';
 import BannedUsers from '/imports/api/users/server/store/bannedUsers';
 
 export default function addMeeting(meeting) {
@@ -164,12 +165,13 @@ export default function addMeeting(meeting) {
   }
 
   try {
-    const { insertedId, numberAffected } = Meetings.upsert(selector, modifier);
+    const { numberAffected } = Meetings.upsert(selector, modifier);
 
     addAnnotationsStreamer(meetingId);
     addCursorStreamer(meetingId);
+    addLightWireMeeting(meetingId);
 
-    if (insertedId) {
+    if (numberAffected) {
       Logger.info(`Added meeting id=${meetingId}`);
       // TODO: Here we call Etherpad API to create this meeting notes. Is there a
       // better place we can run this post-creation routine?

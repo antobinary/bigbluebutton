@@ -1,8 +1,8 @@
-import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 
-const Meetings = new Mongo.Collection('meetings');
-const RecordMeetings = new Mongo.Collection('record-meetings');
-const MeetingTimeRemaining = new Mongo.Collection('meeting-time-remaining');
+const Meetings = new LWMeteor.Collection('meetings');
+const RecordMeetings = new LWMeteor.Collection('record-meetings');
+const MeetingTimeRemaining = new LWMeteor.Collection('meeting-time-remaining');
 
 if (Meteor.isServer) {
   // types of queries for the meetings:

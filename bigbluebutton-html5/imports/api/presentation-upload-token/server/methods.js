@@ -1,8 +1,8 @@
-import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 import requestPresentationUploadToken from './methods/requestPresentationUploadToken';
 import setUsedToken from './methods/setUsedToken';
 
-Meteor.methods({
+LWMeteor.methods({
   requestPresentationUploadToken,
   setUsedToken,
 });

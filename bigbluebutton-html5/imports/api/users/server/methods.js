@@ -1,4 +1,4 @@
-import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 import validateAuthToken from './methods/validateAuthToken';
 import setEmojiStatus from './methods/setEmojiStatus';
 import assignPresenter from './methods/assignPresenter';
@@ -9,7 +9,7 @@ import setUserEffectiveConnectionType from './methods/setUserEffectiveConnection
 import userActivitySign from './methods/userActivitySign';
 import userLeftMeeting from './methods/userLeftMeeting';
 
-Meteor.methods({
+LWMeteor.methods({
   setEmojiStatus,
   assignPresenter,
   changeRole,

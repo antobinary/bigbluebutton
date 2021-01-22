@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react';
+import { LightWire } from './lightwire-client';
 import { withTracker } from 'meteor/react-meteor-data';
 import PropTypes from 'prop-types';
 import Auth from '/imports/ui/services/auth';
@@ -16,6 +17,7 @@ import AppService from '/imports/ui/components/app/service';
 import Breakouts from '/imports/api/breakouts';
 import AudioService from '/imports/ui/components/audio/service';
 import { notify } from '/imports/ui/services/notification';
+import { LWMeteor } from '/imports/startup/lightwire';
 import deviceInfo from '/imports/utils/deviceInfo';
 import getFromUserSettings from '/imports/ui/services/users-settings';
 import LayoutManager from '/imports/ui/components/layout/layout-manager';
@@ -409,7 +411,7 @@ const BaseContainer = withTracker(() => {
     meetingModeratorSubscriptionHandler,
     animations,
     User,
-    isMeteorConnected: Meteor.status().connected,
+    isMeteorConnected: LWMeteor.status().connected,
     meetingExist: !!meeting,
     meetingHasEnded: !!meeting && meeting.meetingEnded,
     meetingIsBreakout: AppService.meetingIsBreakout(),

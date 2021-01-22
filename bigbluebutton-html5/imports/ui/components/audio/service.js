@@ -3,7 +3,7 @@ import Auth from '/imports/ui/services/auth';
 import { debounce } from 'lodash';
 import AudioManager from '/imports/ui/services/audio-manager';
 import Meetings from '/imports/api/meetings';
-import { makeCall } from '/imports/ui/services/api';
+import { makeCallLW as makeCall } from '/imports/ui/services/api';
 import VoiceUsers from '/imports/api/voice-users';
 import logger from '/imports/startup/client/logger';
 

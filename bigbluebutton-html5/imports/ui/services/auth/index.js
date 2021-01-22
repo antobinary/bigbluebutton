@@ -1,11 +1,11 @@
 /* eslint prefer-promise-reject-errors: 0 */
 import { Tracker } from 'meteor/tracker';
-
+import { LWMeteor } from '/imports/startup/lightwire';
 import Storage from '/imports/ui/services/storage/session';
 
 import Users from '/imports/api/users';
 import logger from '/imports/startup/client/logger';
-import { makeCall } from '/imports/ui/services/api';
+import { makeCallLW } from '/imports/ui/services/api';
 import { initAnnotationsStreamListener } from '/imports/ui/components/whiteboard/service';
 import allowRedirectToLogoutURL from '/imports/ui/components/meeting-ended/service';
 import { initCursorStreamListener } from '/imports/ui/components/cursor/service';
@@ -210,6 +210,9 @@ class Auth {
       .then(() => {
         this.loggedIn = true;
         this.uniqueClientSession = `${this.sessionToken}-${Math.random().toString(36).substring(6)}`;
+      })
+      .catch((e) => {
+        logger.error({ logCode: 'auth_service_authenticate', extraInfo: { error: e } }, 'Error when trying to authenticate');
       });
   }
 
@@ -225,9 +228,9 @@ class Auth {
         });
       }, CONNECTION_TIMEOUT);
 
-      Meteor.subscribe('auth-token-validation', { meetingId: this.meetingID, userId: this.userID });
+      LWMeteor.subscribe('auth-token-validation', { meetingId: this.meetingID, userId: this.userID });
 
-      const result = await makeCall('validateAuthToken', this.meetingID, this.userID, this.token, this.externUserID);
+      const result = await makeCallLW('validateAuthToken', this.meetingID, this.userID, this.token, this.externUserID);
 
       if (result && result.invalid) {
         clearTimeout(validationTimeout);
@@ -239,7 +242,7 @@ class Auth {
         return;
       }
 
-      Meteor.subscribe('current-user');
+      LWMeteor.subscribe('current-user');
 
       Tracker.autorun((c) => {
         computation = c;
@@ -252,7 +255,7 @@ class Auth {
         // Skip in case the user is not in the collection yet or is a dummy user
         if (!User || !('intId' in User)) {
           logger.info({ logCode: 'auth_service_resend_validateauthtoken' }, 're-send validateAuthToken for delayed authentication');
-          makeCall('validateAuthToken', this.meetingID, this.userID, this.token);
+          makeCallLW('validateAuthToken', this.meetingID, this.userID, this.token);
 
           return;
         }

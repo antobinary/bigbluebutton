@@ -1,5 +1,5 @@
 import { Slides, SlidePositions } from '/imports/api/slides';
-import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 import Logger from '/imports/startup/server/logger';
 import AuthTokenValidation, { ValidationStates } from '/imports/api/auth-token-validation';
 
@@ -23,7 +23,7 @@ function publish(...args) {
   return boundSlides(...args);
 }
 
-Meteor.publish('slides', publish);
+LWMeteor.publish('slides', publish);
 
 function slidePositions() {
   const tokenValidation = AuthTokenValidation.findOne({ connectionId: this.connection.id });
@@ -45,4 +45,4 @@ function publishPositions(...args) {
   return boundSlidePositions(...args);
 }
 
-Meteor.publish('slide-positions', publishPositions);
+LWMeteor.publish('slide-positions', publishPositions);

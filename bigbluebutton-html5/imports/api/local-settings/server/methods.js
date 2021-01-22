@@ -1,6 +1,6 @@
-import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 import userChangedLocalSettings from './methods/userChangedLocalSettings';
 
-Meteor.methods({
+LWMeteor.methods({
   userChangedLocalSettings,
 });

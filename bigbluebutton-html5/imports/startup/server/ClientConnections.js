@@ -18,7 +18,8 @@ class ClientConnections {
   }
 
   add(sessionId, connection) {
-    Logger.info('Client connections add called', { logCode: 'client_connections_add', extraInfo: { sessionId, connection } });
+    Logger.info('Client connections add called', { logCode: 'client_connections_add', extraInfo: { sessionId } });
+    // Logger.info('Client connections add called', { logCode: 'client_connections_add', extraInfo: { sessionId, connection } });
     if (!sessionId || !connection) {
       Logger.error(`Error on add new client connection. sessionId=${sessionId} connection=${connection.id}`,
         { logCode: 'client_connections_add_error', extraInfo: { sessionId, connection } }
@@ -42,7 +43,7 @@ class ClientConnections {
       return false;
     }
 
-    connection.onClose(Meteor.bindEnvironment(() => {
+    connection.onclose(Meteor.bindEnvironment(() => {
       userLeaving(meetingId, userId, connection.id);
     }));
 

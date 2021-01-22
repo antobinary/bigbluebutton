@@ -1,8 +1,8 @@
-import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 import switchSlide from './methods/switchSlide';
 import zoomSlide from './methods/zoomSlide';
 
-Meteor.methods({
+LWMeteor.methods({
   switchSlide,
   zoomSlide,
 });

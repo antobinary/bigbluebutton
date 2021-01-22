@@ -1,3 +1,4 @@
+import { LWMeteor } from '/imports/startup/lightwire';
 import React, { PureComponent } from 'react';
 import { defineMessages, injectIntl } from 'react-intl';
 import { withTracker } from 'meteor/react-meteor-data';
@@ -169,7 +170,7 @@ export default injectIntl(withTracker(({ intl }) => {
     };
   });
 
-  const { connected: isMeteorConnected } = Meteor.status();
+  const { connected: isMeteorConnected } = LWMeteor.status();
 
   return {
     chatID,

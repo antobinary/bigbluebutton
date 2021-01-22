@@ -7,11 +7,10 @@ export default function setUserEffectiveConnectionType(meetingId, userId, effect
   check(userId, String);
   check(effectiveConnectionType, String);
 
-  const selector = {
-    meetingId,
-    userId,
-    effectiveConnectionType: { $ne: effectiveConnectionType },
-  };
+  const selector = doc => doc.meetingId === meetingId
+    && doc.userId === userId
+    && doc.effectiveConnectionType !== effectiveConnectionType;
+
 
   const modifier = {
     $set: {

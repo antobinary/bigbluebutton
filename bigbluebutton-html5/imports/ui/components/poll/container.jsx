@@ -1,5 +1,6 @@
+import { LWMeteor } from '/imports/startup/lightwire';
 import React from 'react';
-import { makeCall } from '/imports/ui/services/api';
+import { makeCallLW as makeCall } from '/imports/ui/services/api';
 import { withTracker } from 'meteor/react-meteor-data';
 import Presentations from '/imports/api/presentations';
 import PresentationAreaService from '/imports/ui/components/presentation/service';
@@ -12,7 +13,7 @@ const PUBLIC_CHAT_KEY = CHAT_CONFIG.public_id;
 const PollContainer = ({ ...props }) => <Poll {...props} />;
 
 export default withTracker(() => {
-  Meteor.subscribe('current-poll');
+  LWMeteor.subscribe('current-poll');
 
   const currentPresentation = Presentations.findOne({
     current: true,
@@ -39,7 +40,7 @@ export default withTracker(() => {
     currentPoll: Service.currentPoll(),
     resetPollPanel: Session.get('resetPollPanel') || false,
     pollAnswerIds: Service.pollAnswerIds,
-    isMeteorConnected: Meteor.status().connected,
+    isMeteorConnected: LWMeteor.status().connected,
     sendGroupMessage: Service.sendGroupMessage,
   };
 })(PollContainer);

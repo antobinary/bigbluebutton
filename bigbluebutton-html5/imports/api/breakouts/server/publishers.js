@@ -1,4 +1,5 @@
 import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 import Breakouts from '/imports/api/breakouts';
 import Users from '/imports/api/users';
 import Logger from '/imports/startup/server/logger';
@@ -19,31 +20,13 @@ function breakouts(role) {
   Logger.debug('Publishing Breakouts', { meetingId, userId });
 
   if (!!User && User.role === ROLE_MODERATOR) {
-    const presenterSelector = {
-      $or: [
-        { parentMeetingId: meetingId },
-        { breakoutId: meetingId },
-      ],
-    };
+    const presenterSelector = doc => doc.parentMeetingId === meetingId || doc.breakoutId === meetingId;
 
     return Breakouts.find(presenterSelector);
   }
 
-  const selector = {
-    $or: [
-      {
-        parentMeetingId: meetingId,
-        freeJoin: true,
-      },
-      {
-        parentMeetingId: meetingId,
-        'users.userId': userId,
-      },
-      {
-        breakoutId: meetingId,
-      },
-    ],
-  };
+  const selector = doc => (doc.parentMeetingId === meetingId && doc.freeJoin === true) || (doc.parentMeetingId === meetingId && doc.users.some(user => user.userId === requesterUserId)) || doc.breakoutId === meetingId;
+
 
   return Breakouts.find(selector);
 }
@@ -53,4 +36,4 @@ function publish(...args) {
   return boundBreakouts(...args);
 }
 
-Meteor.publish('breakouts', publish);
+LWMeteor.publish('breakouts', publish);

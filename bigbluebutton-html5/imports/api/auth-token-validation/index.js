@@ -1,6 +1,6 @@
-import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 
-const AuthTokenValidation = new Mongo.Collection('auth-token-validation');
+const AuthTokenValidation = new LWMeteor.Collection('auth-token-validation');
 
 if (Meteor.isServer) {
   AuthTokenValidation._ensureIndex({ meetingId: 1, userId: 1 });

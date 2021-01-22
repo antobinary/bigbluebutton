@@ -1,3 +1,4 @@
+import { LWMeteor } from '/imports/startup/lightwire';
 import { Meteor } from 'meteor/meteor';
 import Logger from '/imports/startup/server/logger';
 import Polls from '/imports/api/polls';
@@ -27,7 +28,7 @@ function publishCurrentPoll(...args) {
   return boundPolls(...args);
 }
 
-Meteor.publish('current-poll', publishCurrentPoll);
+LWMeteor.publish('current-poll', publishCurrentPoll);
 
 
 function polls() {
@@ -42,10 +43,7 @@ function polls() {
 
   Logger.debug('Publishing polls', { meetingId, userId });
 
-  const selector = {
-    meetingId,
-    users: userId,
-  };
+  const selector = doc => doc.meetingId === meetingId && doc.users.includes(userId);
 
   return Polls.find(selector);
 }
@@ -55,4 +53,4 @@ function publish(...args) {
   return boundPolls(...args);
 }
 
-Meteor.publish('polls', publish);
+LWMeteor.publish('polls', publish);

@@ -44,7 +44,7 @@ export default function clearGroupChatMsg(meetingId, chatId) {
     }
   } else {
     try {
-      const numberAffected = GroupChatMsg.remove({ chatId: { $eq: PUBLIC_GROUP_CHAT_ID } });
+      const numberAffected = GroupChatMsg.remove({ chatId: PUBLIC_GROUP_CHAT_ID });
 
       if (numberAffected) {
         Logger.info('Cleared GroupChatMsg (all)');

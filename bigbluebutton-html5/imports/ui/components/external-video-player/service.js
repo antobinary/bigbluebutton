@@ -4,7 +4,7 @@ import Auth from '/imports/ui/services/auth';
 import Logger from '/imports/startup/client/logger';
 
 import { getStreamer } from '/imports/api/external-videos';
-import { makeCall } from '/imports/ui/services/api';
+import { makeCallLW as makeCall } from '/imports/ui/services/api';
 
 import ReactPlayer from 'react-player';
 

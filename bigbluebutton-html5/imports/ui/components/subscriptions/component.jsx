@@ -1,3 +1,4 @@
+import { LWMeteor } from '/imports/startup/lightwire';
 import { Component } from 'react';
 import { withTracker } from 'meteor/react-meteor-data';
 import Auth from '/imports/ui/services/auth';
@@ -61,13 +62,16 @@ export default withTracker(() => {
     if ((!TYPING_INDICATOR_ENABLED && name.indexOf('typing') !== -1)
       || (!CHAT_ENABLED && name.indexOf('chat') !== -1)) return;
 
-    return Meteor.subscribe(name, subscriptionErrorHandler);
+    return LWMeteor.subscribe(
+      name,
+      subscriptionErrorHandler,
+    );
   });
 
   if (currentUser) {
-    subscriptionsHandlers.push(Meteor.subscribe('meetings', currentUser.role, subscriptionErrorHandler));
-    subscriptionsHandlers.push(Meteor.subscribe('users', currentUser.role, subscriptionErrorHandler));
-    subscriptionsHandlers.push(Meteor.subscribe('breakouts', currentUser.role, subscriptionErrorHandler));
+    subscriptionsHandlers.push(LWMeteor.subscribe('meetings', currentUser.role, subscriptionErrorHandler));
+    subscriptionsHandlers.push(LWMeteor.subscribe('users', currentUser.role, subscriptionErrorHandler));
+    subscriptionsHandlers.push(LWMeteor.subscribe('breakouts', currentUser.role, subscriptionErrorHandler));
   }
 
   let groupChatMessageHandler = {};
@@ -86,11 +90,11 @@ export default withTracker(() => {
 
     const chatIds = chats.map(chat => chat.chatId);
 
-    groupChatMessageHandler = Meteor.subscribe('group-chat-msg', chatIds, subscriptionErrorHandler);
+    groupChatMessageHandler = LWMeteor.subscribe('group-chat-msg', chatIds, subscriptionErrorHandler);
     subscriptionsHandlers.push(groupChatMessageHandler);
   }
 
-  const annotationsHandler = Meteor.subscribe('annotations', {
+  const annotationsHandler = LWMeteor.subscribe('annotations', {
     onReady: () => {
       const activeTextShapeId = AnnotationsTextService.activeTextShapeId();
       AnnotationsLocal.remove({ id: { $ne: `${activeTextShapeId}-fake` } });

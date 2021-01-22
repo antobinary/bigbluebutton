@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 
-const VoiceUsers = new Mongo.Collection('voiceUsers');
+const VoiceUsers = new LWMeteor.Collection('voiceUsers');
 
 if (Meteor.isServer) {
   // types of queries for the voice users:

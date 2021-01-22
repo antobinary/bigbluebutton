@@ -6,7 +6,9 @@ export default function clearScreenshare(meetingId, screenshareConf) {
     let numberAffected;
 
     if (meetingId && screenshareConf) {
-      numberAffected = Screenshare.remove({ meetingId, 'screenshare.screenshareConf': screenshareConf });
+      const selector = doc => doc.meetingId === meetingId && doc.screenshare.screenshareConf === screenshareConf;
+
+      numberAffected = Screenshare.remove(selector);
     } else {
       numberAffected = Screenshare.remove({});
     }

@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 
-const UserSettings = new Mongo.Collection('users-settings');
+const UserSettings = new LWMeteor.Collection('users-settings');
 
 if (Meteor.isServer) {
   UserSettings._ensureIndex({

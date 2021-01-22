@@ -1,6 +1,7 @@
 import Auth from '/imports/ui/services/auth';
 import { throttle } from 'lodash';
 import logger from '/imports/startup/client/logger';
+import { LWMeteor } from '/imports/startup/lightwire';
 
 const Cursor = new Mongo.Collection(null);
 let cursorStreamListener = null;
@@ -44,19 +45,19 @@ export function initCursorStreamListener() {
   * The problem was caused because we add handlers to stream before the onStop event happens,
   * which set the handlers to undefined.
   */
-  cursorStreamListener = new Meteor.Streamer(`cursor-${Auth.meetingID}`, { retransmit: false });
+  cursorStreamListener = new LWMeteor.Streamer(`cursor-${Auth.meetingID}`, { retransmit: false });
 
-  // const startStreamHandlersPromise = new Promise((resolve) => {
-  //   const checkStreamHandlersInterval = setInterval(() => {
-  //     const streamHandlersSize = Object.values(Meteor.StreamerCentral.instances[`cursor-${Auth.meetingID}`].handlers)
-  //       .filter(el => el != undefined)
-  //       .length;
-  //
-  //     if (!streamHandlersSize) {
-  //       resolve(clearInterval(checkStreamHandlersInterval));
-  //     }
-  //   }, 250);
-  // });
+  /* const startStreamHandlersPromise = new Promise((resolve) => {
+    const checkStreamHandlersInterval = setInterval(() => {
+      const streamHandlersSize = Object.values(LWMeteor.StreamerCentral.instances[`cursor-${Auth.meetingID}`].handlers)
+        .filter(el => el != undefined)
+        .length;
+
+      if (!streamHandlersSize) {
+        resolve(clearInterval(checkStreamHandlersInterval));
+      }
+    }, 250);
+  }); */
 
   // startStreamHandlersPromise.then(() => {
   logger.debug({

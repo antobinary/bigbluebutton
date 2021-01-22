@@ -1,4 +1,5 @@
 import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 import Meetings, { RecordMeetings, MeetingTimeRemaining } from '/imports/api/meetings';
 import Users from '/imports/api/users';
 import Logger from '/imports/startup/server/logger';
@@ -18,18 +19,12 @@ function meetings(role) {
 
   Logger.debug('Publishing meeting', { meetingId, userId });
 
-  const selector = {
-    $or: [
-      { meetingId },
-    ],
-  };
+  let selector = { meetingId };
 
   const User = Users.findOne({ userId, meetingId }, { fields: { role: 1 } });
   if (!!User && User.role === ROLE_MODERATOR) {
-    selector.$or.push({
-      'meetingProp.isBreakout': true,
-      'breakoutProps.parentId': meetingId,
-    });
+    selector = doc => doc.meetingId === meetingId
+      || (doc.meetingProp.isBreakout && doc.breakoutProps.parentId === meetingId);
   }
 
   const options = {
@@ -47,7 +42,7 @@ function publish(...args) {
   return boundMeetings(...args);
 }
 
-Meteor.publish('meetings', publish);
+LWMeteor.publish('meetings', publish);
 
 function recordMeetings() {
   const tokenValidation = AuthTokenValidation.findOne({ connectionId: this.connection.id });
@@ -68,7 +63,7 @@ function recordPublish(...args) {
   return boundRecordMeetings(...args);
 }
 
-Meteor.publish('record-meetings', recordPublish);
+LWMeteor.publish('record-meetings', recordPublish);
 
 function meetingTimeRemaining() {
   const tokenValidation = AuthTokenValidation.findOne({ connectionId: this.connection.id });
@@ -88,4 +83,4 @@ function timeRemainingPublish(...args) {
   return boundtimeRemaining(...args);
 }
 
-Meteor.publish('meeting-time-remaining', timeRemainingPublish);
+LWMeteor.publish('meeting-time-remaining', timeRemainingPublish);

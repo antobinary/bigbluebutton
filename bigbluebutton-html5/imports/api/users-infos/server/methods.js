@@ -1,8 +1,8 @@
-import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 import requestUserInformation from './methods/requestUserInformation';
 import removeUserInformation from './methods/removeUserInformation';
 
-Meteor.methods({
+LWMeteor.methods({
   requestUserInformation,
   removeUserInformation,
 });

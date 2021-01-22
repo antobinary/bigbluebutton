@@ -10,6 +10,7 @@ import ActionsBar from './component';
 import Service from './service';
 import ExternalVideoService from '/imports/ui/components/external-video-player/service';
 import CaptionsService from '/imports/ui/components/captions/service';
+import { LWMeteor } from '/imports/startup/lightwire';
 import {
   shareScreen,
   unshareScreen,
@@ -44,7 +45,7 @@ export default withTracker(() => ({
   screenShareEndAlert,
   screenshareDataSavingSetting: dataSavingSetting(),
   isCaptionsAvailable: CaptionsService.isCaptionsAvailable(),
-  isMeteorConnected: Meteor.status().connected,
+  isMeteorConnected: LWMeteor.status().connected,
   isPollingEnabled: POLLING_ENABLED,
   isThereCurrentPresentation: Presentations.findOne({ meetingId: Auth.meetingID, current: true },
     { fields: {} }),

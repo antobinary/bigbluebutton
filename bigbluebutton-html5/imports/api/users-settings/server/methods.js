@@ -1,6 +1,6 @@
-import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 import addUserSettings from './methods/addUserSettings';
 
-Meteor.methods({
+LWMeteor.methods({
   addUserSettings,
 });

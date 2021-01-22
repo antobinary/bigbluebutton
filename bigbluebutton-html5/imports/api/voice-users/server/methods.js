@@ -1,10 +1,10 @@
-import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 import muteToggle from './methods/muteToggle';
 import muteAllToggle from './methods/muteAllToggle';
 import muteAllExceptPresenterToggle from './methods/muteAllExceptPresenterToggle';
 import ejectUserFromVoice from './methods/ejectUserFromVoice';
 
-Meteor.methods({
+LWMeteor.methods({
   toggleVoice: muteToggle,
   muteAllUsers: muteAllToggle,
   muteAllExceptPresenter: muteAllExceptPresenterToggle,

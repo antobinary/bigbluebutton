@@ -1,5 +1,5 @@
 import Screenshare from '/imports/api/screenshare';
-import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 import Logger from '/imports/startup/server/logger';
 import AuthTokenValidation, { ValidationStates } from '/imports/api/auth-token-validation';
 
@@ -23,4 +23,4 @@ function publish(...args) {
   return boundScreenshare(...args);
 }
 
-Meteor.publish('screenshare', publish);
+LWMeteor.publish('screenshare', publish);

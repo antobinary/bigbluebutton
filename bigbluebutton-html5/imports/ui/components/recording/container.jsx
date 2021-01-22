@@ -1,7 +1,8 @@
+import { LWMeteor } from '/imports/startup/lightwire';
 import React from 'react';
 import { withTracker } from 'meteor/react-meteor-data';
 import { withModalMounter } from '/imports/ui/components/modal/service';
-import { makeCall } from '/imports/ui/services/api';
+import { makeCallLW as makeCall } from '/imports/ui/services/api';
 import { RecordMeetings } from '/imports/api/meetings';
 import Auth from '/imports/ui/services/auth';
 import RecordingComponent from './component';
@@ -21,7 +22,7 @@ export default withModalMounter(withTracker(({ mountModal }) => {
 
     recordingStatus: recording,
     recordingTime: time,
-    isMeteorConnected: Meteor.status().connected,
+    isMeteorConnected: LWMeteor.status().connected,
 
   });
 })(RecordingContainer));

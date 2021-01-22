@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 
-const Breakouts = new Mongo.Collection('breakouts');
+const Breakouts = new LWMeteor.Collection('breakouts');
 
 if (Meteor.isServer) {
   // types of queries for the breakouts:

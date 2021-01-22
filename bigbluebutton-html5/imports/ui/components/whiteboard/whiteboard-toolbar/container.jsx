@@ -1,5 +1,6 @@
 import React from 'react';
 import { withTracker } from 'meteor/react-meteor-data';
+import { LWMeteor } from '/imports/startup/lightwire';
 import WhiteboardToolbarService from './service';
 import WhiteboardToolbar from './component';
 
@@ -26,7 +27,7 @@ export default withTracker((params) => {
     multiUser: WhiteboardToolbarService.getMultiUserStatus(whiteboardId),
     isPresenter: WhiteboardToolbarService.isPresenter(),
     annotations: WhiteboardToolbarService.filterAnnotationList(),
-    isMeteorConnected: Meteor.status().connected,
+    isMeteorConnected: LWMeteor.status().connected,
   };
 
   return data;

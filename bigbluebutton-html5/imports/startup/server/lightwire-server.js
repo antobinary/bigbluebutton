@@ -42,7 +42,6 @@ const baseUser = {
   authToken: 'fakefakefake',
   clientType: 'HTML5',
   validated: true,
-  connectionId: '1000000',
   approved: true,
   loginTime: new Date().getTime(),
   inactivityCheck: false,
@@ -62,7 +61,6 @@ const baseUser = {
   guestStatus: 'ALLOW',
   responseDelay: 0,
   breakoutProps: { parentId: 'bbb-none', isBreakoutUser: false },
-  connectionStatus: 'online',
   effectiveConnectionType: null,
 };
 const baseVoiceUser = {
@@ -113,7 +111,7 @@ function debugCreateFake(meetingId, count) {
 
     SUBSCRIPTIONS.forEach((sub) => {
       let ret = null;
-      if (fakeCount == 1) {
+      if (fakeCount === 1) {
         ret = LWCollection.collections[sub].find({ meetingId }).observeChanges({
           added: (id, fields, documentCacheId) => {
             LightWire.pack(new JSONDocument({ fields, id, sub }));

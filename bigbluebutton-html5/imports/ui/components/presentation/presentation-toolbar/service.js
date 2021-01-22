@@ -1,6 +1,6 @@
 import Auth from '/imports/ui/services/auth';
 import Presentations from '/imports/api/presentations';
-import { makeCall } from '/imports/ui/services/api';
+import { makeCallLW as makeCall } from '/imports/ui/services/api';
 import { throttle } from 'lodash';
 
 const PAN_ZOOM_INTERVAL = Meteor.settings.public.presentation.panZoomInterval || 200;

@@ -119,7 +119,7 @@ export default function addSlide(meetingId, podId, presentationId, slide) {
         requestWhiteboardHistory(meetingId, slideId);
 
         if (insertedId) {
-          Logger.info(`Added slide id=${slideId} pod=${podId} presentation=${presentationId}`);
+          // Logger.info(`Added slide id=${slideId} pod=${podId} presentation=${presentationId}`);
         } else if (numberAffected) {
           Logger.info(`Upserted slide id=${slideId} pod=${podId} presentation=${presentationId}`);
         }

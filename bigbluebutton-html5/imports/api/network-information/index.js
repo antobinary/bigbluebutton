@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 
-const NetworkInformation = new Mongo.Collection('network-information');
+const NetworkInformation = new LWMeteor.Collection('network-information');
 
 if (Meteor.isServer) {
   NetworkInformation._ensureIndex({ meetingId: 1 });

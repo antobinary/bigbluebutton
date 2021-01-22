@@ -1,6 +1,6 @@
 import Breakouts from '/imports/api/breakouts';
 import Meetings from '/imports/api/meetings';
-import { makeCall } from '/imports/ui/services/api';
+import { makeCallLW as makeCall } from '/imports/ui/services/api';
 import Auth from '/imports/ui/services/auth';
 import { Session } from 'meteor/session';
 import Users from '/imports/api/users';

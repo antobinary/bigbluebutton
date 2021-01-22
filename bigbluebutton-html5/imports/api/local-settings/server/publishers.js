@@ -1,4 +1,4 @@
-import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 import LocalSettings from '/imports/api/local-settings';
 import Logger from '/imports/startup/server/logger';
 import AuthTokenValidation, { ValidationStates } from '/imports/api/auth-token-validation';
@@ -23,4 +23,4 @@ function publish(...args) {
   return boundLocalSettings(...args);
 }
 
-Meteor.publish('local-settings', publish);
+LWMeteor.publish('local-settings', publish);

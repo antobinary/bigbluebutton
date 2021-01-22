@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 
-const WhiteboardMultiUser = new Mongo.Collection('whiteboard-multi-user');
+const WhiteboardMultiUser = new LWMeteor.Collection('whiteboard-multi-user');
 
 if (Meteor.isServer) {
   // types of queries for the whiteboard-multi-user:

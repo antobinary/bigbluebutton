@@ -1,4 +1,4 @@
-import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 import { check } from 'meteor/check';
 import Logger from '/imports/startup/server/logger';
 import ConnectionStatus from '/imports/api/connection-status';
@@ -27,4 +27,4 @@ function publish(...args) {
   return boundNote(...args);
 }
 
-Meteor.publish('connection-status', publish);
+LWMeteor.publish('connection-status', publish);

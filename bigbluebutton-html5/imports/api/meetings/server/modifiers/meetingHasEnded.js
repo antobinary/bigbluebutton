@@ -21,6 +21,7 @@ import clearNote from '/imports/api/note/server/modifiers/clearNote';
 import clearNetworkInformation from '/imports/api/network-information/server/modifiers/clearNetworkInformation';
 import clearLocalSettings from '/imports/api/local-settings/server/modifiers/clearLocalSettings';
 import clearRecordMeeting from './clearRecordMeeting';
+import { clearLightWireMeeting } from '/imports/startup/server/lightwire-server';
 import clearVoiceCallStates from '/imports/api/voice-call-states/server/modifiers/clearVoiceCallStates';
 import clearVideoStreams from '/imports/api/video-streams/server/modifiers/clearVideoStreams';
 import clearAuthTokenValidation from '/imports/api/auth-token-validation/server/modifiers/clearAuthTokenValidation';
@@ -31,6 +32,7 @@ export default function meetingHasEnded(meetingId) {
   removeCursorStreamer(meetingId);
 
   return Meetings.remove({ meetingId }, () => {
+    clearLightWireMeeting(meetingId);
     clearCaptions(meetingId);
     clearGroupChat(meetingId);
     clearPresentationPods(meetingId);

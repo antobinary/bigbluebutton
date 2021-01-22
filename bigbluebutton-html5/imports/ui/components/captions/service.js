@@ -2,7 +2,7 @@ import _ from 'lodash';
 import Captions from '/imports/api/captions';
 import Users from '/imports/api/users';
 import Auth from '/imports/ui/services/auth';
-import { makeCall } from '/imports/ui/services/api';
+import { makeCallLW as makeCall } from '/imports/ui/services/api';
 import { Meteor } from 'meteor/meteor';
 import { Session } from 'meteor/session';
 

@@ -101,6 +101,8 @@ public:
       - critical
       - danger
       - warning
+  lightwire:
+    debug: false
   externalVideoPlayer:
     enabled: true
   networkMonitoring:
@@ -502,6 +504,10 @@ private:
     pencilChunkLength: 100
     cursorUpdateDelay: 66
     loadSlidesFromHttpAlways: false
+  lightwire:
+    debug: false
+    debugCollection: false
+    allowFakeClients: false
   etherpad:
     apikey: ETHERPAD_APIKEY
     version: 1.2.13

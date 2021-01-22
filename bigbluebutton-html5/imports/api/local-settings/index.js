@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 
-const LocalSettings = new Mongo.Collection('local-settings');
+const LocalSettings = new LWMeteor.Collection('local-settings');
 
 if (Meteor.isServer) {
   LocalSettings._ensureIndex({

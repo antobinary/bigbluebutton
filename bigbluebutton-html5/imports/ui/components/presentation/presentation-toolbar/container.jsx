@@ -1,10 +1,11 @@
+import { LWMeteor } from '/imports/startup/lightwire';
 import React from 'react';
 import PropTypes from 'prop-types';
 import { withTracker } from 'meteor/react-meteor-data';
 import PresentationService from '/imports/ui/components/presentation/service';
 import MediaService from '/imports/ui/components/media/service';
 import Service from '/imports/ui/components/actions-bar/service';
-import { makeCall } from '/imports/ui/services/api';
+import { makeCallLW as makeCall } from '/imports/ui/services/api';
 import PresentationToolbar from './component';
 import PresentationToolbarService from './service';
 
@@ -49,7 +50,7 @@ export default withTracker((params) => {
     nextSlide: PresentationToolbarService.nextSlide,
     previousSlide: PresentationToolbarService.previousSlide,
     skipToSlide: PresentationToolbarService.skipToSlide,
-    isMeteorConnected: Meteor.status().connected,
+    isMeteorConnected: LWMeteor.status().connected,
     isPollingEnabled: POLLING_ENABLED,
     currentSlidHasContent: PresentationService.currentSlidHasContent(),
     parseCurrentSlideContent: PresentationService.parseCurrentSlideContent,

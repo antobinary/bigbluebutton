@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 
-const VideoStreams = new Mongo.Collection('video-streams');
+const VideoStreams = new LWMeteor.Collection('video-streams');
 
 if (Meteor.isServer) {
   // types of queries for the video users:

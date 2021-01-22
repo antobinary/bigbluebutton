@@ -1,6 +1,6 @@
-import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 import changeWhiteboardAccess from './methods/changeWhiteboardAccess';
 
-Meteor.methods({
+LWMeteor.methods({
   changeWhiteboardAccess,
 });

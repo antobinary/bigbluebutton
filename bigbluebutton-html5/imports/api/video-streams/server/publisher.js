@@ -1,4 +1,4 @@
-import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 import Logger from '/imports/startup/server/logger';
 import VideoStreams from '/imports/api/video-streams';
 import AuthTokenValidation, { ValidationStates } from '/imports/api/auth-token-validation';
@@ -27,4 +27,4 @@ function publish(...args) {
   return boundVideoStreams(...args);
 }
 
-Meteor.publish('video-streams', publish);
+LWMeteor.publish('video-streams', publish);

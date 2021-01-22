@@ -1,8 +1,8 @@
-import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 import createGroupChat from './methods/createGroupChat';
 import destroyGroupChat from './methods/destroyGroupChat';
 
-Meteor.methods({
+LWMeteor.methods({
   createGroupChat,
   destroyGroupChat,
 });

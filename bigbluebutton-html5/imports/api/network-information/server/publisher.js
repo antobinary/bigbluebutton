@@ -1,4 +1,4 @@
-import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 import NetworkInformation from '/imports/api/network-information';
 import Logger from '/imports/startup/server/logger';
 import AuthTokenValidation, { ValidationStates } from '/imports/api/auth-token-validation';
@@ -26,4 +26,4 @@ function publish(...args) {
   return boundNetworkInformation(...args);
 }
 
-Meteor.publish('network-information', publish);
+LWMeteor.publish('network-information', publish);

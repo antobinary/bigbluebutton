@@ -1,5 +1,6 @@
 import Users from '/imports/api/users';
 import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 import Logger from '/imports/startup/server/logger';
 import AuthTokenValidation, { ValidationStates } from '/imports/api/auth-token-validation';
 import { extractCredentials } from '/imports/api/common/server/helpers';
@@ -9,6 +10,7 @@ const ROLE_MODERATOR = Meteor.settings.public.user.role_moderator;
 function currentUser() {
   if (!this.userId) {
     return Users.find({ meetingId: '' });
+    // return Users.find({ connectionId: this.connection.id }); // TODO ANTON - check do we want this
   }
   const { meetingId, requesterUserId } = extractCredentials(this.userId);
 
@@ -35,7 +37,7 @@ function publishCurrentUser(...args) {
   return boundUsers(...args);
 }
 
-Meteor.publish('current-user', publishCurrentUser);
+LWMeteor.publish('current-user', publishCurrentUser);
 
 function users(role) {
   const tokenValidation = AuthTokenValidation.findOne({ connectionId: this.connection.id });
@@ -52,18 +54,17 @@ function users(role) {
 
   Logger.debug(`Publishing Users for ${meetingId} ${userId}`);
 
-  const selector = {
-    $or: [
-      { meetingId },
-    ],
-  };
+  let selector = doc => doc.meetingId === meetingId
+    && !!doc.intId;
 
   const User = Users.findOne({ userId, meetingId }, { fields: { role: 1 } });
   if (!!User && User.role === ROLE_MODERATOR) {
-    selector.$or.push({
-      'breakoutProps.isBreakoutUser': true,
-      'breakoutProps.parentId': meetingId,
-    });
+    selector = doc => (doc.meetingId === meetingId
+      && !!doc.intId)
+      || (!!doc.intId
+        && doc.breakoutProps.isBreakoutUser === true
+        && doc.breakoutProps.parentId === meetingId
+      );
   }
 
   const options = {
@@ -82,4 +83,4 @@ function publish(...args) {
   return boundUsers(...args);
 }
 
-Meteor.publish('users', publish);
+LWMeteor.publish('users', publish);

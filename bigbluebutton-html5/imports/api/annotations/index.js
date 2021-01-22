@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 
-const Annotations = new Mongo.Collection('annotations');
+const Annotations = new LWMeteor.Collection('annotations');
 
 if (Meteor.isServer) {
   // types of queries for the annotations  (Total):

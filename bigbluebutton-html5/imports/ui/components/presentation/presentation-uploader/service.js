@@ -1,8 +1,9 @@
+import { LWMeteor } from '/imports/startup/lightwire';
 import Presentations from '/imports/api/presentations';
 import PresentationUploadToken from '/imports/api/presentation-upload-token';
 import Auth from '/imports/ui/services/auth';
 import Poll from '/imports/api/polls/';
-import { makeCall } from '/imports/ui/services/api';
+import { makeCallLW as makeCall } from '/imports/ui/services/api';
 import logger from '/imports/startup/client/logger';
 import _ from 'lodash';
 
@@ -114,7 +115,7 @@ const requestPresentationUploadToken = (
 
   Tracker.autorun((c) => {
     computation = c;
-    const sub = Meteor.subscribe('presentation-upload-token', podId, filename);
+    const sub = LWMeteor.subscribe('presentation-upload-token', podId, filename);
     if (!sub.ready()) return;
 
     const PresentationToken = PresentationUploadToken.findOne({

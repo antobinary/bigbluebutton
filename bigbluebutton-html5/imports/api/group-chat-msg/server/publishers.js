@@ -1,3 +1,4 @@
+import { LWMeteor } from '/imports/startup/lightwire';
 import { GroupChatMsg, UsersTyping } from '/imports/api/group-chat-msg';
 import { Meteor } from 'meteor/meteor';
 
@@ -18,13 +19,9 @@ function groupChatMsg(chatsIds) {
   const PUBLIC_GROUP_CHAT_ID = CHAT_CONFIG.public_group_id;
 
   Logger.debug('Publishing group-chat-msg', { meetingId, userId });
+  const selector = doc => (doc.meetingId === meetingId && doc.chatId === PUBLIC_GROUP_CHAT_ID) || chatsIds.includes(doc.chatId);
 
-  return GroupChatMsg.find({
-    $or: [
-      { meetingId, chatId: { $eq: PUBLIC_GROUP_CHAT_ID } },
-      { chatId: { $in: chatsIds } },
-    ],
-  });
+  return GroupChatMsg.find(selector);
 }
 
 function publish(...args) {
@@ -32,7 +29,7 @@ function publish(...args) {
   return boundGroupChat(...args);
 }
 
-Meteor.publish('group-chat-msg', publish);
+LWMeteor.publish('group-chat-msg', publish);
 
 function usersTyping() {
   const tokenValidation = AuthTokenValidation.findOne({ connectionId: this.connection.id });
@@ -54,4 +51,4 @@ function pubishUsersTyping(...args) {
   return boundUsersTyping(...args);
 }
 
-Meteor.publish('users-typing', pubishUsersTyping);
+LWMeteor.publish('users-typing', pubishUsersTyping);

@@ -1,3 +1,4 @@
+import { LWMeteor } from '/imports/startup/lightwire';
 import { withTracker } from 'meteor/react-meteor-data';
 import PropTypes from 'prop-types';
 import Auth from '/imports/ui/services/auth';
@@ -84,7 +85,7 @@ const UserOptionsContainer = withTracker((props) => {
     isBreakoutEnabled: ActionsBarService.isBreakoutEnabled(),
     isBreakoutRecordable: ActionsBarService.isBreakoutRecordable(),
     users: ActionsBarService.users(),
-    isMeteorConnected: Meteor.status().connected,
+    isMeteorConnected: LWMeteor.status().connected,
     meetingName: getMeetingName(),
   };
 })(UserOptions);

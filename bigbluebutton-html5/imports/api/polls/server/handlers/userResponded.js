@@ -13,13 +13,13 @@ export default function userResponded({ body }) {
     id: pollId,
   };
 
-  const modifier = {
-    $pull: {
-      users: userId,
-    },
-    $push: {
-      responses: { userId, answerId },
-    },
+  const modifier = (doc) => {
+    const resp = doc.responses || [];
+
+    return {
+      users: doc.users.filter((user) => user !== userId),
+      responses: [...resp, {userId, answerId}]
+    };
   };
 
   try {

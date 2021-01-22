@@ -11,11 +11,9 @@ export default function handleGetUsers({ body }, meetingId) {
 
   const usersIds = users.map(m => m.intId);
 
-  const usersToRemove = Users.find({
-    meetingId,
-    userId: { $nin: usersIds },
-  }, { fields: { userId: 1 } }).fetch();
+  const selector = doc => doc.meetingId === meetingId && !usersIds.includes(doc.userId);
 
+  const usersToRemove = Users.find(selector, { fields: { userId: 1 } }).fetch();
   usersToRemove.forEach(user => removeUser(meetingId, user.userId));
 
   const usersAdded = [];

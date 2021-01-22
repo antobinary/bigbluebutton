@@ -1,4 +1,4 @@
-import { makeCall } from '/imports/ui/services/api';
+import { makeCallLW as makeCall } from '/imports/ui/services/api';
 
 const guestUsersCall = (guestsArray, status) => makeCall('allowPendingUsers', guestsArray, status);
 

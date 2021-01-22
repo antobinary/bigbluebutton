@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 
-const Screenshare = new Mongo.Collection('screenshare');
+const Screenshare = new LWMeteor.Collection('screenshare');
 
 if (Meteor.isServer) {
   // types of queries for the screenshare:

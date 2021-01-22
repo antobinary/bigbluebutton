@@ -3,7 +3,7 @@ import { withTracker } from 'meteor/react-meteor-data';
 import Auth from '/imports/ui/services/auth';
 import Users from '/imports/api/users';
 import Settings from '/imports/ui/services/settings';
-import { makeCall } from '/imports/ui/services/api';
+import { makeCallLW as makeCall } from '/imports/ui/services/api';
 import StatusNotifier from './component';
 
 const ROLE_VIEWER = Meteor.settings.public.user.role_viewer;

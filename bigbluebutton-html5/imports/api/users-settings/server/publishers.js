@@ -1,4 +1,4 @@
-import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 import UserSettings from '/imports/api/users-settings';
 import Logger from '/imports/startup/server/logger';
 import AuthTokenValidation, { ValidationStates } from '/imports/api/auth-token-validation';
@@ -16,7 +16,7 @@ function userSettings() {
 
   const currentUser = User.findOne({ userId });
 
-  if (currentUser && currentUser.breakoutProps.isBreakoutUser) {
+  if (currentUser?.breakoutProps?.isBreakoutUser) {
     const { parentId } = currentUser.breakoutProps;
 
     const [externalId] = currentUser.extId.split('-');
@@ -52,4 +52,4 @@ function publish(...args) {
   return boundUserSettings(...args);
 }
 
-Meteor.publish('users-settings', publish);
+LWMeteor.publish('users-settings', publish);

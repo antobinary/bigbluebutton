@@ -21,9 +21,9 @@ export default function modifyWhiteboardAccess(meetingId, whiteboardId, multiUse
   try {
     const { insertedId } = WhiteboardMultiUser.upsert(selector, modifier);
     if (insertedId) {
-      Logger.info(`Added multiUser flag=${multiUser} meetingId=${meetingId} whiteboardId=${whiteboardId}`);
+      // Logger.info(`Added multiUser flag=${multiUser} meetingId=${meetingId} whiteboardId=${whiteboardId}`);
     } else {
-      Logger.info(`Upserted multiUser flag=${multiUser} meetingId=${meetingId} whiteboardId=${whiteboardId}`);
+      // Logger.info(`Upserted multiUser flag=${multiUser} meetingId=${meetingId} whiteboardId=${whiteboardId}`);
     }
   } catch (err) {
     Logger.error(`Error while adding an entry to Multi-User collection: ${err}`);

@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
 import { withTracker } from 'meteor/react-meteor-data';
-import { makeCall } from '/imports/ui/services/api';
+import { makeCallLW as makeCall } from '/imports/ui/services/api';
 import ChatForm from './component';
 import ChatService from '../service';
 

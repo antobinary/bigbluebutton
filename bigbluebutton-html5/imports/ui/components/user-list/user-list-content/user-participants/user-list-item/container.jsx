@@ -1,3 +1,4 @@
+import { LWMeteor } from '/imports/startup/lightwire';
 import React from 'react';
 import { withTracker } from 'meteor/react-meteor-data';
 import BreakoutService from '/imports/ui/components/breakout-room/service';
@@ -21,7 +22,7 @@ export default withTracker(({ user }) => {
     userInBreakout: !!findUserInBreakout,
     breakoutSequence,
     lockSettingsProps: Meeting && Meeting.lockSettingsProps,
-    isMeteorConnected: Meteor.status().connected,
+    isMeteorConnected: LWMeteor.status().connected,
     isThisMeetingLocked: UserListService.isMeetingLocked(Auth.meetingID),
     voiceUser: UserListService.curatedVoiceUser(user.userId),
     toggleVoice: UserListService.toggleVoice,

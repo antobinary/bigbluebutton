@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { defineMessages, injectIntl } from 'react-intl';
-import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 import { Session } from 'meteor/session';
 import AudioManager from '/imports/ui/services/audio-manager';
 import logger from '/imports/startup/client/logger';
@@ -48,7 +48,7 @@ class ErrorScreen extends PureComponent {
   componentDidMount() {
     const { code } = this.props;
     AudioManager.exitAudio();
-    Meteor.disconnect();
+    LWMeteor.disconnect();
     logger.error({ logCode: 'startup_client_usercouldnotlogin_error' }, `User could not log in HTML5, hit ${code}`);
   }
 

@@ -1,6 +1,6 @@
-import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 import publishCursorUpdate from './methods/publishCursorUpdate';
 
-Meteor.methods({
+LWMeteor.methods({
   publishCursorUpdate,
 });

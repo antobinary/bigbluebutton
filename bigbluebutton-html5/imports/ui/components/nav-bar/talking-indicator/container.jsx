@@ -4,7 +4,7 @@ import VoiceUsers from '/imports/api/voice-users';
 import Auth from '/imports/ui/services/auth';
 import { debounce } from 'lodash';
 import TalkingIndicator from './component';
-import { makeCall } from '/imports/ui/services/api';
+import { makeCallLW as makeCall } from '/imports/ui/services/api';
 import { meetingIsBreakout } from '/imports/ui/components/app/service';
 import Service from './service';
 

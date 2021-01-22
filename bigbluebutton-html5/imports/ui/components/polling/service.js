@@ -1,4 +1,4 @@
-import { makeCall } from '/imports/ui/services/api';
+import { makeCallLW as makeCall } from '/imports/ui/services/api';
 import Polls from '/imports/api/polls';
 import { debounce } from 'lodash';
 

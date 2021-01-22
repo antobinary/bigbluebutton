@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor';
-import { makeCall } from '/imports/ui/services/api';
+import { makeCallLW as makeCall } from '/imports/ui/services/api';
 
 let streamer = null;
 const getStreamer = (meetingID) => {

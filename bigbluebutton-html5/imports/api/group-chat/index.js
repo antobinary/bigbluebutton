@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 
-const GroupChat = new Mongo.Collection('group-chat');
+const GroupChat = new LWMeteor.Collection('group-chat');
 
 if (Meteor.isServer) {
   GroupChat._ensureIndex({

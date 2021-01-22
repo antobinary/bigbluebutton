@@ -1,7 +1,7 @@
 import ConnectionStatus from '/imports/api/connection-status';
 import Users from '/imports/api/users';
 import Auth from '/imports/ui/services/auth';
-import { makeCall } from '/imports/ui/services/api';
+import { makeCallLW as makeCall } from '/imports/ui/services/api';
 
 const STATS = Meteor.settings.public.stats;
 const ROLE_MODERATOR = Meteor.settings.public.user.role_moderator;

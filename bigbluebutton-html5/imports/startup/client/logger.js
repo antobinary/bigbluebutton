@@ -1,3 +1,4 @@
+// import { LWMeteor } from '/imports/startup/lightwire';
 import Auth from '/imports/ui/services/auth';
 import { Meteor } from 'meteor/meteor';
 import { createLogger, stdSerializers } from 'browser-bunyan';
@@ -58,6 +59,7 @@ class MeteorStream {
 
       this.rec.extraInfo.clientURL = clientURL;
 
+      // LWMeteor.call(
       Meteor.call(
         'logClient',
         nameFromLevel[this.rec.level],
@@ -67,6 +69,7 @@ class MeteorStream {
         fullInfo,
       );
     } else {
+      // LWMeteor.call(
       Meteor.call(
         'logClient',
         nameFromLevel[this.rec.level],

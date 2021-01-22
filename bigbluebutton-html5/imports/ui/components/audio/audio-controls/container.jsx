@@ -1,8 +1,9 @@
+import { LWMeteor } from '/imports/startup/lightwire';
 import React from 'react';
 import { withTracker } from 'meteor/react-meteor-data';
 import { withModalMounter } from '/imports/ui/components/modal/service';
 import AudioManager from '/imports/ui/services/audio-manager';
-import { makeCall } from '/imports/ui/services/api';
+import { makeCallLW as makeCall } from '/imports/ui/services/api';
 import lockContextContainer from '/imports/ui/components/lock-viewers/context/container';
 import logger from '/imports/startup/client/logger';
 import Auth from '/imports/ui/services/auth';
@@ -74,7 +75,7 @@ export default lockContextContainer(withModalMounter(withTracker(({ mountModal, 
     muted: isConnected() && !isListenOnly() && isMuted(),
     inAudio: isConnected() && !isEchoTest(),
     listenOnly: isConnected() && isListenOnly(),
-    disable: isConnecting() || isHangingUp() || !Meteor.status().connected,
+    disable: isConnecting() || isHangingUp() || !LWMeteor.status().connected,
     talking: isTalking() && !isMuted(),
     isVoiceUser: isVoiceUser(),
     handleToggleMuteMicrophone: () => toggleMuteMicrophone(),

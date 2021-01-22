@@ -1,5 +1,6 @@
 import GroupChat from '/imports/api/group-chat';
 import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 
 import Logger from '/imports/startup/server/logger';
 import AuthTokenValidation, { ValidationStates } from '/imports/api/auth-token-validation';
@@ -19,13 +20,9 @@ function groupChat() {
 
   Logger.debug('Publishing group-chat', { meetingId, userId });
 
-  return GroupChat.find({
-    $or: [
-      { meetingId, access: PUBLIC_CHAT_TYPE },
-      { meetingId, users: { $all: [userId] } },
-    ],
+  const selector = doc => doc.meetingId === meetingId && (doc.access === PUBLIC_CHAT_TYPE || (Array.isArray(doc.users) && doc.users.includes(requesterUserId)));
 
-  });
+  return GroupChat.find(selector);
 }
 
 function publish(...args) {
@@ -33,4 +30,4 @@ function publish(...args) {
   return boundGroupChat(...args);
 }
 
-Meteor.publish('group-chat', publish);
+LWMeteor.publish('group-chat', publish);

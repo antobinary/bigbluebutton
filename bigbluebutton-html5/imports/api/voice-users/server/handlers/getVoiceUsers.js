@@ -14,10 +14,9 @@ export default function handleGetVoiceUsers({ body }, meetingId) {
   const meeting = Meetings.findOne({ meetingId }, { fields: { 'voiceProp.voiceConf': 1 } });
   const usersIds = users.map(m => m.intId);
 
-  const voiceUsersIdsToUpdate = VoiceUsers.find({
-    meetingId,
-    intId: { $in: usersIds },
-  }, { fields: { intId: 1 } }).fetch().map(m => m.intId);
+  const selector = doc => doc.meetingId === meetingId && usersIds.includes(doc.intId);
+  const voiceUsersIdsToUpdate = VoiceUsers.find(selector, { fields: { intId: 1 } }).fetch().map(m => m.intId);
+
 
   const voiceUsersUpdated = [];
   users.forEach((user) => {
@@ -49,10 +48,8 @@ export default function handleGetVoiceUsers({ body }, meetingId) {
   });
 
   // removing extra users already existing in Mongo
-  const voiceUsersToRemove = VoiceUsers.find({
-    meetingId,
-    intId: { $nin: usersIds },
-  }).fetch();
+  const selectorUsersToRemove = doc => doc.meetingId === meetingId && !usersIds.includes(doc.intId);
+  const voiceUsersToRemove = VoiceUsers.find(selectorUsersToRemove).fetch();
   voiceUsersToRemove.forEach(user => removeVoiceUser(meetingId, {
     voiceConf: meeting.voiceProp.voiceConf,
     voiceUserId: user.voiceUserId,

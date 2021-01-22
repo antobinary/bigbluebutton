@@ -1,11 +1,11 @@
-import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 import endMeeting from './methods/endMeeting';
 import toggleRecording from './methods/toggleRecording';
 import transferUser from './methods/transferUser';
 import toggleLockSettings from './methods/toggleLockSettings';
 import toggleWebcamsOnlyForModerator from './methods/toggleWebcamsOnlyForModerator';
 
-Meteor.methods({
+LWMeteor.methods({
   endMeeting,
   toggleRecording,
   toggleLockSettings,

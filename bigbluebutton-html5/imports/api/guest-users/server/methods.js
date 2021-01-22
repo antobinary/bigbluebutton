@@ -1,8 +1,8 @@
-import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 import allowPendingUsers from '/imports/api/guest-users/server/methods/allowPendingUsers';
 import changeGuestPolicy from '/imports/api/guest-users/server/methods/changeGuestPolicy';
 
-Meteor.methods({
+LWMeteor.methods({
   allowPendingUsers,
   changeGuestPolicy,
 });

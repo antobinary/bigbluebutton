@@ -8,6 +8,7 @@ import { lookup as lookupUserAgent } from 'useragent';
 import { check } from 'meteor/check';
 import Logger from './logger';
 import Redis from './redis';
+import { LightWire } from './lightwire-server';
 
 import setMinBrowserVersions from './minBrowserVersion';
 

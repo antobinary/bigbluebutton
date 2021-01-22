@@ -1,3 +1,4 @@
+import { LWMeteor } from '/imports/startup/lightwire';
 import React from 'react';
 import PropTypes from 'prop-types';
 import { withTracker } from 'meteor/react-meteor-data';
@@ -33,6 +34,6 @@ export default withTracker(() => {
     handleVote,
     poll,
     pollAnswerIds: PollService.pollAnswerIds,
-    isMeteorConnected: Meteor.status().connected,
+    isMeteorConnected: LWMeteor.status().connected,
   });
 })(PollingContainer);

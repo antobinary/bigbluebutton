@@ -30,6 +30,7 @@ export default function handleValidateAuthToken({ body }, meetingId) {
   check(waitForApproval, Boolean);
 
   const pendingAuths = pendingAuthenticationsStore.take(meetingId, userId, authToken);
+  Logger.info(`pendingAuths count: ${pendingAuths.length}`);
 
   if (!valid) {
     pendingAuths.forEach(
@@ -40,7 +41,8 @@ export default function handleValidateAuthToken({ body }, meetingId) {
 
           upsertValidationState(meetingId, userId, ValidationStates.INVALID, connectionId);
 
-          // Schedule socket disconnection for this user, giving some time for client receiving the reason of disconnection
+          // Schedule socket disconnection for this user, giving some time for client receiving
+          // the reason of disconnection
           Meteor.setTimeout(() => {
             methodInvocationObject.connection.close();
           }, 2000);
@@ -61,7 +63,8 @@ export default function handleValidateAuthToken({ body }, meetingId) {
       (pendingAuth) => {
         const { methodInvocationObject } = pendingAuth;
 
-        /* Logic migrated from validateAuthToken method ( postponed to only run in case of success response ) - Begin */
+        /* Logic migrated from validateAuthToken method
+         ( postponed to only run in case of success response ) - Begin */
         const sessionId = `${meetingId}--${userId}`;
 
         methodInvocationObject.setUserId(sessionId);
@@ -71,8 +74,19 @@ export default function handleValidateAuthToken({ body }, meetingId) {
           userId,
         });
 
+        Logger.info(`pre-createDummyUser:${JSON.stringify(User)}`);
+
         if (!User) {
-          createDummyUser(meetingId, userId, authToken);
+          try {
+            createDummyUser(meetingId, userId, authToken);
+          } catch (e) {
+            const user3 = Users.findOne({
+              meetingId,
+              userId,
+            });
+
+            Logger.info(`post-createDummy:${JSON.stringify(user3)}`);
+          }
         }
 
         upsertValidationState(meetingId, userId, ValidationStates.VALIDATED, methodInvocationObject.connection.id);

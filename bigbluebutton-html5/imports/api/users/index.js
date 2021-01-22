@@ -1,6 +1,6 @@
-import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 
-const Users = new Mongo.Collection('users');
+const Users = new LWMeteor.Collection('users');
 
 if (Meteor.isServer) {
   // types of queries for the users:

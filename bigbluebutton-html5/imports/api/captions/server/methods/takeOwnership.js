@@ -8,8 +8,8 @@ export default function takeOwnership(locale) {
 
   check(locale, String);
 
-  const pad = Captions.findOne({ meetingId, padId: { $regex: `_captions_${locale}$` } });
-
+  const regex = new RegExp(`_captions_${locale}$`);
+  const pad = Captions.findOne(doc => doc.meetingId === meetingId && regex.test(doc.padId));
   if (pad) {
     updateOwnerId(meetingId, requesterUserId, pad.padId);
   }

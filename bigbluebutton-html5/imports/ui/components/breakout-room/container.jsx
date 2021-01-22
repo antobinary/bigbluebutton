@@ -1,3 +1,4 @@
+import { LWMeteor } from '/imports/startup/lightwire';
 import React from 'react';
 import { withTracker } from 'meteor/react-meteor-data';
 import AudioService from '/imports/ui/components/audio/service';
@@ -24,7 +25,7 @@ export default withTracker((props) => {
 
   const breakoutRooms = findBreakouts();
   const isMicrophoneUser = AudioService.isConnected() && !AudioService.isListenOnly();
-  const isMeteorConnected = Meteor.status().connected;
+  const isMeteorConnected = LWMeteor.status().connected;
 
   return {
     ...props,

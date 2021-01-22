@@ -23,12 +23,7 @@ export default function handlePresenterAssigned({ body }, meetingId) {
 
   changePresenter(true, presenterId, meetingId, assignedBy);
 
-  const selector = {
-    meetingId,
-    userId: { $ne: presenterId },
-    presenter: true,
-  };
-
+  const selector = doc => doc.meetingId === meetingId && doc.presenter && doc.userId !== presenterId;
   const prevPresenter = Users.findOne(selector);
 
   // no previous presenters

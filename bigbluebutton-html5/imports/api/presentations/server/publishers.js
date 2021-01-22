@@ -1,4 +1,4 @@
-import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 import Presentations from '/imports/api/presentations';
 import Logger from '/imports/startup/server/logger';
 import AuthTokenValidation, { ValidationStates } from '/imports/api/auth-token-validation';
@@ -23,4 +23,4 @@ function publish(...args) {
   return boundPresentations(...args);
 }
 
-Meteor.publish('presentations', publish);
+LWMeteor.publish('presentations', publish);

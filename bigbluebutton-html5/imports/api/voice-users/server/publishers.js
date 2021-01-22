@@ -1,3 +1,4 @@
+import { LWMeteor } from '/imports/startup/lightwire';
 import VoiceUsers from '/imports/api/voice-users';
 import { Meteor } from 'meteor/meteor';
 import Logger from '/imports/startup/server/logger';
@@ -28,7 +29,7 @@ function voiceUser() {
 
   Logger.debug('Publishing Voice User', { meetingId, requesterUserId });
 
-  this._session.socket.on('close', _.debounce(onCloseConnection, 100));
+  this.connection.socket.on('close', _.debounce(onCloseConnection, 100));
   return VoiceUsers.find({ meetingId });
 }
 
@@ -37,4 +38,4 @@ function publish(...args) {
   return boundVoiceUser(...args);
 }
 
-Meteor.publish('voiceUsers', publish);
+LWMeteor.publish('voiceUsers', publish);

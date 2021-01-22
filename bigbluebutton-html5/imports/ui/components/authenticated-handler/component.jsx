@@ -1,3 +1,4 @@
+import { LWMeteor } from '/imports/startup/lightwire';
 import React, { Component } from 'react';
 import { Session } from 'meteor/session';
 import logger from '/imports/startup/client/logger';
@@ -24,11 +25,11 @@ class AuthenticatedHandler extends Component {
     let lastStatus = null;
 
     Tracker.autorun(() => {
-      lastStatus = AuthenticatedHandler.updateStatus(Meteor.status(), lastStatus);
+      lastStatus = AuthenticatedHandler.updateStatus(LWMeteor.status(), lastStatus);
 
-      if (AuthenticatedHandler.shouldAuthenticate(Meteor.status(), lastStatus)) {
+      if (AuthenticatedHandler.shouldAuthenticate(LWMeteor.status(), lastStatus)) {
         Auth.authenticate(true);
-        lastStatus = Meteor.status().status;
+        lastStatus = LWMeteor.status().status;
       }
     });
   }

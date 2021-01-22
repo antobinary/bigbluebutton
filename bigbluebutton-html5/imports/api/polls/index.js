@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 
-const Polls = new Mongo.Collection('polls');
+const Polls = new LWMeteor.Collection('polls');
 
 if (Meteor.isServer) {
   // We can have just one active poll per meeting

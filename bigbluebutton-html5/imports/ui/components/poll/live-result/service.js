@@ -1,5 +1,5 @@
 import Users from '/imports/api/users';
-import { makeCall } from '/imports/ui/services/api';
+import { makeCallLW as makeCall } from '/imports/ui/services/api';
 
 const sortUsers = (a, b) => {
   const sortByResponse = (a, b) => {

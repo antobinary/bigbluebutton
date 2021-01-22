@@ -1,5 +1,5 @@
 import GuestUsers from '/imports/api/guest-users/';
-import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 import Logger from '/imports/startup/server/logger';
 import AuthTokenValidation, { ValidationStates } from '/imports/api/auth-token-validation';
 
@@ -23,4 +23,4 @@ function publish(...args) {
   return boundSlides(...args);
 }
 
-Meteor.publish('guestUser', publish);
+LWMeteor.publish('guestUser', publish);

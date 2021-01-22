@@ -1,6 +1,7 @@
+import { LWMeteor } from '/imports/startup/lightwire';
 import Storage from '/imports/ui/services/storage/session';
 import _ from 'lodash';
-import { makeCall } from '/imports/ui/services/api';
+import { makeCallLW as makeCall } from '/imports/ui/services/api';
 
 const SETTINGS = [
   'application',
@@ -66,7 +67,7 @@ class Settings {
     });
 
     Tracker.autorun((c) => {
-      const { status } = Meteor.status();
+      const { status } = LWMeteor.status();
       if (status === 'connected') {
         c.stop();
         makeCall('userChangedLocalSettings', userSettings);

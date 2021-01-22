@@ -1,8 +1,9 @@
+import { LWMeteor } from '/imports/startup/lightwire';
 import Users from '/imports/api/users';
 import Auth from '/imports/ui/services/auth';
 import WhiteboardMultiUser from '/imports/api/whiteboard-multi-user/';
 import addAnnotationQuery from '/imports/api/annotations/addAnnotation';
-import { makeCall } from '/imports/ui/services/api';
+import { makeCallLW as makeCall } from '/imports/ui/services/api';
 import logger from '/imports/startup/client/logger';
 
 const Annotations = new Mongo.Collection(null);
@@ -60,11 +61,12 @@ export function initAnnotationsStreamListener() {
    * The problem was caused because we add handlers to stream before the onStop event happens,
    * which set the handlers to undefined.
    */
-  annotationsStreamListener = new Meteor.Streamer(`annotations-${Auth.meetingID}`, { retransmit: false });
+  annotationsStreamListener = new LWMeteor.Streamer(`annotations-${Auth.meetingID}`, { retransmit: false });
+  console.log("initAnnotationsStreamListener called");
 
-  const startStreamHandlersPromise = new Promise((resolve) => {
+  /*const startStreamHandlersPromise = new Promise((resolve) => {
     const checkStreamHandlersInterval = setInterval(() => {
-      const streamHandlersSize = Object.values(Meteor.StreamerCentral.instances[`annotations-${Auth.meetingID}`].handlers)
+      const streamHandlersSize = Object.values(LWMeteor.StreamerCentral.instances[`annotations-${Auth.meetingID}`].handlers)
         .filter(el => el !== undefined)
         .length;
 
@@ -72,9 +74,9 @@ export function initAnnotationsStreamListener() {
         resolve(clearInterval(checkStreamHandlersInterval));
       }
     }, 250);
-  });
+  });*/
 
-  startStreamHandlersPromise.then(() => {
+  // startStreamHandlersPromise.then(() => {
     logger.debug({ logCode: 'annotations_stream_handler_attach' }, 'Attaching handlers for annotations stream');
 
     annotationsStreamListener.on('removed', handleRemovedAnnotation);
@@ -82,7 +84,7 @@ export function initAnnotationsStreamListener() {
     annotationsStreamListener.on('added', ({ annotations }) => {
       annotations.forEach(annotation => handleAddedAnnotation(annotation));
     });
-  });
+  // });
 }
 
 function increaseBrightness(realHex, percent) {
@@ -141,7 +143,7 @@ const sendAnnotation = (annotation) => {
   // Prevent sending annotations while disconnected
   // TODO: Change this to add the annotation, but delay the send until we're
   // reconnected. With this it will miss things
-  if (!Meteor.status().connected) return;
+  if (!LWMeteor.status().connected) return;
 
   if (annotation.status === DRAW_END) {
     annotationsQueue.push(annotation);

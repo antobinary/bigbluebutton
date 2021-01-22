@@ -1,8 +1,8 @@
-import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 import userShareWebcam from './methods/userShareWebcam';
 import userUnshareWebcam from './methods/userUnshareWebcam';
 
-Meteor.methods({
+LWMeteor.methods({
   userShareWebcam,
   userUnshareWebcam,
 });

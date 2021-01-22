@@ -1,3 +1,4 @@
+import { LWMeteor } from '/imports/startup/lightwire';
 import { Tracker } from 'meteor/tracker';
 import { Session } from 'meteor/session';
 import Settings from '/imports/ui/services/settings';
@@ -6,7 +7,7 @@ import Meetings from '/imports/api/meetings';
 import Users from '/imports/api/users';
 import VideoStreams from '/imports/api/video-streams';
 import UserListService from '/imports/ui/components/user-list/service';
-import { makeCall } from '/imports/ui/services/api';
+import { makeCallLW as makeCall } from '/imports/ui/services/api';
 import { notify } from '/imports/ui/services/notification';
 import { monitorVideoConnection } from '/imports/utils/stats';
 import browser from 'browser-detect';
@@ -547,7 +548,7 @@ class VideoService {
       videoLocked: this.isUserLocked(),
       videoConnecting: this.isConnecting,
       dataSaving: !viewParticipantsWebcams,
-      meteorDisconnected: !Meteor.status().connected
+      meteorDisconnected: !LWMeteor.status().connected
     };
     const locksKeys = Object.keys(locks);
     const disableReason = locksKeys.filter( i => locks[i]).shift();

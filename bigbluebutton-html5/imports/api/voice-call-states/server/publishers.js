@@ -1,5 +1,5 @@
 import VoiceCallStates from '/imports/api/voice-call-states';
-import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 import Logger from '/imports/startup/server/logger';
 import AuthTokenValidation, { ValidationStates } from '/imports/api/auth-token-validation';
 
@@ -23,4 +23,4 @@ function publish(...args) {
   return boundVoiceCallStates(...args);
 }
 
-Meteor.publish('voice-call-states', publish);
+LWMeteor.publish('voice-call-states', publish);

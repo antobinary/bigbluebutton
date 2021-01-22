@@ -1,3 +1,4 @@
+import { LWMeteor } from '/imports/startup/lightwire';
 import React from 'react';
 import { withTracker } from 'meteor/react-meteor-data';
 import browser from 'browser-detect';
@@ -20,7 +21,7 @@ export default withTracker((props) => {
     amIModerator: props.amIModerator,
     handleToggleFullscreen,
     noIOSFullscreen,
-    isMeteorConnected: Meteor.status().connected,
+    isMeteorConnected: LWMeteor.status().connected,
     isBreakoutRoom: meetingIsBreakout(),
   };
 })(SettingsDropdownContainer);

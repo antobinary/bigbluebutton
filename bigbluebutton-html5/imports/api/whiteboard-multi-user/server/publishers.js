@@ -1,5 +1,5 @@
 import WhiteboardMultiUser from '/imports/api/whiteboard-multi-user/';
-import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 import Logger from '/imports/startup/server/logger';
 import AuthTokenValidation, { ValidationStates } from '/imports/api/auth-token-validation';
 
@@ -24,4 +24,4 @@ function publish(...args) {
   return boundMultiUser(...args);
 }
 
-Meteor.publish('whiteboard-multi-user', publish);
+LWMeteor.publish('whiteboard-multi-user', publish);

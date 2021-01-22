@@ -1,5 +1,5 @@
 import NetworkInformation from '/imports/api/network-information';
-import { makeCall } from '/imports/ui/services/api';
+import { makeCallLW as makeCall } from '/imports/ui/services/api';
 import Auth from '/imports/ui/services/auth';
 import Users from '/imports/api/users';
 import LocalSettings from '/imports/api/local-settings';

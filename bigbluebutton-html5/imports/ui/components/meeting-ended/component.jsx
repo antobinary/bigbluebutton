@@ -1,3 +1,4 @@
+import { LWMeteor } from '/imports/startup/lightwire';
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { defineMessages, injectIntl } from 'react-intl';
@@ -118,7 +119,7 @@ class MeetingEnded extends PureComponent {
     this.shouldShowFeedback = this.shouldShowFeedback.bind(this);
 
     AudioManager.exitAudio();
-    Meteor.disconnect();
+    LWMeteor.disconnect();
   }
 
   setSelectedStar(starNumber) {

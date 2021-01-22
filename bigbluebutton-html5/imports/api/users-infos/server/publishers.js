@@ -1,4 +1,4 @@
-import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 import UserInfos from '/imports/api/users-infos';
 import Logger from '/imports/startup/server/logger';
 import AuthTokenValidation, { ValidationStates } from '/imports/api/auth-token-validation';
@@ -23,4 +23,4 @@ function publish(...args) {
   return boundUserInfos(...args);
 }
 
-Meteor.publish('users-infos', publish);
+LWMeteor.publish('users-infos', publish);

@@ -4,7 +4,7 @@ import { defineMessages } from 'react-intl';
 
 import Button from '/imports/ui/components/button/component';
 import Modal from '/imports/ui/components/modal/simple/component';
-import { makeCall } from '/imports/ui/services/api';
+import { makeCallLW as makeCall } from '/imports/ui/services/api';
 
 import { styles } from './styles';
 import {Meteor} from "meteor/meteor";

@@ -1,5 +1,5 @@
 import Auth from '/imports/ui/services/auth';
-import { makeCall } from '/imports/ui/services/api';
+import { makeCallLW as makeCall } from '/imports/ui/services/api';
 import RecordMeetings from '/imports/api/meetings';
 
 const processOutsideToggleRecording = (e) => {

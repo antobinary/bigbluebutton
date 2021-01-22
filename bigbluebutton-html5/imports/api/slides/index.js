@@ -1,7 +1,7 @@
-import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 
-const Slides = new Mongo.Collection('slides');
-const SlidePositions = new Mongo.Collection('slide-positions');
+const Slides = new LWMeteor.Collection('slides');
+const SlidePositions = new LWMeteor.Collection('slide-positions');
 
 if (Meteor.isServer) {
   // types of queries for the slides:

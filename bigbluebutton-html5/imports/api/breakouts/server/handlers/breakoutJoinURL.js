@@ -15,15 +15,7 @@ export default function handleBreakoutJoinURL({ body }) {
     breakoutId,
   };
 
-  const modifier = {
-    $push: {
-      users: {
-        userId,
-        redirectToHtml5JoinURL,
-        insertedTime: new Date().getTime(),
-      },
-    },
-  };
+  const modifier = doc => ({ users: [...doc.users, { userId, redirectToHtml5JoinURL, insertedTime: new Date().getTime() }] });
 
   try {
     const { insertedId, numberAffected } = Breakouts.upsert(selector, modifier);

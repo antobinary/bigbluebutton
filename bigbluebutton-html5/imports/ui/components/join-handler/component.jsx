@@ -1,10 +1,11 @@
+import { LWMeteor } from '/imports/startup/lightwire';
 import React, { Component } from 'react';
 import { Session } from 'meteor/session';
 import PropTypes from 'prop-types';
 import SanitizeHTML from 'sanitize-html';
 import Auth from '/imports/ui/services/auth';
 import { setCustomLogoUrl, setModeratorOnlyMessage } from '/imports/ui/components/user-list/service';
-import { makeCall } from '/imports/ui/services/api';
+import { makeCallLW as makeCall } from '/imports/ui/services/api';
 import logger from '/imports/startup/client/logger';
 import LoadingScreen from '/imports/ui/components/loading-screen/component';
 import Users from '/imports/api/users';
@@ -37,7 +38,7 @@ class JoinHandler extends Component {
       const {
         connected,
         status,
-      } = Meteor.status();
+      } = LWMeteor.status();
 
       if (status === 'connecting') {
         this.setState({ joined: false });
@@ -116,7 +117,7 @@ class JoinHandler extends Component {
         logCode: 'joinhandler_component_clientinfo',
         extraInfo: { clientInfo },
       },
-      'Log information about the client');
+        'Log information about the client');
     };
 
     const setAuth = (resp) => {

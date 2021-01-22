@@ -1,6 +1,5 @@
-import { Meteor } from 'meteor/meteor';
-import { Mongo } from 'meteor/mongo';
+import { LWMeteor } from '/imports/startup/lightwire';
 
-const GuestUsers = new Mongo.Collection('guestUsers');
+const GuestUsers = new LWMeteor.Collection('guestUsers');
 
 export default GuestUsers;

@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
+import { LWMeteor } from '/imports/startup/lightwire';
 
-const PresentationPods = new Mongo.Collection('presentation-pods');
+const PresentationPods = new LWMeteor.Collection('presentation-pods');
 
 if (Meteor.isServer) {
   // types of queries for the presentation pods:
