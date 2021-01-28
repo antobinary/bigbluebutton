@@ -29,7 +29,7 @@ function voiceUser() {
 
   Logger.debug('Publishing Voice User', { meetingId, requesterUserId });
 
-  this.connection.socket.on('close', _.debounce(onCloseConnection, 100));
+  this.connection._socket.on('close', _.debounce(onCloseConnection, 100));
   return VoiceUsers.find({ meetingId });
 }
 
