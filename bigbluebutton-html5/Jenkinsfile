@@ -9,6 +9,7 @@ pipeline {
                 sh 'ls -l'
                 sh 'pwd'
                 echo 'HTML5 dir'
+                sh 'cat bigbluebutton-html5/temp'
             }
         }
     }
