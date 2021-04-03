@@ -6,7 +6,7 @@ pipeline {
                 sh 'ls -l'
                 sh 'pwd'
                 echo 'BBB bigbluebutton-config dir'
-                sh 'cat temp'
+                sh 'cat bigbluebutton-config/temp'
             }
         }
     }
