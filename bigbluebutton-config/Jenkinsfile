@@ -5,19 +5,20 @@ pipeline {
             // ensure we only complete the build of this package if the SCM dir was touched
             // https://stackoverflow.com/a/51237488
             steps {
-            // Moving in to the directory to execute the commands
-            dir('servicelayer') {
-                script {
-                    //Using the git command to check the difference between previous successful commit. ${GIT_PREVIOUS_SUCCESSFUL_COMMIT} is an environment variable comes with GIT Jenkins plugin
-                    //There is a drawback though, if it is the first time you are running this job, this variable is not available and fails the build
-                    //For the first time i had to use ${env.GIT_COMMIT} itself at both places to pass the build. A hack but worth it for future builds.
+                // Moving in to the directory to execute the commands
+                dir('servicelayer') {
+                    script {
+                        //Using the git command to check the difference between previous successful commit. ${GIT_PREVIOUS_SUCCESSFUL_COMMIT} is an environment variable comes with GIT Jenkins plugin
+                        //There is a drawback though, if it is the first time you are running this job, this variable is not available and fails the build
+                        //For the first time i had to use ${env.GIT_COMMIT} itself at both places to pass the build. A hack but worth it for future builds.
 
-                    def strCount = sh(returnStdout: true, script: "git diff --name-only ${env.GIT_COMMIT} ${GIT_PREVIOUS_SUCCESSFUL_COMMIT} | grep servicelayer | wc -l").trim()
-                    if(strCount=="0") {
-                        echo "Skipping build no files updated"
-                        CONTINUE_BUILD = false
-                    } else {
-                        echo "Changes found in the servicelayer module"
+                        def strCount = sh(returnStdout: true, script: "git diff --name-only ${env.GIT_COMMIT} ${GIT_PREVIOUS_SUCCESSFUL_COMMIT} | grep servicelayer | wc -l").trim()
+                        if(strCount=="0") {
+                            echo "Skipping build no files updated"
+                            CONTINUE_BUILD = false
+                        } else {
+                            echo "Changes found in the servicelayer module"
+                        }
                     }
                 }
             }
