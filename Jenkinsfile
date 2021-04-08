@@ -31,7 +31,8 @@ pipeline {
             steps {
                 sh "ls /mnt"
                 sh "ls -l /mnt/bigbluebutton-build"
-                sh "SOURCE=/mnt/bigbluebutton-build PACKAGE=bbb-html5 /mnt/bigbluebutton-build/setup.sh"
+                sh "ls -l /mnt/bigbluebutton-build/build"
+                sh "SOURCE=/mnt/bigbluebutton-build PACKAGE=bbb-html5 /mnt/bigbluebutton-build/build/setup.sh"
             }
         }
     }
