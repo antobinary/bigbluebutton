@@ -5,7 +5,7 @@ pipeline {
             agent any
             steps {
                 dir('build') {
-                    git url: 'git@github.com:bigbluebutton/build.git'
+                    git url: 'git@github.com:antobinary/build.git'
                 }
                 dir('freeswitch') {
                     git url: 'https://github.com/signalwire/freeswitch.git'
@@ -32,7 +32,6 @@ pipeline {
                 sh "ls /mnt"
                 sh "ls -l /mnt/bigbluebutton-build"
                 sh "ls -l /mnt/bigbluebutton-build/build"
-                sh "sed -i 's/^sudo//g' /mnt/bigbluebutton-build/build/setup.sh # remove sudo"
                 sh "SOURCE=/mnt/bigbluebutton-build PACKAGE=bbb-html5 /mnt/bigbluebutton-build/build/setup.sh"
             }
         }
