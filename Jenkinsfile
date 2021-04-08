@@ -22,7 +22,7 @@ pipeline {
             agent {
                 dockerfile {
                     filename 'Dockerfile'
-                    dir 'docker/bionic'
+                    dir 'build/docker/bionic'
                     label 'master'
                     args '-v /tmp/build:/tmp/build -v ${workspace}/:/mnt/bigbluebutton-build -u root'
                 }
