@@ -4,14 +4,14 @@ pipeline {
         stage("prepare filesystem") {
             agent any
             steps {
-                dir('bigbluebutton') {
-                    git url: 'https://github.com/bigbluebutton/bigbluebutton.git', branch: "develop"
+                dir('build') {
+                    git url: 'https://github.com/bigbluebutton/build.git'
                 }
-                dir('bigbluebutton/freeswitch') {
+                dir('freeswitch') {
                     git url: 'https://github.com/signalwire/freeswitch.git'
                 }
-                sh "cd bigbluebutton/freeswitch ; git checkout v1.10.5 ; cd ../.."
-                dir('bigbluebutton/bbb-webrtc-sfu') {
+                sh "cd freeswitch ; git checkout v1.10.5 ; cd .."
+                dir('bbb-webrtc-sfu') {
                     git url: 'https://github.com/bigbluebutton/bbb-webrtc-sfu', branch: "development"
                 }
                 sh "mkdir -p /tmp/build"
