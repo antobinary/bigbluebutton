@@ -32,7 +32,7 @@ pipeline {
                 sh "ls /mnt"
                 sh "ls -l /mnt/bigbluebutton-build"
                 sh "ls -l /mnt/bigbluebutton-build/build"
-                sh "/mnt/bigbluebutton-build/setup-inside-docker.sh"
+                sh "/mnt/bigbluebutton-build/build/setup-inside-docker.sh"
             }
         }
     }
