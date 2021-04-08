@@ -30,7 +30,8 @@ pipeline {
             
             steps {
                 sh "ls /mnt"
-                sh "/mnt/bigbluebutton-build/setup-inside-docker.sh"
+                sh "ls -l /mnt/bigbluebutton-build"
+                sh "SOURCE=/mnt/bigbluebutton-build PACKAGE=bbb-html5 /mnt/bigbluebutton-build/setup.sh"
             }
         }
     }
