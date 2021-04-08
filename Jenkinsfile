@@ -5,7 +5,7 @@ pipeline {
             agent any
             steps {
                 dir('build') {
-                    git url: 'https://github.com/bigbluebutton/build.git'
+                    git url: 'git@github.com:bigbluebutton/build.git'
                 }
                 dir('freeswitch') {
                     git url: 'https://github.com/signalwire/freeswitch.git'
