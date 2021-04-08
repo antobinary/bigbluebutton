@@ -32,7 +32,7 @@ pipeline {
                 sh "ls /mnt"
                 sh "ls -l /mnt/bigbluebutton-build"
                 sh "ls -l /mnt/bigbluebutton-build/build"
-                sh "sed -i 's/^sudo\ rm/rm/g' /mnt/bigbluebutton-build/build/setup.sh # remove sudo"
+                sh "sed -i 's/^sudo//g' /mnt/bigbluebutton-build/build/setup.sh # remove sudo"
                 sh "SOURCE=/mnt/bigbluebutton-build PACKAGE=bbb-html5 /mnt/bigbluebutton-build/build/setup.sh"
             }
         }
