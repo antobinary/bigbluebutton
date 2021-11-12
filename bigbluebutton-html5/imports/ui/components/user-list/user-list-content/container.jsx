@@ -6,6 +6,8 @@ import Storage from '/imports/ui/services/storage/session';
 import UserContent from './component';
 import GuestUsers from '/imports/api/guest-users/';
 import { UsersContext } from '/imports/ui/components/components-data/users-context/context';
+import ActionsBarService from "../../actions-bar/service";
+import AudioManager from "../../../services/audio-manager";
 
 const CLOSED_CHAT_LIST_KEY = 'closedChatList';
 const STARTED_CHAT_LIST_KEY = 'startedChatList';
@@ -32,4 +34,9 @@ export default withTracker(() => ({
     approved: false,
     denied: false,
   }).fetch(),
+  hasLanguages: ActionsBarService.hasLanguages(),
+  isTranslationEnabled: AudioManager.isTranslationEnabled()
+
+
+
 }))(UserContentContainer);

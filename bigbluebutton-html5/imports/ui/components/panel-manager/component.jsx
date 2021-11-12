@@ -24,6 +24,7 @@ import {
   BREAKOUT_MIN_WIDTH,
   BREAKOUT_MAX_WIDTH,
 } from '/imports/ui/components/layout/layout-manager/component';
+import Translations from "../translations/component";
 
 const intlMessages = defineMessages({
   chatLabel: {
@@ -562,6 +563,15 @@ class PanelManager extends Component {
     );
   }
 
+  renderTranslationPanel(){
+    return (
+      <div key={"translation-container"}>
+        <Translations/>
+      </div>
+
+    )
+  }
+
   renderBreakoutRoomResizable() {
     const { breakoutRoomWidth } = this.state;
     const { isRTL } = this.props;
@@ -654,6 +664,10 @@ class PanelManager extends Component {
       } else {
         panels.push(this.renderChat());
       }
+    }
+
+    if(openPanel === "translations"){
+      panels.push(this.renderTranslationPanel())
     }
 
     if (openPanel === 'note') {

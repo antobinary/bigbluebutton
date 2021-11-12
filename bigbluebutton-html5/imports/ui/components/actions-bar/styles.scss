@@ -4,6 +4,7 @@
 @import "/imports/ui/stylesheets/mixins/focus";
 @import "/imports/ui/stylesheets/mixins/_indicators";
 @import "/imports/ui/stylesheets/variables/placeholders";
+@import "/imports/ui/stylesheets/variables/palette";
 
 .modal {
   @extend .modal;
@@ -167,3 +168,60 @@
     max-height: 100%;
   }
 }
+
+.presentationItem {
+  span {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 10rem;
+  }
+}
+
+.isCurrent {
+  i,
+  span {
+    color: var(--color-primary);
+  }
+}
+
+.glow {
+  border-radius: 50%;
+
+  :global(.animationsEnabled) & {
+    animation: pulse 1s infinite ease-in;
+  }
+
+  :global(.animationsDisabled) & span {
+    content: '';
+    outline: none !important;
+    background-clip: padding-box;
+    box-shadow: 0 0 0 4px rgba(255,255,255,.5);
+  }
+}
+
+.translatorLanguageOverlay{
+  --anchor-bottom: #translatorButton top;
+  --anchor-horizontalCenter: #translatorButton horizontalCenter;
+}
+
+.translationLanguageOverlay{
+  --anchor-bottom: #translationButton top;
+  --anchor-horizontalCenter: #translationButton horizontalCenter;
+}
+
+.languageOverlay {
+  position: fixed;
+
+  box-sizing: border-box;
+  border-radius: 1em;
+
+  margin: 0;
+}
+
+.translatorBtn{
+  span{
+    background-color: mediumpurple;
+  }
+}
+

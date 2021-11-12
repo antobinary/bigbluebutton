@@ -48,6 +48,7 @@ const DEFAULT_OUTPUT_DEVICE_ID = 'default';
 
 const INPUT_DEVICE_ID_KEY = 'audioInputDeviceId';
 const OUTPUT_DEVICE_ID_KEY = 'audioOutputDeviceId';
+const STANDARD_USER_MEDIA_CONSTRAINTS = {audio: true, video: false,};
 
 const getAudioSessionNumber = () => {
   let currItem = parseInt(sessionStorage.getItem(AUDIO_SESSION_NUM_KEY), 10);
@@ -83,7 +84,7 @@ const getErrorCode = (error) => {
 
 class SIPSession {
   constructor(user, userData, protocol, hostname,
-    baseCallStates, baseErrorCodes, reconnectAttempt) {
+              baseCallStates, baseErrorCodes, reconnectAttempt, mediaTag = MEDIA_TAG, userMediaConstraints = STANDARD_USER_MEDIA_CONSTRAINTS) {
     this.user = user;
     this.userData = userData;
     this.protocol = protocol;
@@ -99,6 +100,8 @@ class SIPSession {
     this._reconnecting = false;
     this._currentSessionState = null;
     this._ignoreCallState = false;
+    this.mediaTag = mediaTag;
+    this.userMediaConstraints = userMediaConstraints;
   }
 
   get inputStream() {
@@ -558,6 +561,7 @@ class SIPSession {
             iceServers,
             sdpSemantics: SDP_SEMANTICS,
           },
+          constraints: this.userMediaConstraints,
         },
         displayName: callerIdName,
         register: false,
@@ -817,14 +821,22 @@ class SIPSession {
 
       const matchConstraints = this.getAudioConstraints();
 
+      let userMediaConstraints = {audio: false, video: false};
+      if (!isListenOnly) {
+        userMediaConstraints = this.userMediaConstraints;
+        if (this.inputDeviceId) {
+          let inputDeviceIdMediaTrackConstraint = {exact: this.inputDeviceId};
+          if (typeof userMediaConstraints.audio === "object") {
+            userMediaConstraints.audio.deviceId = inputDeviceIdMediaTrackConstraint;
+          } else {
+            userMediaConstraints.audio = {deviceId: inputDeviceIdMediaTrackConstraint}
+          }
+        }
+      }
+
       const inviterOptions = {
         sessionDescriptionHandlerOptions: {
-          constraints: {
-            audio: isListenOnly
-              ? false
-              : matchConstraints,
-            video: false,
-          },
+          constraints: userMediaConstraints,
           iceGatheringTimeout: ICE_GATHERING_TIMEOUT,
         },
         sessionDescriptionHandlerModifiersPostICEGathering: [
@@ -859,11 +871,11 @@ class SIPSession {
       if (this.userRequestedHangup === true) reject();
 
       let iceCompleted = false;
-      let fsReady = false;
+      let fsReady = true;
       let sessionTerminated = false;
 
       const setupRemoteMedia = () => {
-        const mediaElement = document.querySelector(MEDIA_TAG);
+        const mediaElement = document.querySelector(this.mediaTag);
 
         this.remoteStream = new MediaStream();
 
@@ -1284,7 +1296,7 @@ class SIPSession {
 }
 
 export default class SIPBridge extends BaseAudioBridge {
-  constructor(userData) {
+  constructor(userData, mediaTag = MEDIA_TAG, userMediaConstraints = STANDARD_USER_MEDIA_CONSTRAINTS) {
     super(userData);
 
     const {
@@ -1302,6 +1314,9 @@ export default class SIPBridge extends BaseAudioBridge {
     this.media = {
       inputDevice: {},
     };
+
+    this.mediaTag = mediaTag;
+    this.userMediaConstraints = userMediaConstraints;
 
     this.protocol = window.document.location.protocol;
     this.hostname = window.document.location.hostname;
@@ -1394,7 +1409,7 @@ export default class SIPBridge extends BaseAudioBridge {
       let { hostname } = this;
 
       this.activeSession = new SIPSession(this.user, this.userData, this.protocol,
-        hostname, this.baseCallStates, this.baseErrorCodes, false);
+        hostname, this.baseCallStates, this.baseErrorCodes, false, this.mediaTag, this.userMediaConstraints);
 
       const callback = (message) => {
         if (message.status === this.baseCallStates.failed) {
@@ -1418,8 +1433,8 @@ export default class SIPBridge extends BaseAudioBridge {
           if (shouldTryReconnect) {
             const fallbackExtension = this.activeSession.inEchoTest ? extension : undefined;
             this.activeSession = new SIPSession(this.user, this.userData, this.protocol,
-              hostname, this.baseCallStates, this.baseErrorCodes, true);
-            const { inputDeviceId, outputDeviceId } = this;
+              hostname, this.baseCallStates, this.baseErrorCodes, true, this.mediaTag);
+            const {inputDeviceId, outputDeviceId} = this;
             this.activeSession.joinAudio({
               isListenOnly,
               extension: fallbackExtension,
@@ -1505,7 +1520,7 @@ export default class SIPBridge extends BaseAudioBridge {
   }
 
   async changeOutputDevice(value, isLive) {
-    const audioElement = document.querySelector(MEDIA_TAG);
+    const audioElement = document.querySelector(this.mediaTag);
 
     if (audioElement.setSinkId) {
       try {
