@@ -36,11 +36,6 @@ bbb_config() {
 	fi
 
 	#
-	# Update the placementsThreshold and imageTagThreshold
-	sed -i 's/placementsThreshold=8000/placementsThreshold=800/g' $SERVLET_DIR/WEB-INF/classes/bigbluebutton.properties
-	sed -i 's/imageTagThreshold=8000/imageTagThreshold=800/g'     $SERVLET_DIR/WEB-INF/classes/bigbluebutton.properties
-
-	#
 	# Fix links in welcome text
 	sed -i 's#<a href="event:http://www.bigbluebutton.org/html5">#<a href="https://www.bigbluebutton.org/html5" target="_blank">#g' \
 		$SERVLET_DIR/WEB-INF/classes/bigbluebutton.properties
