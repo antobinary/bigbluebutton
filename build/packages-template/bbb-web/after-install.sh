@@ -12,9 +12,6 @@ bbb_new_properties() {
 	#
  sed -i "s/bigbluebutton.web.serverURL=http:\/\/.*/bigbluebutton.web.serverURL=http:\/\/$IP/g" \
          $SERVLET_DIR/WEB-INF/classes/bigbluebutton.properties
-
- sed -i "s/screenshareRtmpServer=.*/screenshareRtmpServer=$IP/g" \
-         $SERVLET_DIR/WEB-INF/classes/bigbluebutton.properties
 }
 
 bbb_config() {
