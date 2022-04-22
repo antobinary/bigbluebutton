@@ -27,6 +27,14 @@ jobs:
 
           openssl req -x509 -new -nodes -key bbb-dev-ca.key -sha256 -days 1460 -passin file:/root/bbb-ci-ssl/bbb-dev-ca.pass -out bbb-dev-ca.crt -subj "/C=CA/ST=BBB/L=BBB/O=BBB/OU=BBB/CN=BBB-DEV" ;
           '
+      - run: |
+          sudo sh -c '
+          sudo mkdir /usr/local/share/ca-certificates/bbb-dev/
+          sudo cp /root/bbb-ci-ssl/bbb-dev-ca.crt /usr/local/share/ca-certificates/bbb-dev/
+          sudo chmod 644 /usr/local/share/ca-certificates/bbb-dev/bbb-dev-ca.crt
+          sudo update-ca-certificates
+
+          '
       - run: cat bbb-install.sh
       - run: exit 1 
       - uses: actions/checkout@v2
