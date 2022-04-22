@@ -10,6 +10,13 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - run: |
+            sudo sh -c '
+            echo "Faking a package build (to speed up installation test)"
+            cd /
+            wget -q "http://ci.bbbvm.imdt.com.br/artifacts.tar"
+            tar xf artifacts.tar
+            '
+      - run: |
           sudo sh -c '
           apt install -yq dpkg-dev
           apt --purge remove apache2-bin
