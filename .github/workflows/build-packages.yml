@@ -9,6 +9,35 @@ jobs:
   build-packages:
     runs-on: ubuntu-20.04
     steps:
+      # - uses: actions/checkout@v2
+      # - run: ./build/get_external_dependencies.sh
+      # - run: ./build/setup.sh bbb-apps-akka
+      # - run: ./build/setup.sh bbb-config
+      # - run: ./build/setup.sh bbb-etherpad
+      # - run: ./build/setup.sh bbb-freeswitch-core
+      # - run: ./build/setup.sh bbb-freeswitch-sounds
+      # - run: ./build/setup.sh bbb-fsesl-akka
+      # - run: ./build/setup.sh bbb-html5
+      # - run: ./build/setup.sh bbb-learning-dashboard
+      # - run: ./build/setup.sh bbb-libreoffice-docker
+      # - run: ./build/setup.sh bbb-mkclean
+      # - run: ./build/setup.sh bbb-pads
+      # - run: ./build/setup.sh bbb-playback
+      # - run: ./build/setup.sh bbb-playback-notes
+      # - run: ./build/setup.sh bbb-playback-podcast
+      # - run: ./build/setup.sh bbb-playback-presentation
+      # - run: ./build/setup.sh bbb-playback-screenshare
+      # - run: ./build/setup.sh bbb-record-core
+      # - run: ./build/setup.sh bbb-web
+      # - run: ./build/setup.sh bbb-webrtc-sfu
+      # - run: ./build/setup.sh bigbluebutton
+      # - run: tar cvf artifacts.tar artifacts/
+      # - name: Archive packages
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: artifacts.tar
+      #     path: |
+      #       artifacts.tar
       - run: |
           sudo sh -c '
           echo "Faking a package build (to speed up installation test)"
@@ -18,6 +47,7 @@ jobs:
           '
       - run: |
           sudo sh -c '
+          echo "Generating CA"
           mkdir /root/bbb-ci-ssl/
           cd /root/bbb-ci-ssl/
 
@@ -29,6 +59,7 @@ jobs:
           '
       - run: |
           sudo sh -c '
+          echo "Trusting CA"
           sudo mkdir /usr/local/share/ca-certificates/bbb-dev/
           sudo cp /root/bbb-ci-ssl/bbb-dev-ca.crt /usr/local/share/ca-certificates/bbb-dev/
           sudo chmod 644 /usr/local/share/ca-certificates/bbb-dev/bbb-dev-ca.crt
@@ -37,6 +68,7 @@ jobs:
           '
       - run: |
           sudo sh -c '
+          echo "Generating certificate"
           cd /root/bbb-ci-ssl/
           echo "127.0.0.1 bbb-ci.test" >> /etc/hosts
           openssl genrsa -out bbb-ci.test.key 2048
@@ -64,6 +96,7 @@ jobs:
           '
       - run: |
             sudo sh -c '
+            echo "Installing"
             apt install -yq dpkg-dev
             apt --purge -y remove apache2-bin
             cd /root && wget -q http://ci.bbbvm.imdt.com.br/cache-3rd-part-packages.tar
@@ -75,33 +108,4 @@ jobs:
             '
       - run: cat bbb-install.sh
       - run: exit 1 
-      - uses: actions/checkout@v2
-      - run: ./build/get_external_dependencies.sh
-      - run: ./build/setup.sh bbb-apps-akka
-      - run: ./build/setup.sh bbb-config
-      - run: ./build/setup.sh bbb-etherpad
-      - run: ./build/setup.sh bbb-freeswitch-core
-      - run: ./build/setup.sh bbb-freeswitch-sounds
-      - run: ./build/setup.sh bbb-fsesl-akka
-      - run: ./build/setup.sh bbb-html5
-      - run: ./build/setup.sh bbb-learning-dashboard
-      - run: ./build/setup.sh bbb-libreoffice-docker
-      - run: ./build/setup.sh bbb-mkclean
-      - run: ./build/setup.sh bbb-pads
-      - run: ./build/setup.sh bbb-playback
-      - run: ./build/setup.sh bbb-playback-notes
-      - run: ./build/setup.sh bbb-playback-podcast
-      - run: ./build/setup.sh bbb-playback-presentation
-      - run: ./build/setup.sh bbb-playback-screenshare
-      - run: ./build/setup.sh bbb-record-core
-      - run: ./build/setup.sh bbb-web
-      - run: ./build/setup.sh bbb-webrtc-sfu
-      - run: ./build/setup.sh bigbluebutton
-      - run: tar cvf artifacts.tar artifacts/
-      - name: Archive packages
-        uses: actions/upload-artifact@v3
-        with:
-          name: artifacts.tar
-          path: |
-            artifacts.tar
 
