@@ -9,24 +9,6 @@ jobs:
   build-packages:
     runs-on: ubuntu-20.04
     steps:
-      - run: |
-          sudo sh -c '
-          echo "Faking a package build (to speed up installation test)"
-          cd /
-          wget -q "http://ci.bbbvm.imdt.com.br/artifacts.tar"
-          tar xf artifacts.tar
-          '
-      - run: |
-          sudo sh -c '
-          apt install -yq dpkg-dev
-          apt --purge -y remove apache2-bin
-          cd /artifacts && dpkg-scanpackages . /dev/null | gzip -9c > Packages.gz
-          echo "deb [trusted=yes] file:/artifacts/ ./" >> /etc/apt/sources.list
-          cd /root/ && wget -q https://ubuntu.bigbluebutton.org/bbb-install-2.5.sh -O bbb-install.sh
-          cat bbb-install.sh | sed "s|> /etc/apt/sources.list.d/bigbluebutton.list||g" | bash -s -- -v focal-25-dev -s ci.bbbvm.imdt.com.br
-          '
-      - run: cat bbb-install.sh
-      - run: exit 1 
       - uses: actions/checkout@v2
       - run: ./build/get_external_dependencies.sh
       - run: ./build/setup.sh bbb-apps-akka
@@ -49,6 +31,22 @@ jobs:
       - run: ./build/setup.sh bbb-web
       - run: ./build/setup.sh bbb-webrtc-sfu
       - run: ./build/setup.sh bigbluebutton
+#      - run: |
+#          sudo sh -c '
+#          echo "Faking a package build (to speed up installation test)"
+#          cd /
+#          wget -q "http://ci.bbbvm.imdt.com.br/artifacts.tar"
+#          tar xf artifacts.tar
+#          '
+      - run: |
+          sudo sh -c '
+          apt install -yq dpkg-dev
+          apt --purge -y remove apache2-bin
+          cd /artifacts && dpkg-scanpackages . /dev/null | gzip -9c > Packages.gz
+          echo "deb [trusted=yes] file:/artifacts/ ./" >> /etc/apt/sources.list
+          cd /root/ && wget -q https://ubuntu.bigbluebutton.org/bbb-install-2.5.sh -O bbb-install.sh
+          cat bbb-install.sh | sed "s|> /etc/apt/sources.list.d/bigbluebutton.list||g" | bash -s -- -v focal-25-dev -s ci.bbbvm.imdt.com.br
+          '
       - run: tar cvf artifacts.tar artifacts/
       - name: Archive packages
         uses: actions/upload-artifact@v3
