@@ -40,7 +40,7 @@ jobs:
       #       artifacts.tar
       - run: echo "Disabled - to speed up development"
 
-  install-packages:
+  install-from-packages:
     runs-on: ubuntu-20.04
     needs: build-packages
     steps:
@@ -55,6 +55,8 @@ jobs:
           sudo sh -c '
           apt install -yq dpkg-dev
           apt --purge -y remove apache2-bin
+          cd /root && wget -q http://ci.bbbvm.imdt.com.br/cache-3rd-part-packages.tar
+          cd /artifacts && tar xf /root/cache-3rd-part-packages.tar
           cd /artifacts && dpkg-scanpackages . /dev/null | gzip -9c > Packages.gz
           echo "deb [trusted=yes] file:/artifacts/ ./" >> /etc/apt/sources.list
           cd /root/ && wget -q https://ubuntu.bigbluebutton.org/bbb-install-2.5.sh -O bbb-install.sh
