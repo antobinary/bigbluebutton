@@ -62,6 +62,17 @@ jobs:
           cat /root/bbb-ci-ssl/bbb-ci.test.key > /certs/privkey.pem
 
           '
+      - run: |
+            sudo sh -c '
+            apt install -yq dpkg-dev
+            apt --purge -y remove apache2-bin
+            cd /root && wget -q http://ci.bbbvm.imdt.com.br/cache-3rd-part-packages.tar
+            cd /artifacts && tar xf /root/cache-3rd-part-packages.tar
+            cd /artifacts && dpkg-scanpackages . /dev/null | gzip -9c > Packages.gz
+            echo "deb [trusted=yes] file:/artifacts/ ./" >> /etc/apt/sources.list
+            cd /root/ && wget -q https://ubuntu.bigbluebutton.org/bbb-install-2.5.sh -O bbb-install.sh
+            cat bbb-install.sh | sed "s|> /etc/apt/sources.list.d/bigbluebutton.list||g" | bash -s -- -v focal-25-dev -s bbb-ci.test -d /certs/
+            '
       - run: cat bbb-install.sh
       - run: exit 1 
       - uses: actions/checkout@v2
