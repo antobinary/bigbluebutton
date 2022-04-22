@@ -81,7 +81,7 @@ jobs:
     needs: ssl-trust-ca
     steps:
         - run: |
-            sudo sh -c '
+            sudo sh -c -x '
             cd /root/bbb-ci-ssl/
             echo "127.0.0.1 bbb-ci.test" >> /etc/hosts
             openssl genrsa -out bbb-ci.test.key 2048
@@ -96,6 +96,10 @@ jobs:
             EOF
 
             openssl req -nodes -newkey rsa:2048 -keyout bbb-ci.test.key -out bbb-ci.test.csr -subj "/C=CA/ST=BBB/L=BBB/O=BBB/OU=BBB/CN=bbb-ci.test" -addext "subjectAltName = DNS:bbb-ci.test" 
+
+            find /root/bbb-ci-ssl/
+
+            cat /root/bbb-ci-ssl/bbb-dev-ca.pass
 
             openssl x509 -req -in bbb-ci.test.csr -CA bbb-dev-ca.crt -CAkey bbb-dev-ca.key -CAcreateserial -out bbb-ci.test.crt -days 825 -sha256 -passin file:/root/bbb-ci-ssl/bbb-dev-ca.pass -extfile bbb-ci.test.ext
             cd
