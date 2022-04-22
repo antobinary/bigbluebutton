@@ -10,35 +10,69 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - run: |
-            sudo sh -c '
-            echo "Faking a package build (to speed up installation test)"
-            cd /
-            wget -q "http://ci.bbbvm.imdt.com.br/artifacts.tar"
-            tar xf artifacts.tar
-            '
-        - run: |
-            sudo sh -c '
-            mkdir /root/bbb-ci-ssl/
-            cd /root/bbb-ci-ssl/
-
-            openssl rand -base64 48 > /root/bbb-ci-ssl/bbb-dev-ca.pass ;
-            chmod 600 /root/bbb-ci-ssl/bbb-dev-ca.pass ;
-            openssl genrsa -des3 -out bbb-dev-ca.key -passout file:/root/bbb-ci-ssl/bbb-dev-ca.pass 2048 ;
-
-            openssl req -x509 -new -nodes -key bbb-dev-ca.key -sha256 -days 1460 -passin file:/root/bbb-ci-ssl/bbb-dev-ca.pass -out bbb-dev-ca.crt -subj "/C=CA/ST=BBB/L=BBB/O=BBB/OU=BBB/CN=BBB-DEV" ;
-            '
+          sudo sh -c '
+          echo "Faking a package build (to speed up installation test)"
+          cd /
+          wget -q "http://ci.bbbvm.imdt.com.br/artifacts.tar"
+          tar xf artifacts.tar
+          '
       - run: |
           sudo sh -c '
-          apt install -yq dpkg-dev
-          apt --purge remove apache2-bin
-          cd /
-          wget -q "http://137.184.184.218/artifacts.tar"
-          tar xf artifacts.tar
-          cd artifacts && dpkg-scanpackages . /dev/null | gzip -9c > Packages.gz
-          echo "deb [trusted=yes] file:/artifacts/ ./" >> /etc/apt/sources.list
-          cd /root/ && wget -q https://ubuntu.bigbluebutton.org/bbb-install-2.5.sh -O bbb-install.sh
-          cat bbb-install.sh | sed "s|> /etc/apt/sources.list.d/bigbluebutton.list||g" | bash -s -- -v focal-25-dev -s ci.bbbvm.imdt.com.br
+          mkdir /root/bbb-ci-ssl/
+          cd /root/bbb-ci-ssl/
+
+          openssl rand -base64 48 > /root/bbb-ci-ssl/bbb-dev-ca.pass ;
+          chmod 600 /root/bbb-ci-ssl/bbb-dev-ca.pass ;
+          openssl genrsa -des3 -out bbb-dev-ca.key -passout file:/root/bbb-ci-ssl/bbb-dev-ca.pass 2048 ;
+
+          openssl req -x509 -new -nodes -key bbb-dev-ca.key -sha256 -days 1460 -passin file:/root/bbb-ci-ssl/bbb-dev-ca.pass -out bbb-dev-ca.crt -subj "/C=CA/ST=BBB/L=BBB/O=BBB/OU=BBB/CN=BBB-DEV" ;
           '
+      - run: |
+          sudo sh -c '
+          sudo mkdir /usr/local/share/ca-certificates/bbb-dev/
+          sudo cp /root/bbb-ci-ssl/bbb-dev-ca.crt /usr/local/share/ca-certificates/bbb-dev/
+          sudo chmod 644 /usr/local/share/ca-certificates/bbb-dev/bbb-dev-ca.crt
+          sudo update-ca-certificates
+
+          '
+      - run: |
+          sudo sh -c '
+          cd /root/bbb-ci-ssl/
+          echo "127.0.0.1 bbb-ci.test" >> /etc/hosts
+          openssl genrsa -out bbb-ci.test.key 2048
+          rm bbb-ci.test.csr bbb-ci.test.crt bbb-ci.test.key
+          cat > bbb-ci.test.ext << EOF
+          authorityKeyIdentifier=keyid,issuer
+          basicConstraints=CA:FALSE
+          keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
+          subjectAltName = @alt_names
+          [alt_names]
+          DNS.1 = bbb-ci.test
+          EOF
+
+          openssl req -nodes -newkey rsa:2048 -keyout bbb-ci.test.key -out bbb-ci.test.csr -subj "/C=CA/ST=BBB/L=BBB/O=BBB/OU=BBB/CN=bbb-ci.test" -addext "subjectAltName = DNS:bbb-ci.test" 
+
+          openssl x509 -req -in bbb-ci.test.csr -CA bbb-dev-ca.crt -CAkey bbb-dev-ca.key -CAcreateserial -out bbb-ci.test.crt -days 825 -sha256 -passin file:/root/bbb-ci-ssl/bbb-dev-ca.pass -extfile bbb-ci.test.ext
+          cd
+
+          mkdir /certs/
+          cp /root/bbb-ci-ssl/bbb-dev-ca.crt /certs/
+          cat /root/bbb-ci-ssl/bbb-ci.test.crt > /certs/fullchain.pem
+          cat /root/bbb-ci-ssl/bbb-dev-ca.crt >> /certs/fullchain.pem
+          cat /root/bbb-ci-ssl/bbb-ci.test.key > /certs/privkey.pem
+
+          '
+    - run: |
+        sudo sh -c '
+        apt install -yq dpkg-dev
+        apt --purge -y remove apache2-bin
+        cd /root && wget -q http://ci.bbbvm.imdt.com.br/cache-3rd-part-packages.tar
+        cd /artifacts && tar xf /root/cache-3rd-part-packages.tar
+        cd /artifacts && dpkg-scanpackages . /dev/null | gzip -9c > Packages.gz
+        echo "deb [trusted=yes] file:/artifacts/ ./" >> /etc/apt/sources.list
+        cd /root/ && wget -q https://ubuntu.bigbluebutton.org/bbb-install-2.5.sh -O bbb-install.sh
+        cat bbb-install.sh | sed "s|> /etc/apt/sources.list.d/bigbluebutton.list||g" | bash -s -- -v focal-25-dev -s bbb-ci.test -d /certs/
+        '
       - run: cat bbb-install.sh
       - run: exit 1 
       - uses: actions/checkout@v2
