@@ -58,11 +58,11 @@ jobs:
             mkdir /root/bbb-ci-ssl/
             cd /root/bbb-ci-ssl/
 
-            openssl rand -base64 48 > bbb-dev-ca.pass ;
-            chmod 600 bbb-dev-ca.pass ;
-            openssl genrsa -des3 -out bbb-dev-ca.key -passout file:bbb-dev-ca.pass 2048 ;
+            openssl rand -base64 48 > /root/bbb-ci-ssl/bbb-dev-ca.pass ;
+            chmod 600 /root/bbb-ci-ssl/bbb-dev-ca.pass ;
+            openssl genrsa -des3 -out bbb-dev-ca.key -passout file:/root/bbb-ci-ssl/bbb-dev-ca.pass 2048 ;
 
-            openssl req -x509 -new -nodes -key bbb-dev-ca.key -sha256 -days 1460 -passin file:bbb-dev-ca.pass -out bbb-dev-ca.crt -subj "/C=CA/ST=BBB/L=BBB/O=BBB/OU=BBB/CN=BBB-DEV" ;
+            openssl req -x509 -new -nodes -key bbb-dev-ca.key -sha256 -days 1460 -passin file:/root/bbb-ci-ssl/bbb-dev-ca.pass -out bbb-dev-ca.crt -subj "/C=CA/ST=BBB/L=BBB/O=BBB/OU=BBB/CN=BBB-DEV" ;
             '
   ssl-trust-ca:
     runs-on: ubuntu-20.04
@@ -97,7 +97,7 @@ jobs:
 
             openssl req -nodes -newkey rsa:2048 -keyout bbb-ci.test.key -out bbb-ci.test.csr -subj "/C=CA/ST=BBB/L=BBB/O=BBB/OU=BBB/CN=bbb-ci.test" -addext "subjectAltName = DNS:bbb-ci.test" 
 
-            openssl x509 -req -in bbb-ci.test.csr -CA bbb-dev-ca.crt -CAkey bbb-dev-ca.key -CAcreateserial -out bbb-ci.test.crt -days 825 -sha256 -passin file:bbb-dev-ca.pass -extfile bbb-ci.test.ext
+            openssl x509 -req -in bbb-ci.test.csr -CA bbb-dev-ca.crt -CAkey bbb-dev-ca.key -CAcreateserial -out bbb-ci.test.crt -days 825 -sha256 -passin file:/root/bbb-ci-ssl/bbb-dev-ca.pass -extfile bbb-ci.test.ext
             cd
 
             mkdir /certs/
