@@ -6,9 +6,9 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 jobs:
-  # build-packages:
-  #   runs-on: ubuntu-20.04
-  #   steps:
+  build-packages:
+    runs-on: ubuntu-20.04
+    steps:
   #     - uses: actions/checkout@v2
   #     - run: ./build/get_external_dependencies.sh
   #     - run: ./build/setup.sh bbb-apps-akka
@@ -38,11 +38,8 @@ jobs:
   #         name: artifacts.tar
   #         path: |
   #           artifacts.tar
-
+  
   # fake the build (to quickly test the setup instructions)
-  build-packages:
-    runs-on: ubuntu-20.04
-    steps:
         - run: |
             sudo sh -c '
             echo "Faking a package build (to speed up installation test)"
@@ -50,9 +47,6 @@ jobs:
             wget -q "http://ci.bbbvm.imdt.com.br/artifacts.tar"
             tar xf artifacts.tar
             '
-  ssl-create-ca:
-    runs-on: ubuntu-20.04
-    steps:
         - run: |
             sudo sh -c '
             mkdir /root/bbb-ci-ssl/
@@ -64,10 +58,6 @@ jobs:
 
             openssl req -x509 -new -nodes -key bbb-dev-ca.key -sha256 -days 1460 -passin file:/root/bbb-ci-ssl/bbb-dev-ca.pass -out bbb-dev-ca.crt -subj "/C=CA/ST=BBB/L=BBB/O=BBB/OU=BBB/CN=BBB-DEV" ;
             '
-  ssl-trust-ca:
-    runs-on: ubuntu-20.04
-    needs: ssl-create-ca
-    steps:
         - run: |
             sudo sh -c '
             sudo mkdir /usr/local/share/ca-certificates/bbb-dev/
@@ -76,12 +66,8 @@ jobs:
             sudo update-ca-certificates
 
             '
-  ssl-generate-certificate:
-    runs-on: ubuntu-20.04
-    needs: ssl-trust-ca
-    steps:
         - run: |
-            sudo sh -c -x '
+            sudo sh -c '
             cd /root/bbb-ci-ssl/
             echo "127.0.0.1 bbb-ci.test" >> /etc/hosts
             openssl genrsa -out bbb-ci.test.key 2048
@@ -97,10 +83,6 @@ jobs:
 
             openssl req -nodes -newkey rsa:2048 -keyout bbb-ci.test.key -out bbb-ci.test.csr -subj "/C=CA/ST=BBB/L=BBB/O=BBB/OU=BBB/CN=bbb-ci.test" -addext "subjectAltName = DNS:bbb-ci.test" 
 
-            find /root/bbb-ci-ssl/
-
-            cat /root/bbb-ci-ssl/bbb-dev-ca.pass
-
             openssl x509 -req -in bbb-ci.test.csr -CA bbb-dev-ca.crt -CAkey bbb-dev-ca.key -CAcreateserial -out bbb-ci.test.crt -days 825 -sha256 -passin file:/root/bbb-ci-ssl/bbb-dev-ca.pass -extfile bbb-ci.test.ext
             cd
 
@@ -111,12 +93,6 @@ jobs:
             cat /root/bbb-ci-ssl/bbb-ci.test.key > /certs/privkey.pem
 
             '
-  install-from-packages:
-    runs-on: ubuntu-20.04
-    needs: 
-      - build-packages
-      - ssl-generate-certificate
-    steps:
       - run: |
           sudo sh -c '
           apt install -yq dpkg-dev
