@@ -9,49 +9,54 @@ jobs:
   build-packages:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
-      - run: ./build/get_external_dependencies.sh
-      - run: ./build/setup.sh bbb-apps-akka
-      - run: ./build/setup.sh bbb-config
-      - run: ./build/setup.sh bbb-etherpad
-      - run: ./build/setup.sh bbb-freeswitch-core
-      - run: ./build/setup.sh bbb-freeswitch-sounds
-      - run: ./build/setup.sh bbb-fsesl-akka
-      - run: ./build/setup.sh bbb-html5
-      - run: ./build/setup.sh bbb-learning-dashboard
-      - run: ./build/setup.sh bbb-libreoffice-docker
-      - run: ./build/setup.sh bbb-mkclean
-      - run: ./build/setup.sh bbb-pads
-      - run: ./build/setup.sh bbb-playback
-      - run: ./build/setup.sh bbb-playback-notes
-      - run: ./build/setup.sh bbb-playback-podcast
-      - run: ./build/setup.sh bbb-playback-presentation
-      - run: ./build/setup.sh bbb-playback-screenshare
-      - run: ./build/setup.sh bbb-record-core
-      - run: ./build/setup.sh bbb-web
-      - run: ./build/setup.sh bbb-webrtc-sfu
-      - run: ./build/setup.sh bigbluebutton
-#      - run: |
-#          sudo sh -c '
-#          echo "Faking a package build (to speed up installation test)"
-#          cd /
-#          wget -q "http://ci.bbbvm.imdt.com.br/artifacts.tar"
-#          tar xf artifacts.tar
-#          '
-      # - run: |
-      #     sudo sh -c '
-      #     apt install -yq dpkg-dev
-      #     apt --purge -y remove apache2-bin
-      #     cd /artifacts && dpkg-scanpackages . /dev/null | gzip -9c > Packages.gz
-      #     echo "deb [trusted=yes] file:/artifacts/ ./" >> /etc/apt/sources.list
-      #     cd /root/ && wget -q https://ubuntu.bigbluebutton.org/bbb-install-2.5.sh -O bbb-install.sh
-      #     cat bbb-install.sh | sed "s|> /etc/apt/sources.list.d/bigbluebutton.list||g" | bash -s -- -v focal-25-dev -s ci.bbbvm.imdt.com.br
-      #     '
-      - run: tar cvf artifacts.tar artifacts/
-      - name: Archive packages
-        uses: actions/upload-artifact@v3
-        with:
-          name: artifacts.tar
-          path: |
-            artifacts.tar
+      # - uses: actions/checkout@v2
+      # - run: ./build/get_external_dependencies.sh
+      # - run: ./build/setup.sh bbb-apps-akka
+      # - run: ./build/setup.sh bbb-config
+      # - run: ./build/setup.sh bbb-etherpad
+      # - run: ./build/setup.sh bbb-freeswitch-core
+      # - run: ./build/setup.sh bbb-freeswitch-sounds
+      # - run: ./build/setup.sh bbb-fsesl-akka
+      # - run: ./build/setup.sh bbb-html5
+      # - run: ./build/setup.sh bbb-learning-dashboard
+      # - run: ./build/setup.sh bbb-libreoffice-docker
+      # - run: ./build/setup.sh bbb-mkclean
+      # - run: ./build/setup.sh bbb-pads
+      # - run: ./build/setup.sh bbb-playback
+      # - run: ./build/setup.sh bbb-playback-notes
+      # - run: ./build/setup.sh bbb-playback-podcast
+      # - run: ./build/setup.sh bbb-playback-presentation
+      # - run: ./build/setup.sh bbb-playback-screenshare
+      # - run: ./build/setup.sh bbb-record-core
+      # - run: ./build/setup.sh bbb-web
+      # - run: ./build/setup.sh bbb-webrtc-sfu
+      # - run: ./build/setup.sh bigbluebutton
+      # - run: tar cvf artifacts.tar artifacts/
+      # - name: Archive packages
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: artifacts.tar
+      #     path: |
+      #       artifacts.tar
+      - run: echo "Disabled - to speed up development"
 
+  install-packages:
+    runs-on: ubuntu-20.04
+    needs: build-packages
+    steps:
+      - run: |
+          sudo sh -c '
+          echo "Faking a package build (to speed up installation test)"
+          cd /
+          wget -q "http://ci.bbbvm.imdt.com.br/artifacts.tar"
+          tar xf artifacts.tar
+          '
+      - run: |
+          sudo sh -c '
+          apt install -yq dpkg-dev
+          apt --purge -y remove apache2-bin
+          cd /artifacts && dpkg-scanpackages . /dev/null | gzip -9c > Packages.gz
+          echo "deb [trusted=yes] file:/artifacts/ ./" >> /etc/apt/sources.list
+          cd /root/ && wget -q https://ubuntu.bigbluebutton.org/bbb-install-2.5.sh -O bbb-install.sh
+          cat bbb-install.sh | sed "s|> /etc/apt/sources.list.d/bigbluebutton.list||g" | bash -s -- -v focal-25-dev -s ci.bbbvm.imdt.com.br
+          '
