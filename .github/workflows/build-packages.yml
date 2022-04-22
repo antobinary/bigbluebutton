@@ -50,6 +50,7 @@ jobs:
             tar xf artifacts.tar
             '
   ssl-create-ca:
+    needs: build-packages
     steps:
         - run: |
             sudo sh -c '
@@ -63,6 +64,7 @@ jobs:
             openssl req -x509 -new -nodes -key bbb-dev-ca.key -sha256 -days 1460 -passin file:bbb-dev-ca.pass -out bbb-dev-ca.crt -subj "/C=CA/ST=BBB/L=BBB/O=BBB/OU=BBB/CN=BBB-DEV" ;
             '
   ssl-trust-ca:
+    needs: ssl-create-ca
     steps:
         - run: |
             sudo sh -c '
@@ -73,6 +75,7 @@ jobs:
 
             '
   ssl-generate-certificate:
+    needs: ssl-trust-ca
     steps:
         - run: |
             sudo sh -c '
@@ -103,7 +106,9 @@ jobs:
             '
   install-from-packages:
     runs-on: ubuntu-20.04
-    needs: build-packages
+    needs: 
+      - build-packages
+      - ssl-trust-ca
     steps:
       - run: |
           sudo sh -c '
