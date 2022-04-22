@@ -52,7 +52,6 @@ jobs:
             '
   ssl-create-ca:
     runs-on: ubuntu-20.04
-    needs: build-packages
     steps:
         - run: |
             sudo sh -c '
