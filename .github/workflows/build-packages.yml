@@ -55,8 +55,8 @@ jobs:
     steps:
         - run: |
             sudo sh -c '
-            mkdir ~/bbb-docker-dev-setup/
-            cd ~/bbb-docker-dev-setup/
+            mkdir /root/bbb-ci-ssl/
+            cd /root/bbb-ci-ssl/
 
             openssl rand -base64 48 > bbb-dev-ca.pass ;
             chmod 600 bbb-dev-ca.pass ;
@@ -71,7 +71,7 @@ jobs:
         - run: |
             sudo sh -c '
             sudo mkdir /usr/local/share/ca-certificates/bbb-dev/
-            sudo cp ~/bbb-docker-dev-setup/bbb-dev-ca.crt /usr/local/share/ca-certificates/bbb-dev/
+            sudo cp /root/bbb-ci-ssl/bbb-dev-ca.crt /usr/local/share/ca-certificates/bbb-dev/
             sudo chmod 644 /usr/local/share/ca-certificates/bbb-dev/bbb-dev-ca.crt
             sudo update-ca-certificates
 
@@ -82,7 +82,7 @@ jobs:
     steps:
         - run: |
             sudo sh -c '
-            cd ~/bbb-docker-dev-setup/
+            cd /root/bbb-ci-ssl/
             echo "127.0.0.1 bbb-ci.test" >> /etc/hosts
             openssl genrsa -out bbb-ci.test.key 2048
             rm bbb-ci.test.csr bbb-ci.test.crt bbb-ci.test.key
@@ -101,10 +101,10 @@ jobs:
             cd
 
             mkdir /certs/
-            cp ~/bbb-docker-dev-setup/bbb-dev-ca.crt /certs/
-            cat ~/bbb-docker-dev-setup/$HOSTNAME.crt > /certs/fullchain.pem
-            cat ~/bbb-docker-dev-setup/bbb-dev-ca.crt >> /certs/fullchain.pem
-            cat ~/bbb-docker-dev-setup/$HOSTNAME.key > /certs/privkey.pem
+            cp /root/bbb-ci-ssl/bbb-dev-ca.crt /certs/
+            cat /root/bbb-ci-ssl/bbb-ci.test.crt > /certs/fullchain.pem
+            cat /root/bbb-ci-ssl/bbb-dev-ca.crt >> /certs/fullchain.pem
+            cat /root/bbb-ci-ssl/bbb-ci.test.key > /certs/privkey.pem
 
             '
   install-from-packages:
