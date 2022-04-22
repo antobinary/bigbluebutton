@@ -41,6 +41,7 @@ jobs:
 
   # fake the build (to quickly test the setup instructions)
   build-packages:
+    runs-on: ubuntu-20.04
     steps:
         - run: |
             sudo sh -c '
@@ -50,6 +51,7 @@ jobs:
             tar xf artifacts.tar
             '
   ssl-create-ca:
+    runs-on: ubuntu-20.04
     needs: build-packages
     steps:
         - run: |
@@ -64,6 +66,7 @@ jobs:
             openssl req -x509 -new -nodes -key bbb-dev-ca.key -sha256 -days 1460 -passin file:bbb-dev-ca.pass -out bbb-dev-ca.crt -subj "/C=CA/ST=BBB/L=BBB/O=BBB/OU=BBB/CN=BBB-DEV" ;
             '
   ssl-trust-ca:
+    runs-on: ubuntu-20.04
     needs: ssl-create-ca
     steps:
         - run: |
@@ -75,6 +78,7 @@ jobs:
 
             '
   ssl-generate-certificate:
+    runs-on: ubuntu-20.04
     needs: ssl-trust-ca
     steps:
         - run: |
