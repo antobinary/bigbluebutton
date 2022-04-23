@@ -87,11 +87,11 @@ jobs:
           openssl x509 -req -in bbb-ci.test.csr -CA bbb-dev-ca.crt -CAkey bbb-dev-ca.key -CAcreateserial -out bbb-ci.test.crt -days 825 -sha256 -passin file:/root/bbb-ci-ssl/bbb-dev-ca.pass -extfile bbb-ci.test.ext
           cd
 
-          mkdir /certs/
-          cp /root/bbb-ci-ssl/bbb-dev-ca.crt /certs/
-          cat /root/bbb-ci-ssl/bbb-ci.test.crt > /certs/fullchain.pem
-          cat /root/bbb-ci-ssl/bbb-dev-ca.crt >> /certs/fullchain.pem
-          cat /root/bbb-ci-ssl/bbb-ci.test.key > /certs/privkey.pem
+          mkdir -p /local/certs/
+          cp /root/bbb-ci-ssl/bbb-dev-ca.crt /local/certs/
+          cat /root/bbb-ci-ssl/bbb-ci.test.crt > /local/certs/fullchain.pem
+          cat /root/bbb-ci-ssl/bbb-dev-ca.crt >> /local/certs/fullchain.pem
+          cat /root/bbb-ci-ssl/bbb-ci.test.key > /local/certs/privkey.pem
 
           '
       - run: |
