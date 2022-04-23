@@ -116,7 +116,7 @@ jobs:
             cd /root/ && wget -q https://ubuntu.bigbluebutton.org/bbb-install-2.5.sh -O bbb-install.sh
             cat bbb-install.sh | sed "s|> /etc/apt/sources.list.d/bigbluebutton.list||g" | bash -s -- -v focal-25-dev -s bbb-ci.test -d /certs/
             bbb-conf --salt bbbci
-            bbb-const --restart
+            bbb-conf --restart
             '
       - name: Run tests
         run: |
