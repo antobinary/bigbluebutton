@@ -6,7 +6,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 jobs:
-  build-packages:
+  build-install-and-test:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
