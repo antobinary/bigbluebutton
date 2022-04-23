@@ -95,15 +95,24 @@ jobs:
           cat /root/bbb-ci-ssl/bbb-ci.test.key > /local/certs/privkey.pem
 
           '
-      - name: Install BBB
+      - name: Setup local repository
         run: |
             sudo sh -c '
             apt install -yq dpkg-dev
-            apt --purge -y remove apache2-bin
             cd /root && wget -q http://ci.bbbvm.imdt.com.br/cache-3rd-part-packages.tar
+            cp -r /home/runner/work/bigbluebutton/artifacts/ /artifacts/
             cd /artifacts && tar xf /root/cache-3rd-part-packages.tar
             cd /artifacts && dpkg-scanpackages . /dev/null | gzip -9c > Packages.gz
             echo "deb [trusted=yes] file:/artifacts/ ./" >> /etc/apt/sources.list
+            '
+      - name: Prepare for install
+        run: |
+            sudo sh -c '
+            apt --purge -y remove apache2-bin
+            '
+      - name: Install BBB
+        run: |
+            sudo sh -c '
             cd /root/ && wget -q https://ubuntu.bigbluebutton.org/bbb-install-2.5.sh -O bbb-install.sh
             cat bbb-install.sh | sed "s|> /etc/apt/sources.list.d/bigbluebutton.list||g" | bash -s -- -v focal-25-dev -s bbb-ci.test -d /certs/
             bbb-conf --salt bbbci
