@@ -42,6 +42,7 @@ jobs:
         run: |
             sudo sh -c '
             echo "Teste"
+            pwd
             echo "$GITHUB_WORKSPACE"
             find $GITHUB_WORKSPACE 
             '
