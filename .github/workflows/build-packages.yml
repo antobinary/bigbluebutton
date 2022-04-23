@@ -40,7 +40,7 @@ jobs:
       #       artifacts.tar
       - name: Run tests
         run: |
-            sudo sh -c '
+            sh -c '
             echo "Teste"
             cd /home/runner/work/bigbluebutton/bigbluebutton/bigbluebutton-tests/playwright/
             npm install
