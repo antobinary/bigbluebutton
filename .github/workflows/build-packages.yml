@@ -43,6 +43,8 @@ jobs:
             sudo sh -c '
             echo "Teste"
             cd /home/runner/work/bigbluebutton/bigbluebutton/bigbluebutton-tests/playwright/
+            npm install
+            npx playwright install
             npx playwright test
             '
       - run: exit 1
