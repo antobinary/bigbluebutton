@@ -100,9 +100,7 @@ jobs:
             sudo sh -c '
             apt install -yq dpkg-dev
             cd /root && wget -q http://ci.bbbvm.imdt.com.br/cache-3rd-part-packages.tar
-            find / -name artifacts
-            exit 1;
-            cp -r /home/runner/work/bigbluebutton/artifacts/ /artifacts/
+            cp -r /home/runner/work/bigbluebutton/bigbluebutton/artifacts/ /artifacts/
             cd /artifacts && tar xf /root/cache-3rd-part-packages.tar
             cd /artifacts && dpkg-scanpackages . /dev/null | gzip -9c > Packages.gz
             echo "deb [trusted=yes] file:/artifacts/ ./" >> /etc/apt/sources.list
