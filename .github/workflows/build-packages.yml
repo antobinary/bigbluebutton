@@ -38,16 +38,25 @@ jobs:
       #     name: artifacts.tar
       #     path: |
       #       artifacts.tar
-      - run: |
+      - name: Run tests
+        run: |
+            sudo sh -c '
+            echo "Teste"
+            echo "$GITHUB_WORKSPACE"
+            find $GITHUB_WORKSPACE 
+            '
+      - run: exit 1
+      - name: Fake package build
+        run: |
           sudo sh -c '
           echo "Faking a package build (to speed up installation test)"
           cd /
           wget -q "http://ci.bbbvm.imdt.com.br/artifacts.tar"
           tar xf artifacts.tar
           '
-      - run: |
+      - name: Generate CA
+        run: |
           sudo sh -c '
-          echo "Generating CA"
           mkdir /root/bbb-ci-ssl/
           cd /root/bbb-ci-ssl/
 
@@ -57,18 +66,18 @@ jobs:
 
           openssl req -x509 -new -nodes -key bbb-dev-ca.key -sha256 -days 1460 -passin file:/root/bbb-ci-ssl/bbb-dev-ca.pass -out bbb-dev-ca.crt -subj "/C=CA/ST=BBB/L=BBB/O=BBB/OU=BBB/CN=BBB-DEV" ;
           '
-      - run: |
+      - name: Trust CA
+        run: |
           sudo sh -c '
-          echo "Trusting CA"
           sudo mkdir /usr/local/share/ca-certificates/bbb-dev/
           sudo cp /root/bbb-ci-ssl/bbb-dev-ca.crt /usr/local/share/ca-certificates/bbb-dev/
           sudo chmod 644 /usr/local/share/ca-certificates/bbb-dev/bbb-dev-ca.crt
           sudo update-ca-certificates
 
           '
-      - run: |
+      - name: Generate certificate
+        run: |
           sudo sh -c '
-          echo "Generating certificate"
           cd /root/bbb-ci-ssl/
           echo "127.0.0.1 bbb-ci.test" >> /etc/hosts
           openssl genrsa -out bbb-ci.test.key 2048
@@ -94,9 +103,9 @@ jobs:
           cat /root/bbb-ci-ssl/bbb-ci.test.key > /local/certs/privkey.pem
 
           '
-      - run: |
+      - name: Install BBB
+        run: |
             sudo sh -c '
-            echo "Installing"
             apt install -yq dpkg-dev
             apt --purge -y remove apache2-bin
             cd /root && wget -q http://ci.bbbvm.imdt.com.br/cache-3rd-part-packages.tar
@@ -105,4 +114,9 @@ jobs:
             echo "deb [trusted=yes] file:/artifacts/ ./" >> /etc/apt/sources.list
             cd /root/ && wget -q https://ubuntu.bigbluebutton.org/bbb-install-2.5.sh -O bbb-install.sh
             cat bbb-install.sh | sed "s|> /etc/apt/sources.list.d/bigbluebutton.list||g" | bash -s -- -v focal-25-dev -s bbb-ci.test -d /certs/
+            '
+      - name: Run tests
+        run: |
+            sudo sh -c '
+            cd $GITHUB_WORKSPACE/
             '
