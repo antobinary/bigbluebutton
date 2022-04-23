@@ -9,7 +9,7 @@ jobs:
   build-packages:
     runs-on: ubuntu-20.04
     steps:
-      # - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
       # - run: ./build/get_external_dependencies.sh
       # - run: ./build/setup.sh bbb-apps-akka
       # - run: ./build/setup.sh bbb-config
