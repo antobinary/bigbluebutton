@@ -38,16 +38,6 @@ jobs:
       #     name: artifacts.tar
       #     path: |
       #       artifacts.tar
-      - name: Run tests
-        run: |
-            sh -c '
-            echo "Teste"
-            cd /home/runner/work/bigbluebutton/bigbluebutton/bigbluebutton-tests/playwright/
-            npm install
-            npx playwright install
-            npx playwright test
-            '
-      - run: exit 1
       - name: Fake package build
         run: |
           sudo sh -c '
@@ -116,9 +106,21 @@ jobs:
             echo "deb [trusted=yes] file:/artifacts/ ./" >> /etc/apt/sources.list
             cd /root/ && wget -q https://ubuntu.bigbluebutton.org/bbb-install-2.5.sh -O bbb-install.sh
             cat bbb-install.sh | sed "s|> /etc/apt/sources.list.d/bigbluebutton.list||g" | bash -s -- -v focal-25-dev -s bbb-ci.test -d /certs/
+            bbb-conf --salt bbbci
+            bbb-const --restart
             '
       - name: Run tests
         run: |
-            sudo sh -c '
-            cd $GITHUB_WORKSPACE/
+            sh -c '
+            echo "Teste"
+            cd /home/runner/work/bigbluebutton/bigbluebutton/bigbluebutton-tests/playwright/
+            echo "
+            BBB_URL=\"https://bbb-ci.test/bigbluebutton/api\"
+            BBB_SECRET=\"bbbci\"
+
+            DEBUG_MODE=\"\"
+            " > .env
+            npm install
+            npx playwright install
+            npx playwright test
             '
