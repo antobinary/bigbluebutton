@@ -42,9 +42,8 @@ jobs:
         run: |
             sudo sh -c '
             echo "Teste"
-            pwd
-            echo "$GITHUB_WORKSPACE"
-            find $GITHUB_WORKSPACE 
+            cd /home/runner/work/bigbluebutton/bigbluebutton/bigbluebutton-tests/playwright/
+            npx playwright test
             '
       - run: exit 1
       - name: Fake package build
