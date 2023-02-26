@@ -37,13 +37,10 @@ const PollContainer = ({ ...props }) => {
 
 export default withTracker(({ amIPresenter }) => {
   const isPollSecret = Session.get('secretPoll') || false;
-  const currentPresentation = Presentations.findOne({
-    current: true,
-  }, { fields: { podId: 1 } }) || {};
 
   Meteor.subscribe('current-poll', isPollSecret, amIPresenter);
 
-  const currentSlide = PresentationService.getCurrentSlide(currentPresentation.podId);
+  const currentSlide = PresentationService.getCurrentSlide("DEFAULT_PRESENTATION_POD");
 
   const pollId = currentSlide ? currentSlide.id : PUBLIC_CHAT_KEY;
 

@@ -1,15 +1,26 @@
 import Presentations from '/imports/api/presentations';
+import PresentationPods from '/imports/api/presentation-pods';
 import { Slides, SlidePositions } from '/imports/api/slides';
 import PollService from '/imports/ui/components/poll/service';
 import { safeMatch } from '/imports/utils/string-utils';
+import Auth from '/imports/ui/services/auth';
 
 const POLL_SETTINGS = Meteor.settings.public.poll;
 const MAX_CUSTOM_FIELDS = POLL_SETTINGS.maxCustom;
 
-const getCurrentPresentation = (podId) => Presentations.findOne({
-  podId,
-  current: true,
-});
+const getCurrentPresentationPod = (podId) => {
+  return PresentationPods.findOne({ podId, meetingId: Auth.meetingID });
+}
+
+const getCurrentPresentation = (podId) => {
+  return Presentations.findOne({
+    podId,
+    id: getCurrentPresentationPod(podId)?.currentPresentationId,
+  });
+}
+
+
+
 
 const downloadPresentationUri = (podId) => {
   const currentPresentation = getCurrentPresentation(podId);
@@ -37,16 +48,18 @@ const isPresentationDownloadable = (podId) => {
 };
 
 const getCurrentSlide = (podId) => {
+  const pod = getCurrentPresentationPod(podId);
   const currentPresentation = getCurrentPresentation(podId);
 
-  if (!currentPresentation) {
+  // console.error({pod, currentPresentation})
+  if (!pod || !currentPresentation) {
     return null;
   }
 
-  return Slides.findOne({
+  const slide = Slides.findOne({
     podId,
-    presentationId: currentPresentation.id,
-    current: true,
+    presentationId: pod.currentPresentationId,
+    id: pod.currentSlideId,
   }, {
     fields: {
       meetingId: 0,
@@ -54,6 +67,9 @@ const getCurrentSlide = (podId) => {
       txtUri: 0,
     },
   });
+
+  // console.error({slide});
+  return slide;
 };
 
 const getSlidePosition = (podId, presentationId, slideId) => SlidePositions.findOne({

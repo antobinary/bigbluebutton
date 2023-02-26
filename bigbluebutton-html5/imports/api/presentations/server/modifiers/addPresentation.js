@@ -4,7 +4,7 @@ import Presentations from '/imports/api/presentations';
 import Logger from '/imports/startup/server/logger';
 import flat from 'flat';
 import addSlide from '/imports/api/slides/server/modifiers/addSlide';
-import setCurrentPresentation from './setCurrentPresentation';
+import setCurrentPresentation from '/imports/api/presentation-pods/server/modifiers/setCurrentPresentation';
 
 const getSlideText = async (url) => {
   let content = '';
@@ -53,6 +53,11 @@ export default function addPresentation(meetingId, podId, presentation) {
     removable: Boolean,
   });
 
+  const { current } = presentation;
+  
+  const presentationCopy = presentation;
+  presentationCopy.current = undefined;
+
   const selector = {
     meetingId,
     podId,
@@ -66,6 +71,7 @@ export default function addPresentation(meetingId, podId, presentation) {
       'conversion.done': true,
       'conversion.error': false,
       'exportation.status': null,
+      current: undefined, // we use presentation-pods to track current
     }, flat(presentation, { safe: true })),
   };
 

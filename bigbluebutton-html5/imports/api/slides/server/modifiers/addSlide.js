@@ -8,6 +8,8 @@ import Logger from '/imports/startup/server/logger';
 import { SVG, PNG } from '/imports/utils/mimeTypes';
 import calculateSlideData from '/imports/api/slides/server/helpers';
 import addSlidePositions from './addSlidePositions';
+import changeCurrentSlide from '/imports/api/presentation-pods/server/modifiers/changeCurrentSlide';
+import PresentationPods from '/imports/api/presentation-pods';
 
 const loadSlidesFromHttpAlways = Meteor.settings.private.app.loadSlidesFromHttpAlways || false;
 
@@ -66,6 +68,7 @@ export default function addSlide(meetingId, podId, presentationId, slide) {
     yOffset,
     widthRatio,
     heightRatio,
+    current,
     ...restSlide
   } = slide;
 
@@ -84,6 +87,7 @@ export default function addSlide(meetingId, podId, presentationId, slide) {
       { podId },
       { presentationId },
       { id: slideId },
+      { current: undefined }, // we use presentation-pods to track current
       { imageUri },
       flat(restSlide),
       { safe: true },
@@ -115,6 +119,14 @@ export default function addSlide(meetingId, podId, presentationId, slide) {
       try {
         const { insertedId, numberAffected } = Slides.upsert(selector, modifier);
 
+        const pod = PresentationPods.findOne({ 
+          meetingId,
+           podId,
+           currentPresentationId: presentationId,
+           });
+        if (pod) {
+          changeCurrentSlide(meetingId, podId, presentationId, slideId);
+        }
         requestWhiteboardHistory(meetingId, slideId);
 
         if (insertedId) {

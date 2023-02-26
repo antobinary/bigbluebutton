@@ -256,19 +256,12 @@ const getMultiUserSize = (whiteboardId) => {
 };
 
 const getCurrentWhiteboardId = () => {
-  const podId = "DEFAULT_PRESENTATION_POD";
+  const podId = "DEFAULT_PRESENTATION_POD"; //
   const currentPresentation = PresentationService.getCurrentPresentation(podId);
 
   if (!currentPresentation) return null;
 
-  const currentSlide = Slides.findOne(
-    {
-      podId,
-      presentationId: currentPresentation.id,
-      current: true,
-    },
-    { fields: { id: 1 } }
-  );
+  const currentSlide = PresentationService.getCurrentSlide(podId);
 
   return currentSlide && currentSlide.id;
 };

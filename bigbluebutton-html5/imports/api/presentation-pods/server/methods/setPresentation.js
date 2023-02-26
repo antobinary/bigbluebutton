@@ -4,6 +4,7 @@ import { extractCredentials } from '/imports/api/common/server/helpers';
 import Logger from '/imports/startup/server/logger';
 
 export default function setPresentation(presentationId, podId) {
+  console.error('----------setPresentation ', { presentationId, podId, userIdd: this.userId})
   const REDIS_CONFIG = Meteor.settings.private.redis;
   const CHANNEL = REDIS_CONFIG.channels.toAkkaApps;
   const EVENT_NAME = 'SetCurrentPresentationPubMsg';

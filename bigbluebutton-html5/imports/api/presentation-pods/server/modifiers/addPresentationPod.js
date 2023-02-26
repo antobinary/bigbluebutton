@@ -24,6 +24,10 @@ export default function addPresentationPod(meetingId, pod, presentations = undef
     meetingId,
     podId,
     currentPresenterId,
+    currentSlideId: null,
+    currentPresentationId: null,
+    // tuple
+    
   };
 
   try {

@@ -18,14 +18,16 @@ const getNumberOfSlides = (podId, presentationId) => {
 };
 
 const previousSlide = (currentSlideNum, podId) => {
+  console.error('prev slide, ', {currentSlideNum})
   if (currentSlideNum > 1) {
     makeCall('switchSlide', currentSlideNum - 1, podId);
   }
 };
 
 const nextSlide = (currentSlideNum, numberOfSlides, podId) => {
+  console.error('next slide ', {currentSlideNum, numberOfSlides});
   if (currentSlideNum < numberOfSlides) {
-    makeCall('switchSlide', currentSlideNum + 1, podId);
+    makeCall('switchSlide', currentSlideNum + 1, podId); // TODO deciding on whether num or id should be passed
   }
 };
 

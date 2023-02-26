@@ -1,4 +1,5 @@
 import Presentations from '/imports/api/presentations';
+import PresentationPods from '/imports/api/presentation-pods';
 import { isVideoBroadcasting } from '/imports/ui/components/screenshare/service';
 import { getVideoUrl } from '/imports/ui/components/external-video-player/service';
 import Settings from '/imports/ui/services/settings';
@@ -7,14 +8,16 @@ import { isExternalVideoEnabled, isScreenSharingEnabled } from '/imports/ui/serv
 import { ACTIONS } from '../layout/enums';
 import UserService from '/imports/ui/components/user-list/service';
 import NotesService from '/imports/ui/components/notes/service';
+import Auth from '/imports/ui/services/auth';
 
 const LAYOUT_CONFIG = Meteor.settings.public.layout;
 const KURENTO_CONFIG = Meteor.settings.public.kurento;
 const PRESENTATION_CONFIG = Meteor.settings.public.presentation;
 
 const getPresentationInfo = () => {
+  const pod = PresentationPods.findOne({ meetingId: Auth.meetingID });
   const currentPresentation = Presentations.findOne({
-    current: true,
+    id: pod?.currentPresentationId,
   });
 
   return {

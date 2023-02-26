@@ -1,4 +1,4 @@
-import Presentations from '/imports/api/presentations';
+import PresentationPods from '/imports/api/presentation-pods';
 import { Slides } from '/imports/api/slides';
 import { Meteor } from 'meteor/meteor';
 import { check } from 'meteor/check';
@@ -7,6 +7,8 @@ import { extractCredentials } from '/imports/api/common/server/helpers';
 import Logger from '/imports/startup/server/logger';
 
 export default function switchSlide(slideNumber, podId) { // TODO-- send presentationId and SlideId
+// export default function switchSlide(slideNumber, podId, presentationIdpresentationId) { // TODO-- send presentationId and SlideId
+  console.error('switchslide ', {slideNumber})
   const REDIS_CONFIG = Meteor.settings.private.redis;
   const CHANNEL = REDIS_CONFIG.channels.toAkkaApps;
   const EVENT_NAME = 'SetCurrentPagePubMsg';
@@ -22,19 +24,18 @@ export default function switchSlide(slideNumber, podId) { // TODO-- send present
     const selector = {
       meetingId,
       podId,
-      current: true,
     };
 
-    const Presentation = Presentations.findOne(selector);
+    const PresentationPod = PresentationPods.findOne(selector);
 
-    if (!Presentation) {
-      throw new Meteor.Error('presentation-not-found', 'You need a presentation to be able to switch slides');
+    if (!PresentationPod) {
+    // if (!PresentationPod || PresentationPod.currentPresentationId !== presentationId) {
+      throw new Meteor.Error('pod-not-found', `podId ${podId} not found in the current meeting`);
     }
 
     const Slide = Slides.findOne({
       meetingId,
       podId,
-      presentationId: Presentation.id,
       num: slideNumber,
     });
 
@@ -44,7 +45,7 @@ export default function switchSlide(slideNumber, podId) { // TODO-- send present
 
     const payload = {
       podId,
-      presentationId: Presentation.id,
+      presentationId: PresentationPod.currentPresentationId,
       pageId: Slide.id,
     };
 
