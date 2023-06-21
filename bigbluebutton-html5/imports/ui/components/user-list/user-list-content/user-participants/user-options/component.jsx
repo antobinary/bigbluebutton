@@ -195,7 +195,8 @@ class UserOptions extends PureComponent {
   }
 
   handleCaptionsClick() {
-    this.setWriterMenuModalIsOpen(true);
+    const { mountModal } = this.props;
+    mountModal(<CaptionsWriterMenu />);
   }
 
   renderMenuItems() {
