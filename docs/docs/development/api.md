@@ -108,6 +108,9 @@ Updated in 2.7:
 
 - **join** - **Added:** `redirectErrorUrl`, `userdata-bbb_fullaudio_bridge`
 
+Updated in 3.0:
+
+
 ## API Data Types
 
 There are three types in the API.
