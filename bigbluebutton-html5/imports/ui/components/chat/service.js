@@ -78,6 +78,7 @@ const mapGroupMessage = (message) => {
     sender: null,
     key: message.key,
     chatId: message.chatId,
+    extra: message.extra,
   };
 
   if (message.sender && message.sender !== SYSTEM_CHAT_TYPE) {
