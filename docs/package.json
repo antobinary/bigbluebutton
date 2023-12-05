@@ -3,14 +3,6 @@
   "version": "0.0.1",
   "private": false,
   "scripts": {
-    "start": "npm run start",
-    "build": "npm run build",
-    "swizzle": "npm run swizzle",
-    "deploy": "npm run deploy",
-    "clear": "npm run clear",
-    "serve": "npm run serve",
-    "write-translations": "npm run write-translations",
-    "write-heading-ids": "npm run write-heading-ids"
   },
   "dependencies": {
     "@cmfcmf/docusaurus-search-local": "^1.1.0",
