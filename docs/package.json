@@ -3,7 +3,6 @@
   "version": "0.0.1",
   "private": false,
   "scripts": {
-    "docusaurus": "npm run",
     "start": "npm run start",
     "build": "npm run build",
     "swizzle": "npm run swizzle",
