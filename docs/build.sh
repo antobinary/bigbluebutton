@@ -30,7 +30,7 @@ for tag in "${TAGS[@]}"; do
   if [ -f docusaurus.config.js ]; then
     version=${tag:1:3}-legacy
     echo "Adding documentation for $version"
-    npm run build docs:version "${version}"
+    npx docusaurus build docs:version "${version}"
   else
     echo "Warning: branch/tag $(version) does not contain a docusaurus.config.js!"
   fi
@@ -47,7 +47,7 @@ for branch in "${BRANCHES[@]}"; do
   if [ -f docusaurus.config.js ]; then
     version=${branch:1:3}
     echo "Adding documentation for $version"
-    npm run build docs:version "${version}"
+    npx docusaurus build docs:version "${version}"
   else
     echo "Warning: branch $(branch) does not contain a docusaurus.config.js!"
   fi
