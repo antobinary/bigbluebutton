@@ -38,7 +38,10 @@ const config = {
                     lastVersion: '2.7',
                     includeCurrentVersion: false,
                     versions: {
-                        '2.7': {
+                        '2.6': {
+                            banner: 'none'
+                        },
+			'2.7': {
                             banner: 'none'
                         },
                     }
