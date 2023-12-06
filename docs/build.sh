@@ -6,7 +6,7 @@ set -eu
 # We build the docs for historical reasons. The branch no longer exists
 # since the release is no longer supported/maintained.
 TAGS=(
-  #v2.5.20
+  v2.5.21
 )
 
 # Build the docs only for these release branches
@@ -30,9 +30,7 @@ for tag in "${TAGS[@]}"; do
   if [ -f docusaurus.config.js ]; then
     version=${tag:1:3}-legacy
     echo "Adding documentation for $version"
-    echo "lala"
-    npm run build
-    #npx docusaurus build docs:version "${version}"
+    npm run docusaurus docs:version "${version}"
   else
     echo "Warning: branch/tag $(version) does not contain a docusaurus.config.js!"
   fi
@@ -49,8 +47,6 @@ for branch in "${BRANCHES[@]}"; do
   if [ -f docusaurus.config.js ]; then
     version=${branch:1:3}
     echo "Adding documentation for $version"
-    echo "jaja"
-    #npm run build docs:version "${version}"
     npm run docusaurus docs:version "${version}"
   else
     echo "Warning: branch $(branch) does not contain a docusaurus.config.js!"
