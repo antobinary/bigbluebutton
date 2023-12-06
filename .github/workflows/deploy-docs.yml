@@ -35,7 +35,7 @@ jobs:
       - name: Build all versions
         run: ./build.sh
       - name: Build website
-        run: npm run build
+        run: npm run docusaurus build
       - name: upload build artifact
         uses: actions/upload-pages-artifact@v1
         with:
