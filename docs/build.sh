@@ -49,7 +49,8 @@ for branch in "${BRANCHES[@]}"; do
   if [ -f docusaurus.config.js ]; then
     version=${branch:1:3}
     echo "Adding documentation for $version"
-    npx docusaurus build docs:version "${version}"
+    echo "jaja"
+    npm run build
   else
     echo "Warning: branch $(branch) does not contain a docusaurus.config.js!"
   fi
