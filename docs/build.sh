@@ -50,7 +50,7 @@ for branch in "${BRANCHES[@]}"; do
     version=${branch:1:3}
     echo "Adding documentation for $version"
     echo "jaja"
-    npm run build
+    npm run build docs:version "${version}"
   else
     echo "Warning: branch $(branch) does not contain a docusaurus.config.js!"
   fi
