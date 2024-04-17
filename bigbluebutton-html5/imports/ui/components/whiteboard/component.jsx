@@ -22,6 +22,7 @@ import {
   mapLanguage,
 } from './utils';
 import { useMouseEvents, useCursor } from './hooks';
+import { notifyShapeNumberExceeded } from './service';
 import getFromUserSettings from '/imports/ui/services/users-settings';
 import meetingClientSettingsInitialValues from '/imports/ui/core/initial-values/meetingClientSettings';
 
@@ -90,6 +91,8 @@ const Whiteboard = React.memo((props) => {
     presentationHeight,
     presentationWidth,
     skipToSlide,
+    intl,
+    maxNumberOfAnnotations,
   } = props;
 
   clearTldrawCache();
@@ -872,16 +875,25 @@ const Whiteboard = React.memo((props) => {
         const { changes } = entry;
         const { added, updated, removed } = changes;
 
-        Object.values(added).forEach((record) => {
-          const updatedRecord = {
-            ...record,
-            meta: {
-              ...record.meta,
-              createdBy: currentUser?.userId,
-            },
-          };
-          persistShapeWrapper(updatedRecord, whiteboardIdRef.current, isModeratorRef.current);
-        });
+        const addedCount = Object.keys(added).length;
+        const shapeNumberExceeded = Object.keys(prevShapesRef.current).length + addedCount > maxNumberOfAnnotations;
+
+        if (shapeNumberExceeded) {
+          // notify and undo last command without persisting to not generate the onUndo/onRedo callback
+          notifyShapeNumberExceeded(intl, maxNumberOfAnnotations);
+          editor.history.undo({ persist: false });
+        } else {
+          Object.values(added).forEach((record) => {
+            const updatedRecord = {
+              ...record,
+              meta: {
+                ...record.meta,
+                createdBy: currentUser?.userId,
+              },
+            };
+            persistShapeWrapper(updatedRecord, whiteboardIdRef.current, isModeratorRef.current);
+          });
+        }
 
         Object.values(updated).forEach(([_, record]) => {
           const createdBy = prevShapesRef.current[record?.id]?.meta?.createdBy || currentUser?.userId;
