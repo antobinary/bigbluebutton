@@ -314,7 +314,7 @@ export default withTracker((props) => {
     partialUtterances: getFromUserSettings('bbb_transcription_partial_utterances'),
     minUtteranceLength: getFromUserSettings('bbb_transcription_min_utterance_length'),
   };
-  const transcriptionSavedSettings = Settings.transcription;
+  const transcriptionSavedSettings = SETTINGS.transcription;
 
   return {
     audioCaptions: <AudioCaptionsLiveContainer />,
