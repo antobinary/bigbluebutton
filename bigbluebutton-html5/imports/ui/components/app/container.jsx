@@ -19,7 +19,6 @@ import {
   layoutSelectOutput,
   layoutDispatch,
 } from '../layout/context';
-import { SET_MOBILE_FLAG } from '/imports/ui/core/graphql/mutations/userMutations';
 import { SET_SYNC_WITH_PRESENTER_LAYOUT, SET_LAYOUT_PROPS } from './mutations';
 import useSetSpeechOptions from '../audio/audio-graphql/hooks/useSetSpeechOptions';
 
@@ -34,6 +33,7 @@ import { PINNED_PAD_SUBSCRIPTION } from '../notes/queries';
 import VideoStreamsState from '../video-provider/video-provider-graphql/state';
 import useSettings from '../../services/settings/hooks/useSettings';
 import { SETTINGS } from '../../services/settings/enums';
+import { getSettingsSingletonInstance } from '/imports/ui/services/settings';
 
 const AppContainer = (props) => {
   const layoutType = useRef(null);
@@ -196,7 +196,11 @@ const AppContainer = (props) => {
       transcriptionSavedSettings.partialUtterances,
       transcriptionSavedSettings.minUtteranceLength,
     );
-  }, [transcriptionSavedSettings, transcriptionSavedSettings.partialUtterances, transcriptionSavedSettings.minUtteranceLength]);
+  }, [
+    transcriptionSavedSettings,
+    transcriptionSavedSettings.partialUtterances,
+    transcriptionSavedSettings.minUtteranceLength
+  ]);
 
   if (!currentUserData) return null;
 
@@ -314,7 +318,8 @@ export default withTracker((props) => {
     partialUtterances: getFromUserSettings('bbb_transcription_partial_utterances'),
     minUtteranceLength: getFromUserSettings('bbb_transcription_min_utterance_length'),
   };
-  const transcriptionSavedSettings = SETTINGS.transcription;
+  const Settings = getSettingsSingletonInstance();
+  const transcriptionSavedSettings = Settings.transcription;
 
   return {
     audioCaptions: <AudioCaptionsLiveContainer />,

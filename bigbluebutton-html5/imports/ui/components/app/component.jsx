@@ -44,14 +44,12 @@ import ActionsBarContainer from '../actions-bar/container';
 import PushLayoutEngine from '../layout/push-layout/pushLayoutEngine';
 import AudioService from '/imports/ui/components/audio/service';
 import NotesContainer from '/imports/ui/components/notes/component';
-import DEFAULT_VALUES from '../layout/defaultValues';
 import AppService from '/imports/ui/components/app/service';
 import TimeSync from './app-graphql/time-sync/component';
 import PresentationUploaderToastContainer from '/imports/ui/components/presentation/presentation-toast/presentation-uploader-toast/container';
 import BreakoutJoinConfirmationContainerGraphQL from '../breakout-join-confirmation/breakout-join-confirmation-graphql/component';
 import FloatingWindowContainer from '/imports/ui/components/floating-window/container';
 import ChatAlertContainerGraphql from '../chat/chat-graphql/alert/component';
-import useUserChangedLocalSettings from '/imports/ui/services/settings/hooks/useUserChangedLocalSettings';
 
 const MOBILE_MEDIA = 'only screen and (max-width: 40em)';
 
@@ -163,6 +161,7 @@ class App extends Component {
       toggleVoice,
       transcriptionSettings,
       setSpeechOptions,
+      setLocalSettings,
     } = this.props;
     const { browserName } = browserInfo;
     const { osName } = deviceInfo;
@@ -222,7 +221,6 @@ class App extends Component {
 
     if (transcriptionSettings) {
       const { partialUtterances, minUtteranceLength } = transcriptionSettings;
-      const setLocalSettings = useUserChangedLocalSettings();
       if (partialUtterances !== undefined || minUtteranceLength !== undefined) {
         logger.info({ logCode: 'app_component_set_speech_options' }, 'Setting initial speech options');
 
@@ -541,12 +539,6 @@ class App extends Component {
 
   setVideoPreviewModalIsOpen(value) {
     this.setState({isVideoPreviewModalOpen: value});
-  }
-
-  setRandomUserSelectModalIsOpen(value) {
-    const {setMountRandomUserModal} = this.props;
-    this.setState({isRandomUserSelectModalOpen: value});
-    setMountRandomUserModal(false);
   }
 
   render() {
