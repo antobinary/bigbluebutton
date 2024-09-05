@@ -1,18 +1,15 @@
 #!/bin/bash
 
-set -eu
+set -eux
 
 # Build the docs for these tags (the last tag of old major releases)
 # We build the docs for historical reasons. The branch no longer exists
 # since the release is no longer supported/maintained.
 TAGS=(
-  v2.5.20
 )
 
 # Build the docs only for these release branches
 BRANCHES=(
-  v2.6.x-release
-  v2.7.x-release
   v3.0.x-release
 )
 REMOTE="origin"
