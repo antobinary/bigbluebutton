@@ -8,7 +8,7 @@ public:
     # audio
     autoJoin: true
     # Set to false disables the listen only option in audio modal.
-    listenOnlyMode: false
+    listenOnlyMode: true
     forceListenOnly: false
     # Skips the echo test when connecting with microphone.
     skipCheck: false
