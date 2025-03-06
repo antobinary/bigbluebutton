@@ -525,7 +525,10 @@ class VideoService {
 
     await Promise.all(
       Object.keys(this.activePeers).map(async (peerId) => {
-        const peerStats = await this.activePeers[peerId].getStats();
+        const peer = this.activePeers[peerId];
+        if (!peer) return null;
+        const peerStats = await peer.getStats();
+        if (!peerStats) return null;
 
         const videoStats: Record<string, unknown> = {};
 
