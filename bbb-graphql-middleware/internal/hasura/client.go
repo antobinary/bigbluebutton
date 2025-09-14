@@ -8,6 +8,7 @@ import (
 	"net/http/cookiejar"
 	"net/url"
 	"sync"
+	"sync/atomic"
 
 	"bbb-graphql-middleware/config"
 	"bbb-graphql-middleware/internal/hasura/conn/reader"
@@ -21,7 +22,7 @@ import (
 )
 
 var (
-	lastHasuraConnectionId int
+	lastHasuraConnectionId uint64
 	hasuraEndpoint         = config.GetConfig().Hasura.Url
 )
 
@@ -30,8 +31,8 @@ func HasuraClient(
 	browserConnection *common.BrowserConnection,
 ) error {
 	// Obtain id for this connection
-	lastHasuraConnectionId++
-	hasuraConnectionId := "HC" + fmt.Sprintf("%010d", lastHasuraConnectionId)
+	id := atomic.AddUint64(&lastHasuraConnectionId, 1)
+	hasuraConnectionId := "HC" + fmt.Sprintf("%010d", id)
 
 	browserConnection.Logger = browserConnection.Logger.WithField("hasuraConnectionId", hasuraConnectionId)
 
