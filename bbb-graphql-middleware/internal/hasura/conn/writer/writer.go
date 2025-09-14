@@ -145,13 +145,7 @@ RangeLoop:
 
 							// Validate if subscription is allowed
 							if len(allowedSubscriptions) > 0 {
-								subscriptionAllowed := false
-								for _, s := range allowedSubscriptions {
-									if s == browserMessage.Payload.OperationName {
-										subscriptionAllowed = true
-										break
-									}
-								}
+								subscriptionAllowed := slices.Contains(allowedSubscriptions, browserMessage.Payload.OperationName)
 
 								if !subscriptionAllowed {
 									hc.BrowserConn.Logger.Infof("Subscription %s not allowed!", browserMessage.Payload.OperationName)
@@ -161,13 +155,7 @@ RangeLoop:
 
 							// Validate if subscription is allowed
 							if len(deniedSubscriptions) > 0 {
-								subscriptionAllowed := true
-								for _, s := range deniedSubscriptions {
-									if s == browserMessage.Payload.OperationName {
-										subscriptionAllowed = false
-										break
-									}
-								}
+								subscriptionAllowed := !slices.Contains(deniedSubscriptions, browserMessage.Payload.OperationName)
 
 								if !subscriptionAllowed {
 									hc.BrowserConn.Logger.Infof("Subscription %s not allowed!", browserMessage.Payload.OperationName)

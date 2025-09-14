@@ -9,9 +9,8 @@ import (
 
 func RetransmitSubscriptionStartMessages(hc *common.HasuraConnection) {
 	hc.BrowserConn.ActiveSubscriptionsMutex.RLock()
-	defer hc.BrowserConn.ActiveSubscriptionsMutex.RUnlock()
-
-	for _, subscription := range hc.BrowserConn.ActiveSubscriptions {
+	subscriptionsToProcess := make(map[string]common.GraphQlSubscription, 0)
+	for queryId, subscription := range hc.BrowserConn.ActiveSubscriptions {
 		// Not retransmitting Mutations
 		if subscription.Type == common.Mutation {
 			continue
@@ -24,6 +23,11 @@ func RetransmitSubscriptionStartMessages(hc *common.HasuraConnection) {
 			continue
 		}
 
+		subscriptionsToProcess[queryId] = subscription
+	}
+	hc.BrowserConn.ActiveSubscriptionsMutex.RUnlock()
+
+	for _, subscription := range subscriptionsToProcess {
 		if subscription.LastSeenOnHasuraConnection != hc.Id {
 			hc.BrowserConn.Logger.Tracef("retransmiting subscription start: %v", string(subscription.Message))
 
