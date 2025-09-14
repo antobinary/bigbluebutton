@@ -11,7 +11,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"hash/crc32"
-	"nhooyr.io/websocket"
+	"github.com/coder/websocket"
 	"sync"
 )
 

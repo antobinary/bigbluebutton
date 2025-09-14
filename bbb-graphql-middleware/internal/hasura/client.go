@@ -1,9 +1,6 @@
 package hasura
 
 import (
-	"bbb-graphql-middleware/config"
-	"bbb-graphql-middleware/internal/hasura/conn/reader"
-	"bbb-graphql-middleware/internal/hasura/conn/writer"
 	"context"
 	"fmt"
 	"math"
@@ -12,18 +9,26 @@ import (
 	"net/url"
 	"sync"
 
+	"bbb-graphql-middleware/config"
+	"bbb-graphql-middleware/internal/hasura/conn/reader"
+	"bbb-graphql-middleware/internal/hasura/conn/writer"
+
+	"github.com/coder/websocket"
+
 	"bbb-graphql-middleware/internal/common"
+
 	"golang.org/x/xerrors"
-	"nhooyr.io/websocket"
 )
 
-var lastHasuraConnectionId int
-var hasuraEndpoint = config.GetConfig().Hasura.Url
+var (
+	lastHasuraConnectionId int
+	hasuraEndpoint         = config.GetConfig().Hasura.Url
+)
 
 // Hasura client connection
 func HasuraClient(
-	browserConnection *common.BrowserConnection) error {
-
+	browserConnection *common.BrowserConnection,
+) error {
 	// Obtain id for this connection
 	lastHasuraConnectionId++
 	hasuraConnectionId := "HC" + fmt.Sprintf("%010d", lastHasuraConnectionId)
@@ -56,10 +61,10 @@ func HasuraClient(
 	// this means that if browser connection is closed, the hasura connection will close also
 	// this also means that we can close the hasura connection without closing the browser one
 	// this is used for the invalidation process (reconnection only on the hasura side )
-	var hasuraConnectionContext, hasuraConnectionContextCancel = context.WithCancel(browserConnection.Context)
+	hasuraConnectionContext, hasuraConnectionContextCancel := context.WithCancel(browserConnection.Context)
 	defer hasuraConnectionContextCancel()
 
-	var thisConnection = common.HasuraConnection{
+	thisConnection := common.HasuraConnection{
 		Id:                hasuraConnectionId,
 		BrowserConn:       browserConnection,
 		Context:           hasuraConnectionContext,
@@ -68,7 +73,7 @@ func HasuraClient(
 
 	browserConnection.HasuraConnection = &thisConnection
 	defer func() {
-		//When Hasura sends an CloseError, it will forward the error to the browser and close the connection
+		// When Hasura sends an CloseError, it will forward the error to the browser and close the connection
 		if thisConnection.WebsocketCloseError != nil {
 			browserConnection.Logger.Infof("Closing browser connection because Hasura connection was closed, reason: %s", thisConnection.WebsocketCloseError.Reason)
 			browserConnection.Websocket.Close(thisConnection.WebsocketCloseError.Code, thisConnection.WebsocketCloseError.Reason)
@@ -77,8 +82,8 @@ func HasuraClient(
 
 		browserConnection.HasuraConnection = nil
 
-		//It's necessary to freeze the channel to avoid client trying to start subscriptions before Hasura connection is initialised
-		//It will unfreeze after `connection_ack` is sent by Hasura
+		// It's necessary to freeze the channel to avoid client trying to start subscriptions before Hasura connection is initialised
+		// It will unfreeze after `connection_ack` is sent by Hasura
 		browserConnection.FromBrowserToHasuraChannel.FreezeChannel()
 	}()
 

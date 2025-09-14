@@ -13,11 +13,11 @@ import (
 	"bbb-graphql-middleware/config"
 	"bbb-graphql-middleware/internal/common"
 
+	"github.com/coder/websocket"
 	"github.com/graphql-go/graphql/language/ast"
 	"github.com/graphql-go/graphql/language/parser"
 	"github.com/graphql-go/graphql/language/source"
 	"github.com/prometheus/client_golang/prometheus"
-	"nhooyr.io/websocket"
 )
 
 var (

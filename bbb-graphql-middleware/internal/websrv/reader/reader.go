@@ -11,7 +11,7 @@ import (
 	"bbb-graphql-middleware/internal/common"
 	streamingserver "bbb-graphql-middleware/internal/streaming_server"
 
-	"nhooyr.io/websocket"
+	"github.com/coder/websocket"
 )
 
 func BrowserConnectionReader(

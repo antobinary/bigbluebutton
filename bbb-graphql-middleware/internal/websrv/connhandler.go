@@ -20,10 +20,10 @@ import (
 	"bbb-graphql-middleware/internal/websrv/reader"
 	"bbb-graphql-middleware/internal/websrv/writer"
 
+	"github.com/coder/websocket"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/time/rate"
-	"nhooyr.io/websocket"
 )
 
 var lastBrowserConnectionId atomic.Int64
@@ -266,7 +266,7 @@ func invalidateHasuraConnectionForSessionToken(browserConnection *common.Browser
 		return // If there's no Hasura connection, there's nothing to invalidate.
 	}
 
-	browserConnection.Logger.Infof("Processing invalidate request for sessionToken %v (hasura connection %v)", sessionToken, hasuraConnection.Id)
+	browserConnection.Logger.Debugf("Processing invalidate request for sessionToken %v (hasura connection %v)", sessionToken, hasuraConnection.Id)
 
 	// Stop receiving new messages from the browser.
 	browserConnection.Logger.Debug("freezing channel fromBrowserToHasuraChannel")
