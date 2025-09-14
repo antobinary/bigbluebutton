@@ -54,7 +54,7 @@ func ValidateIfShouldUseCustomJsonPatch(original []byte, modified []byte, idFiel
 		return false, nil
 	}
 
-	return true, CreateJsonPatchFromMaps(originalMap, modifiedMap, modified, "userId")
+	return true, CreateJsonPatchFromMaps(originalMap, modifiedMap, modified, idFieldName)
 }
 
 func hasDuplicatedId(items []map[string]interface{}, idFieldName string) bool {
