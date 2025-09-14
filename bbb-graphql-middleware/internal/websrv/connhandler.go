@@ -80,7 +80,6 @@ func ConnectionHandler(w http.ResponseWriter, r *http.Request) {
 	browserWsConn.SetReadLimit(9999999) // 10MB
 
 	connectionLogger.Infof("browser connection accepted")
-	time.Sleep(15 * time.Second)
 
 	if common.HasReachedMaxGlobalConnections() {
 		common.WsConnectionRejectedCounter.With(prometheus.Labels{"reason": "limit of server connections exceeded"}).Inc()
