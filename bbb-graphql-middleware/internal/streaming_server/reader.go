@@ -10,8 +10,8 @@ func ReadNewStreamingSubscription(
 	browserConnection *common.BrowserConnection,
 	fromBrowserMessage []byte,
 ) error {
-	browserConnection.Logger.Info("Starting ReadNewStreamingSubscription")
-	defer browserConnection.Logger.Info("Finished ReadNewStreamingSubscription")
+	browserConnection.Logger.Debug("Starting ReadNewStreamingSubscription")
+	defer browserConnection.Logger.Debug("Finished ReadNewStreamingSubscription")
 
 	var browserMessage common.BrowserSubscribeMessage
 	err := json.Unmarshal(fromBrowserMessage, &browserMessage)
@@ -19,8 +19,8 @@ func ReadNewStreamingSubscription(
 		browserConnection.Logger.Errorf("failed to unmarshal message: %v", err)
 	}
 
-	browserConnection.Logger.Info(browserMessage.Type)
-	browserConnection.Logger.Info(browserMessage.Payload.OperationName)
+	browserConnection.Logger.Debug(browserMessage.Type)
+	browserConnection.Logger.Debug(browserMessage.Payload.OperationName)
 
 	operationName := "getCursorCoordinatesStream"
 	if browserMessage.Type == "subscribe" && browserMessage.Payload.OperationName == operationName {
@@ -40,7 +40,7 @@ func ReadNewStreamingSubscription(
 
 		SendPreviousCursorPosition(browserConnection, queryId)
 
-		browserConnection.Logger.Debugf("Added new getCursorCoordinatesStream streaming %s ", queryId)
+		browserConnection.Logger.Infof("Added new getCursorCoordinatesStream streaming %s ", queryId)
 	}
 
 	return nil
