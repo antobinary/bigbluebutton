@@ -680,6 +680,7 @@ export const meetingClientSettingsInitialValues: MeetingClientSettings = {
           },
           unpublishOnMute: false,
           unpublishAfterMuteMs: 5000,
+          useLiveKitAudioState: false,
         },
         camera: {
           publishOptions: {
