@@ -113,6 +113,7 @@ const AudioContainer = (props) => {
   const {
     intl,
     userLocks,
+    currentUserHasVoice,
   } = props;
 
   const APP_CONFIG = window.meetingClientSettings.public.app;
@@ -137,7 +138,7 @@ const AudioContainer = (props) => {
 
   const audioModal = useModalRegistration({
     id: 'audioModal',
-    priority: 'medium',
+    priority: 'high',
   });
 
   const meetingIsBreakout = useMeetingIsBreakout();
@@ -147,14 +148,15 @@ const AudioContainer = (props) => {
       voiceConf: m?.voiceSettings?.voiceConf,
       muteOnStart: m?.voiceSettings?.muteOnStart,
     },
+    lockSettings: m.lockSettings,
   }));
+  const lockSettingsLoaded = meeting?.lockSettings !== undefined;
 
   const { data: currentUser } = useCurrentUser((u) => ({
     userId: u.userId,
     name: u.name,
     speechLocale: u.speechLocale,
     breakoutRoomsSummary: u.breakoutRoomsSummary,
-    voice: u.voice,
   }));
 
   const hasBreakoutRooms = (currentUser?.breakoutRoomsSummary?.totalOfBreakoutRooms ?? 0) > 0;
@@ -196,14 +198,18 @@ const AudioContainer = (props) => {
     }
     Session.setItem('audioModalIsOpen', true);
     if (enableVideo && autoShareWebcam) {
+      if (!currentUserHasVoice) {
+        openAudioModal();
+      }
       openVideoPreviewModal();
-      openAudioModal();
       didMountAutoJoin = true;
     } else if (!(
       userSelectedMicrophone
       && userSelectedListenOnly
       && meetingIsBreakout)) {
-      openAudioModal();
+      if (!currentUserHasVoice) {
+        openAudioModal();
+      }
       didMountAutoJoin = true;
     }
     return Promise.resolve(true);
@@ -242,15 +248,15 @@ const AudioContainer = (props) => {
     // We don't know whether the meeting is a breakout or not.
     // So, postpone the decision.
     if (meetingIsBreakout === undefined) return;
-    // If the user has duplicated the session and has already joined the audio.
-    if (!currentUser?.voice) {
-      init().then(() => {
-        if (meetingIsBreakout && !Service.isUsingAudio()) {
-          joinAudio();
-        }
-      });
-    }
-  }, [meetingIsBreakout, currentUser?.voice]);
+
+    if (!lockSettingsLoaded) return;
+    init().then(() => {
+      // Skip auto join audio if user has already joined in another tab (currentUserHasVoice)
+      if (meetingIsBreakout && !Service.isUsingAudio() && !currentUserHasVoice) {
+        joinAudio();
+      }
+    });
+  }, [meetingIsBreakout, lockSettingsLoaded]);
 
   useEffect(() => {
     if (userIsReturningFromBreakoutRoom) {
@@ -296,7 +302,7 @@ const AudioContainer = (props) => {
       {audioModal.isOpen ? (
         <AudioModalContainer
           {...{
-            priority: 'medium',
+            priority: 'high',
             setIsOpen: audioModal.isOpen ? audioModal.close : audioModal.open,
             isOpen: audioModal.isOpen,
           }}
@@ -327,4 +333,5 @@ AudioContainer.propTypes = {
   userLocks: PropTypes.shape({
     userMic: PropTypes.bool.isRequired,
   }).isRequired,
+  currentUserHasVoice: PropTypes.bool,
 };
