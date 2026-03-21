@@ -262,6 +262,7 @@ jobs:
     needs: unify-artifacts
     if: github.event_name == 'push'
     runs-on: ubuntu-22.04
+    environment: apt-repo
     steps:
       - name: Download unified artifacts
         uses: actions/download-artifact@v4
