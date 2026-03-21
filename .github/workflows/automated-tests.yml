@@ -275,14 +275,15 @@ jobs:
           REPO_HOST: ${{ secrets.PKG_REPO_HOST }}
           REPO_USER: ${{ secrets.PKG_REPO_USER }}
         run: |
-          echo "$SSH_KEY" > /tmp/deploy_key && chmod 600 /tmp/deploy_key
-          rsync -avz -e "ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no" \
+          eval $(ssh-agent -s)
+          echo "$SSH_KEY" | tr -d '\r' | ssh-add -
+          rsync -avz -e "ssh -o StrictHostKeyChecking=no" \
             all-artifacts/*.deb ${REPO_USER}@${REPO_HOST}:/srv/apt-incoming/
-          # Trigger processing for the target codename (e.g. noble)
-          ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no \
+          # Trigger processing for the target codename (e.g. jammy)
+          ssh -o StrictHostKeyChecking=no \
             ${REPO_USER}@${REPO_HOST} \
             "sudo -u aptrepo /usr/local/bin/repo-process-incoming jammy"
-          rm -f /tmp/deploy_key
+          ssh-agent -k
   install-and-run-bbb-tests:
     needs:
       - unify-artifacts
