@@ -282,7 +282,7 @@ jobs:
           # Trigger processing for the target codename (e.g. jammy)
           ssh -o StrictHostKeyChecking=no \
             ${REPO_USER}@${REPO_HOST} \
-            "sudo -u aptrepo /usr/local/bin/repo-process-incoming jammy"
+            "sudo -u aptrepo /usr/local/bin/repo-process-incoming new-jammy-30-dev"
           ssh-agent -k
   install-and-run-bbb-tests:
     needs:
