@@ -286,6 +286,7 @@ jobs:
             "sudo -u aptrepo /usr/local/bin/repo-process-incoming new-jammy-30-dev"
           ssh-agent -k
   install-and-run-bbb-tests:
+    if: false # TODO: re-enable after package push is verified
     needs:
       - unify-artifacts
       - bbb-libreoffice-image
