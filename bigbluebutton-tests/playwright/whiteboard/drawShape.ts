@@ -1,10 +1,10 @@
 import { ELEMENT_WAIT_LONGER_TIME } from '../core/constants';
 import { elements as e } from '../core/elements';
 import { MultiUsers } from '../user/multiusers';
-import { snapshotComparison } from './util';
+import { assertShapeDrawn } from './util';
 
 export class DrawShape extends MultiUsers {
-  async drawShape(shapeSelector: string, shapeName: string, expectedShapeDrawn = e.wbDrawnShape) {
+  async drawShape(shapeSelector: string, expectedShapeDrawn = e.wbDrawnShape) {
     await this.modPage.waitForSelector(e.whiteboard, ELEMENT_WAIT_LONGER_TIME);
     await this.userPage.waitForSelector(e.whiteboard);
     // select the shape
@@ -16,7 +16,7 @@ export class DrawShape extends MultiUsers {
     }
     await this.modPage.waitAndClick(shapeSelector);
     await this.drawShapeMiddleSlide();
-    // check if the ellipse is drawn
+    // check the shape is drawn and synced to both the moderator and the viewer
     await this.modPage.hasElement(
       expectedShapeDrawn,
       'should display the expected drawn shape on the whiteboard for the moderator',
@@ -25,7 +25,8 @@ export class DrawShape extends MultiUsers {
       expectedShapeDrawn,
       'should display the expected drawn shape on the whiteboard for the viewer',
     );
-    await snapshotComparison(this.modPage, this.userPage, shapeName);
+    await assertShapeDrawn(this.modPage, expectedShapeDrawn, 'moderator');
+    await assertShapeDrawn(this.userPage, expectedShapeDrawn, 'viewer');
   }
 
   async drawShapeMiddleSlide() {

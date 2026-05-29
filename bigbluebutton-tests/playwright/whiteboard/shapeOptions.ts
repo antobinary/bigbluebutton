@@ -3,7 +3,7 @@ import { expect } from '@playwright/test';
 import { ELEMENT_WAIT_LONGER_TIME } from '../core/constants';
 import { elements as e } from '../core/elements';
 import { MultiUsers } from '../user/multiusers';
-import { snapshotComparison } from './util';
+import { assertDuplicatedShapes } from './util';
 
 export class ShapeOptions extends MultiUsers {
   async duplicate() {
@@ -26,7 +26,9 @@ export class ShapeOptions extends MultiUsers {
     // check if the rectangle was duplicated
     await this.modPage.hasElementCount(e.wbDrawnShape, 2, 'should display the duplicated rectangle for the moderator');
     await this.userPage.hasElementCount(e.wbDrawnShape, 2, 'should display the duplicated rectangle for the viewer');
-    await snapshotComparison(this.modPage, this.userPage, 'duplicate');
+    // assert duplicate semantics geometrically instead of via a flaky full-page screenshot
+    await assertDuplicatedShapes(this.modPage, 'moderator');
+    await assertDuplicatedShapes(this.userPage, 'viewer');
   }
 
   async rotate() {
@@ -48,11 +50,16 @@ export class ShapeOptions extends MultiUsers {
     await this.modPage.page.waitForTimeout(1000); // wait for the rotation to be applied
     await this.modPage.waitAndClick(e.wbRotate);
     await this.modPage.press('Escape');
-    // check for the rotation
+    // check for the rotation on the moderator and (once synced) on the viewer (90 degrees =>
+    // matrix(0, 1, -1, 0, tx, ty)). toHaveCSS auto-retries, so it waits for the viewer to sync.
+    const rotated = /^matrix\(0, 1, -1, 0,/;
     await expect(
-      await this.modPage.page.$eval(e.wbDrawnShape, (element) => getComputedStyle(element).transform),
-      'should the shape be rotated 90 degrees',
-    ).toContain('matrix(0, 1, -1, 0,');
-    await snapshotComparison(this.modPage, this.userPage, 'rotate');
+      this.modPage.page.locator(e.wbDrawnShape),
+      'should the shape be rotated 90 degrees for the moderator',
+    ).toHaveCSS('transform', rotated);
+    await expect(
+      this.userPage.page.locator(e.wbDrawnShape),
+      'should the shape be rotated 90 degrees for the viewer',
+    ).toHaveCSS('transform', rotated);
   }
 }

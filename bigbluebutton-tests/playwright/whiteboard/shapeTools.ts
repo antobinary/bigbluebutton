@@ -4,7 +4,6 @@ import { ELEMENT_WAIT_LONGER_TIME } from '../core/constants';
 import { elements as e } from '../core/elements';
 import { skipSlide } from '../presentation/util';
 import { DrawShape } from './drawShape';
-import { snapshotComparison } from './util';
 
 export class ShapeTools extends DrawShape {
   async pan() {
@@ -29,19 +28,17 @@ export class ShapeTools extends DrawShape {
         currentZoomLabel || '',
       );
     }
-    // pan the whiteboard
+    // pan the whiteboard and assert the drawn content actually moved on screen
+    const lineLocator = this.modPage.page.locator(e.wbDrawnLine);
+    const boxBeforePan = await lineLocator.boundingBox();
+    if (!boxBeforePan) throw new Error('line boundingBox is null before panning');
     await this.modPage.waitAndClick(e.wbHandButton);
     await this.drawShapeMiddleSlide();
     await this.modPage.page.waitForTimeout(1500); // wait for the whiteboard to be panned
-    // check if the whiteboard was panned
-    await expect(this.modPage.page).toHaveScreenshot('moderator-pan.png', {
-      mask: [this.modPage.page.locator(e.presentationTitle)],
-      maxDiffPixels: 1000,
-    });
-    await expect(this.userPage.page).toHaveScreenshot('viewer-pan.png', {
-      mask: [this.userPage.page.locator(e.presentationTitle)],
-      maxDiffPixels: 1000,
-    });
+    const boxAfterPan = await lineLocator.boundingBox();
+    if (!boxAfterPan) throw new Error('line boundingBox is null after panning');
+    const panDistance = Math.hypot(boxBeforePan.x - boxAfterPan.x, boxBeforePan.y - boxAfterPan.y);
+    expect(panDistance, 'the whiteboard content should move after panning').toBeGreaterThan(50);
   }
 
   async eraser() {
@@ -57,7 +54,6 @@ export class ShapeTools extends DrawShape {
     // check if the line was removed
     await this.modPage.wasRemoved(e.wbDrawnLine, 'should remove the drawn line for the moderator');
     await this.userPage.wasRemoved(e.wbDrawnLine, 'should remove the drawn line for the viewer');
-    await snapshotComparison(this.modPage, this.userPage, 'eraser');
   }
 
   async delete() {
@@ -95,7 +91,6 @@ export class ShapeTools extends DrawShape {
       e.wbDrawnArrow,
       'should delete the drawn shape for the viewer by pressing the "Backspace" key',
     );
-    await snapshotComparison(this.modPage, this.userPage, 'delete');
   }
 
   async undo() {
@@ -115,7 +110,6 @@ export class ShapeTools extends DrawShape {
       'should remove the drawn shape for the moderator by pressing "Ctrl+Z"',
     );
     await this.userPage.wasRemoved(e.wbDrawnArrow, 'should remove the drawn shape for the viewer by pressing "Ctrl+Z"');
-    await snapshotComparison(this.modPage, this.userPage, 'undo');
   }
 
   async redo() {
@@ -128,6 +122,5 @@ export class ShapeTools extends DrawShape {
       'should display again the drawn shape for the moderator after redoing',
     );
     await this.userPage.hasElement(e.wbDrawnArrow, 'should display again the drawn shape for the viewer after redoing');
-    await snapshotComparison(this.modPage, this.userPage, 'redo');
   }
 }

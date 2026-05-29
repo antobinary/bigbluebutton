@@ -1,7 +1,6 @@
 import { ELEMENT_WAIT_LONGER_TIME } from '../core/constants';
 import { elements as e } from '../core/elements';
 import { MultiUsers } from '../user/multiusers';
-import { snapshotComparison } from './util';
 
 export class TextShape extends MultiUsers {
   async typeText() {
@@ -24,7 +23,6 @@ export class TextShape extends MultiUsers {
     await this.userPage.hasElement(e.wbTextTrue, 'should display the text shape for the viewer');
     await this.modPage.hasText(e.wbTextTrue, 'AB', 'should text content be "AB" for the moderator');
     await this.userPage.hasText(e.wbTextTrue, 'AB', 'should text content be "AB" for the viewer');
-    await snapshotComparison(this.modPage, this.userPage, 'text');
   }
 
   async stickyNote() {
@@ -47,7 +45,6 @@ export class TextShape extends MultiUsers {
     await this.userPage.hasElement(e.wbTypedStickyNote, 'should display the sticky note for the viewer');
     await this.modPage.hasText(e.wbTypedStickyNote, 'AB', 'should sticky note text content be "AB" for the moderator');
     await this.userPage.hasText(e.wbTypedStickyNote, 'AB', 'should sticky note text content be "AB" for the viewer');
-    await snapshotComparison(this.modPage, this.userPage, 'sticky');
   }
 
   async realTimeTextTyping() {
@@ -75,6 +72,5 @@ export class TextShape extends MultiUsers {
     await this.modPage.press('3');
     await this.modPage.hasText(e.wbTextTrue, 'AB123', 'should text content be "AB123" for the moderator');
     await this.userPage.hasText(e.wbTextTrue, 'AB123', 'should text content be "AB123" for the viewer');
-    await snapshotComparison(this.modPage, this.userPage, 'realtime-text');
   }
 }

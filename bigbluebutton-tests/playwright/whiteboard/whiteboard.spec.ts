@@ -22,13 +22,6 @@ async function runResizeTest(
   await resize[method]();
 }
 
-//! @flaky note:
-// all whiteboard tests are flagged as flaky due to unexpected zooming slides
-// only avoiding those assertions won't be enough as most of the tests are relying only on snapshot comparisons
-// so together with the further fix + re-enablement of the tests,
-// they will need to have non-snapshot assertions added as well
-// P.S. 1. the failures seems to be noticeable only on the CI
-// P.S. 2. Tests updated + re-enabled on March, 2025
 test.describe.parallel('Whiteboard tools', { tag: '@ci' }, () => {
   test.beforeEach(({ browserName }) => {
     test.skip(browserName !== 'chromium', 'Drawing visual regression tests are enabled only for Chromium');
@@ -38,42 +31,42 @@ test.describe.parallel('Whiteboard tools', { tag: '@ci' }, () => {
     const rectangle = new DrawShape(browser, context);
     await rectangle.initModPage(page, { testInfo });
     await rectangle.initUserPage(context, { testInfo });
-    await rectangle.drawShape(e.wbRectangleShape, 'rectangle');
+    await rectangle.drawShape(e.wbRectangleShape);
   });
 
   test('Draw ellipse', async ({ browser, context, page }, testInfo) => {
     const ellipse = new DrawShape(browser, context);
     await ellipse.initModPage(page, { testInfo });
     await ellipse.initUserPage(context, { testInfo });
-    await ellipse.drawShape(e.wbEllipseShape, 'ellipse');
+    await ellipse.drawShape(e.wbEllipseShape);
   });
 
   test('Draw triangle', async ({ browser, context, page }, testInfo) => {
     const triangle = new DrawShape(browser, context);
     await triangle.initModPage(page, { testInfo });
     await triangle.initUserPage(context, { testInfo });
-    await triangle.drawShape(e.wbTriangleShape, 'triangle');
+    await triangle.drawShape(e.wbTriangleShape);
   });
 
   test('Draw line', async ({ browser, context, page }, testInfo) => {
     const line = new DrawShape(browser, context);
     await line.initModPage(page, { testInfo });
     await line.initUserPage(context, { testInfo });
-    await line.drawShape(e.wbLineShape, 'line', e.wbDrawnLine);
+    await line.drawShape(e.wbLineShape, e.wbDrawnLine);
   });
 
   test('Draw arrow', async ({ browser, context, page }, testInfo) => {
     const arrow = new DrawShape(browser, context);
     await arrow.initModPage(page, { testInfo });
     await arrow.initUserPage(context, { testInfo });
-    await arrow.drawShape(e.wbArrowShape, 'arrow', e.wbDrawnArrow);
+    await arrow.drawShape(e.wbArrowShape, e.wbDrawnArrow);
   });
 
   test('Draw with pencil', async ({ browser, context, page }, testInfo) => {
     const pencil = new DrawShape(browser, context);
     await pencil.initModPage(page, { testInfo });
     await pencil.initUserPage(context, { testInfo });
-    await pencil.drawShape(e.wbPencilShape, 'pencil', e.wbDraw);
+    await pencil.drawShape(e.wbPencilShape, e.wbDraw);
   });
 
   test('Type text', async ({ browser, context, page }, testInfo) => {
@@ -186,11 +179,19 @@ test.describe.parallel('Whiteboard tools', { tag: '@ci' }, () => {
     await runResizeTest('cameraResyncVisual', browser, context, page, testInfo);
   });
 
-  test('Camera re-sync visual regression after resize with canvas zoom', async ({ browser, context, page }, testInfo) => {
+  test('Camera re-sync visual regression after resize with canvas zoom', async ({
+    browser,
+    context,
+    page,
+  }, testInfo) => {
     await runResizeTest('cameraResyncZoomedVisual', browser, context, page, testInfo);
   });
 
-  test('Camera zoom is preserved after minimizing and restoring the presentation', async ({ browser, context, page }, testInfo) => {
+  test('Camera zoom is preserved after minimizing and restoring the presentation', async ({
+    browser,
+    context,
+    page,
+  }, testInfo) => {
     await runResizeTest('cameraResyncAfterMinimizeRestore', browser, context, page, testInfo);
   });
 });
