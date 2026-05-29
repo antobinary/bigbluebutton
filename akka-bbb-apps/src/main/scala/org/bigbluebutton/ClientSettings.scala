@@ -1,6 +1,6 @@
 package org.bigbluebutton
 
-import org.bigbluebutton.common2.util.YamlUtil
+import org.bigbluebutton.common2.util.{ ConfigOverrideIssue, YamlUtil }
 import org.slf4j.LoggerFactory
 
 import java.io.{ ByteArrayInputStream, File }
@@ -15,39 +15,64 @@ object ClientSettings extends SystemConfiguration {
     val clientSettingsFile = scala.io.Source.fromFile(clientSettingsPath, "UTF-8")
 
     val clientSettingsFileOverrideToCheck = new File(clientSettingsPathOverride)
+    val hasOverrideFile = clientSettingsFileOverrideToCheck.exists()
 
-    val clientSettingsFileOverride = if (clientSettingsFileOverrideToCheck.exists())
+    val clientSettingsFileOverride = if (hasOverrideFile)
       scala.io.Source.fromFile(
         clientSettingsPathOverride,
         "UTF-8"
       )
     else new BufferedSource(new ByteArrayInputStream(Array[Byte]()))
 
-    clientSettingsFromFile =
-      common2.util.YamlUtil.mergeImmutableMaps(
-        common2.util.YamlUtil.toMap[Object](clientSettingsFile.mkString) match {
-          case Success(value) => value
-          case Failure(exception) =>
-            println("Error while fetching client Settings: ", exception)
-            Map[String, Object]()
-        },
-        common2.util.YamlUtil.toMap[Object](clientSettingsFileOverride.mkString) match {
-          case Success(value) => value
-          case Failure(exception) =>
-            println("Error while fetching client override Settings: ", exception)
-            Map[String, Object]()
-        }
+    val baseSettings = common2.util.YamlUtil.toMap[Object](clientSettingsFile.mkString) match {
+      case Success(value) => value
+      case Failure(exception) =>
+        println("Error while fetching client Settings: ", exception)
+        Map[String, Object]()
+    }
+
+    val overrideSettings = common2.util.YamlUtil.toMap[Object](clientSettingsFileOverride.mkString) match {
+      case Success(value) => value
+      case Failure(exception) =>
+        println("Error while fetching client override Settings: ", exception)
+        Map[String, Object]()
+    }
+
+    // Validate the override file against the base catalog (settings.yml) before merging, while the
+    // base still contains the `private` section so overrides to `private.*` are checked too.
+    if (hasOverrideFile) {
+      logOverrideIssues(
+        YamlUtil.diffOverrideAgainstBase(baseSettings, overrideSettings),
+        s"file [$clientSettingsPathOverride]"
       )
+    }
+
+    clientSettingsFromFile = common2.util.YamlUtil.mergeImmutableMaps(baseSettings, overrideSettings)
 
     //Remove `:private` once it's used only by HTML5 client's internal configs
     clientSettingsFromFile -= "private"
   }
 
-  def getClientSettingsWithOverride(clientSettingsOverrideJson: String): Map[String, Object] = {
+  private def logOverrideIssues(issues: List[ConfigOverrideIssue], source: String): Unit = {
+    issues.foreach { issue =>
+      logger.warn(
+        "Client settings override {}: {} '{}' — {}; value is still applied.",
+        source, issue.kind, issue.path, issue.detail
+      )
+    }
+  }
+
+  def getClientSettingsWithOverride(clientSettingsOverrideJson: String, meetingId: String = ""): Map[String, Object] = {
     if (clientSettingsOverrideJson.nonEmpty) {
       val scalaMapClientOverride = common2.util.JsonUtil.toMap[Object](clientSettingsOverrideJson)
       scalaMapClientOverride match {
-        case Success(clientSettingsOverrideAsMap) => YamlUtil.mergeImmutableMaps(clientSettingsFromFile, clientSettingsOverrideAsMap)
+        case Success(clientSettingsOverrideAsMap) =>
+          val meetingSuffix = if (meetingId.nonEmpty) s" (meeting $meetingId)" else ""
+          logOverrideIssues(
+            YamlUtil.diffOverrideAgainstBase(clientSettingsFromFile, clientSettingsOverrideAsMap),
+            s"on create call$meetingSuffix"
+          )
+          YamlUtil.mergeImmutableMaps(clientSettingsFromFile, clientSettingsOverrideAsMap)
         case Failure(msg) =>
           logger.debug("No valid JSON override of client configuration in create call: {}", msg)
           clientSettingsFromFile

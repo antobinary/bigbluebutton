@@ -6,9 +6,64 @@ import com.fasterxml.jackson.module.scala.{ DefaultScalaModule, ScalaObjectMappe
 
 import scala.util.Try
 
+case class ConfigOverrideIssue(path: String, kind: String, detail: String)
+
 object YamlUtil {
   val mapper = new ObjectMapper(new YAMLFactory()) with ScalaObjectMapper
   mapper.registerModule(DefaultScalaModule)
+
+  // Coarse type classification so values from different parsers still compare as equal
+  // (e.g. Jackson YAML yields Int/Long while Gson JSON yields Double -> both "Number").
+  private def typeClass(value: Object): String = value match {
+    case _: Map[_, _]  => "Map"
+    case _: Seq[_]     => "List"
+    case _: Boolean    => "Boolean"
+    case _: Number     => "Number"
+    case _: String     => "String"
+    case _             => "Other"
+  }
+
+  /**
+   * Walks `overrides` against `base`, treating `base` (the catalog from settings.yml) as the
+   * schema, and reports keys/shapes in the override that don't line up: unknown keys (likely
+   * typos), and shape/type mismatches. Behavior is purely diagnostic — the caller decides how to
+   * surface the returned issues. `ignoredPrefixes` skips dynamic subtrees (e.g. "public.plugins",
+   * whose contents are plugin-defined and not present in settings.yml).
+   */
+  def diffOverrideAgainstBase(
+      base:            Map[String, Object],
+      overrides:       Map[String, Object],
+      pathPrefix:      String      = "",
+      ignoredPrefixes: Set[String] = Set("public.plugins")
+  ): List[ConfigOverrideIssue] = {
+    overrides.toList.flatMap {
+      case (key, overrideValue) =>
+        val path = if (pathPrefix.isEmpty) key else s"$pathPrefix.$key"
+        if (ignoredPrefixes.exists(p => path == p || path.startsWith(p + "."))) {
+          List.empty
+        } else {
+          base.get(key) match {
+            case None =>
+              List(ConfigOverrideIssue(path, "unknown-key", "not present in settings.yml (possible typo)"))
+            case Some(baseValue) =>
+              (baseValue, overrideValue) match {
+                case (baseMap: Map[String, Object] @unchecked, overrideMap: Map[String, Object] @unchecked) =>
+                  diffOverrideAgainstBase(baseMap, overrideMap, path, ignoredPrefixes)
+                case (_: Map[_, _], _) =>
+                  List(ConfigOverrideIssue(path, "shape-mismatch", "expected an object/section, got a value"))
+                case (_, _: Map[_, _]) =>
+                  List(ConfigOverrideIssue(path, "shape-mismatch", "expected a value, got an object/section"))
+                case (b, o) =>
+                  val (bt, ot) = (typeClass(b), typeClass(o))
+                  if (bt != ot)
+                    List(ConfigOverrideIssue(path, "type-mismatch", s"expected $bt, got $ot"))
+                  else
+                    List.empty
+              }
+          }
+        }
+    }
+  }
 
   def mergeImmutableMaps(target: Map[String, Object], source: Map[String, Object]): Map[String, Object] = {
     source.foldLeft(target) {
