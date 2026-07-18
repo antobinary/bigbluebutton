@@ -18,6 +18,9 @@ public class SvgConversionHandler extends AbstractCommandHandler {
     private static String USE_TAG_OUTPUT = "<use";
     private static String USE_TAG_PATTERN = "\\d+\\s" + USE_TAG_OUTPUT;
 
+    private static String FILTER_TAG_OUTPUT = "<filter";
+    private static String FILTER_TAG_PATTERN = "\\d+\\s" + FILTER_TAG_OUTPUT;
+
     private final String id;
 
     public SvgConversionHandler(String id) {
@@ -78,6 +81,31 @@ public class SvgConversionHandler extends AbstractCommandHandler {
                 return Integer.parseInt(m.group(0).replace(USE_TAG_OUTPUT, "").trim());
             } catch (Exception e) {
                 log.error("Exception counting the number of use tags", e);
+                return 0;
+            }
+        }
+        return 0;
+    }
+
+    /**
+     *
+     * @return The number of &lt;filter/&gt; tags in the generated SVG. pdftocairo emits a
+     * &lt;filter&gt; (an alpha-to-luminance feColorMatrix) when it converts a PDF transparency
+     * group used as a soft mask (SMask). Browsers render this construct unreliably and it can
+     * show up blank, so its presence is used to fall back to a rasterized slide. Note: plain
+     * alpha images produce only &lt;mask&gt; (no &lt;filter&gt;) and render fine, so gating on
+     * &lt;filter&gt; avoids needlessly rasterizing them. See issue #23953.
+     */
+    public int numberOfFilterTags() {
+        if (stdoutContains(FILTER_TAG_OUTPUT)) {
+            try {
+                String out = stdoutBuilder.toString();
+                Pattern r = Pattern.compile(FILTER_TAG_PATTERN);
+                Matcher m = r.matcher(out);
+                m.find();
+                return Integer.parseInt(m.group(0).replace(FILTER_TAG_OUTPUT, "").trim());
+            } catch (Exception e) {
+                log.error("Exception counting the number of filter tags", e);
                 return 0;
             }
         }

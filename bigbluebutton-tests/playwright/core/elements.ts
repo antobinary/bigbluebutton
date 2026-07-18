@@ -339,6 +339,7 @@ export const elements = {
   uploadPresentationFileName: 'uploadTest.png',
   presentationPPTX: 'BBB.pptx',
   presentationTXT: 'helloWorld.txt',
+  blurImagePresentationFileName: 'blurImage.pdf',
   startScreenSharing: 'button[data-test="startScreenShare"]',
   stopScreenSharing: 'button[data-test="stopScreenShare"]',
   managePresentations: 'li[data-test="managePresentations"]',

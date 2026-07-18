@@ -32,6 +32,7 @@ public class SvgImageCreatorImp implements SvgImageCreator {
     private long imageTagThreshold;
     private long useTagThreshold;
     private long pathsThreshold;
+    private long filterTagThreshold = 0;
     private int convPdfToSvgTimeout = 60;
     private int pdfFontsTimeout = 3;
     private int svgResolutionPpi = 300;
@@ -226,6 +227,7 @@ public class SvgImageCreatorImp implements SvgImageCreator {
                 pHandler.numberOfImageTags() > imageTagThreshold ||
                 pHandler.numberOfPaths() > pathsThreshold ||
                 pHandler.numberOfUseTags() > useTagThreshold ||
+                pHandler.numberOfFilterTags() > filterTagThreshold ||
                 rasterizeCurrSlide) {
 
             // We need t delete the destination file as we are starting a
@@ -274,9 +276,13 @@ public class SvgImageCreatorImp implements SvgImageCreator {
                 log.error(" --analytics-- data={}", logStr, ioException);
             }
 
-            // Step 1: Convert a PDF page to PNG using a raw pdftocairo
-            NuProcessBuilder convertPdfToPng = createConversionProcess("-png", page, source,
-                        tempPng.getAbsolutePath().substring(0, tempPng.getAbsolutePath().lastIndexOf('.')), false,
+            // Step 1: Rasterize the PDF page to PNG using poppler's splash backend (pdftoppm).
+            // We intentionally avoid pdftocairo (cairo backend) here: it fails to composite
+            // PDF transparency groups that combine a soft mask (SMask) with an ICCBased
+            // colorspace, producing a blank raster. The splash backend renders them correctly.
+            // See issue #23953.
+            NuProcessBuilder convertPdfToPng = createRasterizationProcess(page, source,
+                        tempPng.getAbsolutePath().substring(0, tempPng.getAbsolutePath().lastIndexOf('.')),
                     convPdfToSvgTimeout);
 
             Pdf2PngPageConverterHandler pngHandler = new Pdf2PngPageConverterHandler("pdf2png-" + pres.getMeetingId() + "-" + pres.getId() + "-" + page);
@@ -412,8 +418,26 @@ public class SvgImageCreatorImp implements SvgImageCreator {
 
         rawCommand  += " -q -f " + String.valueOf(page) + " -l " + String.valueOf(page) + " " + source + " " + destFile;
         if (analyze) {
-            rawCommand += " && grep -oE '<image|<path|<use' "+destFile+" | sort | uniq -c ";
+            rawCommand += " && grep -oE '<image|<path|<use|<filter' "+destFile+" | sort | uniq -c ";
         }
+
+        return new NuProcessBuilder(Arrays.asList("/usr/share/bbb-web/run-in-systemd.sh", timeout + "s", "/bin/sh", "-c", rawCommand));
+    }
+
+    // Rasterizes a single PDF page to PNG using poppler's splash backend (pdftoppm) instead of
+    // the cairo backend (pdftocairo -png). The cairo backend renders some PDF transparency
+    // groups (e.g. a soft-masked ICCBased image) as blank, whereas the splash backend composites
+    // them correctly. "-singlefile" makes pdftoppm write exactly "<destFileRoot>.png" (no page
+    // number suffix), matching the temp file the caller created. See issue #23953.
+    private NuProcessBuilder createRasterizationProcess(int page, String source, String destFileRoot, long timeout) {
+        String rawCommand = "pdftoppm -q -png -singlefile -r " + this.svgResolutionPpi;
+
+        //Resize png resolution to avoid too large files
+        if (this.pngWidthRasterizedSlides != 0) {
+            rawCommand += " -scale-to-x " + this.pngWidthRasterizedSlides + " -scale-to-y -1";
+        }
+
+        rawCommand += " -f " + String.valueOf(page) + " -l " + String.valueOf(page) + " " + source + " " + destFileRoot;
 
         return new NuProcessBuilder(Arrays.asList("/usr/share/bbb-web/run-in-systemd.sh", timeout + "s", "/bin/sh", "-c", rawCommand));
     }
@@ -493,6 +517,10 @@ public class SvgImageCreatorImp implements SvgImageCreator {
 
     public void setPathsThreshold(long threshold) {
         pathsThreshold = threshold;
+    }
+
+    public void setFilterTagThreshold(long threshold) {
+        filterTagThreshold = threshold;
     }
     
     public void setSlidesGenerationProgressNotifier(
