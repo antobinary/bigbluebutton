@@ -178,10 +178,9 @@ class ApiControllerSpec extends Specification implements ControllerUnitTest<ApiC
 
     and: "a user joins the meeting"
     def mmetingId = params[ApiParams.MEETING_ID]
-    def password = params[ApiParams.MODERATOR_PW]
     resetWebCall()
 
-    createJoinUser(password)
+    createJoinUser()
     params[ApiParams.MEETING_ID] = mmetingId
     setChecksumAndQueryString('join')
     controller.join()
@@ -267,10 +266,10 @@ class ApiControllerSpec extends Specification implements ControllerUnitTest<ApiC
     params[ApiParams.VOICE_BRIDGE] = Objects.toString(faker.number().numberBetween(25000, 80000))
   }
 
-  def createJoinUser(password) {
+  def createJoinUser() {
     params[ApiParams.MEETING_ID] = faker.educator().course()
     params[ApiParams.FULL_NAME] = faker.superhero().name()
-    params[ApiParams.PASSWORD] = password
+    params[ApiParams.ROLE] = "MODERATOR"
     params[ApiParams.REDIRECT] = "false"
   }
 

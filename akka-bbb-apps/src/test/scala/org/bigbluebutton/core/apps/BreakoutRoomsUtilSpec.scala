@@ -21,13 +21,13 @@ class BreakoutRoomsUtilSpec extends UnitSpec {
   }
 
   it should "create a base string" in {
-    val baseString = "fullName=User+4621018&isBreakout=true&meetingID=random-1853792&password=mp&redirect=true"
+    val baseString = "fullName=User+4621018&isBreakout=true&meetingID=random-1853792&redirect=true&role=MODERATOR"
 
     val params = new collection.mutable.HashMap[String, String]
     params += "fullName" -> BreakoutRoomsUtil.urlEncode("User 4621018")
     params += "isBreakout" -> BreakoutRoomsUtil.urlEncode("true")
     params += "meetingID" -> BreakoutRoomsUtil.urlEncode("random-1853792")
-    params += "password" -> BreakoutRoomsUtil.urlEncode("mp")
+    params += "role" -> BreakoutRoomsUtil.urlEncode("MODERATOR")
     params += "redirect" -> BreakoutRoomsUtil.urlEncode("true")
 
     val result = BreakoutRoomsUtil.createBaseString(params.toMap)
@@ -36,18 +36,18 @@ class BreakoutRoomsUtilSpec extends UnitSpec {
 
   it should "calculate the checksum of join url" in {
     val sharedSecret = "a820d30da2db356124fce5bd5d8054b4"
-    val checksum = "6baef866df491ae82df992eb14f7f8511d5b77f3"
-    val baseString = "fullName=User+4621018&isBreakout=true&meetingID=random-1853792&password=mp&redirect=true"
+    val checksum = "3e84497a600e67476b73c4bb9cce3a3de413dcfa"
+    val baseString = "fullName=User+4621018&isBreakout=true&meetingID=random-1853792&redirect=true&role=MODERATOR"
 
     val joinChecksum = BreakoutRoomsUtil.calculateChecksum("join", baseString, sharedSecret)
     assert(joinChecksum == checksum)
   }
 
   it should "create a join api url" in {
-    val baseString = "fullName=User+4621018&isBreakout=true&meetingID=random-1853792&password=mp&redirect=true"
+    val baseString = "fullName=User+4621018&isBreakout=true&meetingID=random-1853792&redirect=true&role=MODERATOR"
     val webAPI = "http://www.example.com/bigbluebutton/api/"
     val joinAPI = "join"
-    val checksum = "6baef866df491ae82df992eb14f7f8511d5b77f3"
+    val checksum = "3e84497a600e67476b73c4bb9cce3a3de413dcfa"
 
     val joinURL = webAPI.concat(joinAPI).concat("?").concat(baseString).concat("&checksum=").concat(checksum)
     val result = BreakoutRoomsUtil.createJoinURL(webAPI, joinAPI, baseString, checksum);

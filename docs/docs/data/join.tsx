@@ -14,22 +14,15 @@ const joinEndpointTableData = [
     "description": (<>The meeting ID that identifies the meeting you are attempting to join.</>)
   },
   {
-    "name": "password",
-    "required": true,
-    "type": "String",
-    deprecated: true,
-    "description": (
-      <>
-        <p>This password value is used to determine the role of the user. It must match either the moderator or attendee password.</p>
-        <p><i>Deprecated:</i> Use the <code>role</code> parameter instead to directly set the user's role. If the <code>role</code> parameter is passed, then the <code>password</code> parameter is not required.</p>
-      </>
-    )
-  },
-  {
     "name": "role",
     "required": true,
     "type": "String",
-    "description": (<>Define user role for the meeting.  Valid values are MODERATOR or VIEWER (case insensitive). If the role parameter is present and valid, it overrides the password parameter.  You must specify either password parameter or role parameter in the join request.</>)
+    "description": (
+      <>
+        <p>Defines the user's role for the meeting. Valid values are <code>MODERATOR</code> or <code>VIEWER</code> (case insensitive).</p>
+        <p><i>Note:</i> the legacy <code>password</code> parameter — used to derive the role by matching the meeting's moderator/attendee password — was deprecated in BigBlueButton 3.0 and <b>removed in 4.0</b>. Use <code>role</code> instead.</p>
+      </>
+    )
   },
   {
     "name": "createTime",

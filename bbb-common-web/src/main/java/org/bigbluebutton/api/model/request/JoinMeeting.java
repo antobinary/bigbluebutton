@@ -2,10 +2,7 @@ package org.bigbluebutton.api.model.request;
 
 import org.bigbluebutton.api.model.constraint.*;
 import org.bigbluebutton.api.model.shared.Checksum;
-import org.bigbluebutton.api.model.shared.JoinPassword;
-import org.bigbluebutton.api.model.shared.Password;
 
-import jakarta.validation.Valid;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.Collections;
@@ -19,7 +16,6 @@ public class JoinMeeting extends RequestWithChecksum<JoinMeeting.Params> {
         MEETING_ID("meetingID"),
         USER_ID("userID"),
         FULL_NAME("fullName"),
-        PASSWORD("password"),
         GUEST("guest"),
         AUTH("auth"),
         CREATE_TIME("createTime"),
@@ -42,9 +38,6 @@ public class JoinMeeting extends RequestWithChecksum<JoinMeeting.Params> {
     @NotEmpty(key = "missingParamFullName", message = "You must provide your name")
     private String fullName;
 
-    @PasswordConstraint
-    private String password;
-
     @IsBooleanConstraint(message = "Guest must be a boolean value (true or false)")
     private String guestString;
     private Boolean guest;
@@ -59,12 +52,8 @@ public class JoinMeeting extends RequestWithChecksum<JoinMeeting.Params> {
 
     private String role;
 
-    @Valid
-    private Password joinPassword;
-
     public JoinMeeting(Checksum checksum, HttpServletRequest servletRequest) {
         super(checksum, servletRequest);
-        joinPassword = new JoinPassword();
     }
 
     @Override
@@ -94,14 +83,6 @@ public class JoinMeeting extends RequestWithChecksum<JoinMeeting.Params> {
 
     public void setFullName(String fullName) {
         this.fullName = fullName;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     public void setGuestString(String guestString) { this.guestString = guestString; }
@@ -146,17 +127,10 @@ public class JoinMeeting extends RequestWithChecksum<JoinMeeting.Params> {
     public void populateFromParamsMap(Map<String, String[]> params) {
         if(params.containsKey(Params.MEETING_ID.getValue())) {
             setMeetingID(params.get(Params.MEETING_ID.getValue())[0]);
-            joinPassword.setMeetingID(meetingID);
         }
 
         if(params.containsKey(Params.USER_ID.getValue())) setUserID(params.get(Params.USER_ID.getValue())[0]);
         if(params.containsKey(Params.FULL_NAME.getValue())) setFullName(params.get(Params.FULL_NAME.getValue())[0]);
-
-        if(params.containsKey(Params.PASSWORD.getValue())) {
-            setPassword(params.get(Params.PASSWORD.getValue())[0]);
-            joinPassword.setPassword(password);
-        }
-
 
         if(params.containsKey(Params.GUEST.getValue())) setGuestString(params.get(Params.GUEST.getValue())[0]);
         if(params.containsKey(Params.AUTH.getValue())) setAuthString(params.get(Params.AUTH.getValue())[0]);
