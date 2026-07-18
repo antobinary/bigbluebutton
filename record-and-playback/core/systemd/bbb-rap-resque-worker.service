@@ -8,6 +8,9 @@ PartOf=bigbluebutton.target
 Type=simple
 ExecStart=/usr/bin/bundle exec rake -f Rakefile resque:workers
 WorkingDirectory=/usr/local/bigbluebutton/core/scripts
+# The bigbluebutton user's passwd home (/home/bigbluebutton) does not exist;
+# point HOME at a real, user-owned directory so Bundler does not warn. (#16374)
+Environment=HOME=/var/lib/bigbluebutton
 Environment=QUEUE=rap:archive,rap:publish,rap:process,rap:sanity,rap:captions,rap:events
 Environment=COUNT=1
 # Environment=VVERBOSE=1

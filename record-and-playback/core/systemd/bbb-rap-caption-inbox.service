@@ -6,6 +6,9 @@ PartOf=bigbluebutton.target
 Type=simple
 ExecStart=/usr/local/bigbluebutton/core/scripts/rap-caption-inbox.rb
 WorkingDirectory=/usr/local/bigbluebutton/core
+# The bigbluebutton user's passwd home (/home/bigbluebutton) does not exist;
+# point HOME at a real, user-owned directory so Bundler does not warn. (#16374)
+Environment=HOME=/var/lib/bigbluebutton
 User=bigbluebutton
 Slice=bbb_record_core.slice
 Restart=on-failure

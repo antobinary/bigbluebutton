@@ -28,6 +28,14 @@ case "$1" in
     # Run recording link fixup/upgrade script
     # Don't abort on failure; users can manually run it later, too
     if id $BBB_USER > /dev/null 2>&1 ; then
+      # The bigbluebutton user's passwd home (/home/bigbluebutton) is never
+      # created, so services running as this user get HOME pointing at a
+      # missing directory and Bundler warns "`/home/bigbluebutton` is not a
+      # directory". The RAP units set HOME to this directory instead; make sure
+      # it exists and is writable by the user. (#16374)
+      mkdir -p /var/lib/bigbluebutton
+      chown $BBB_USER:$BBB_USER /var/lib/bigbluebutton
+
       mkdir -p /var/bigbluebutton/recording/status
       chown $BBB_USER:$BBB_USER /var/bigbluebutton/recording/status
 
