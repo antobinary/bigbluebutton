@@ -32,7 +32,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
@@ -53,8 +52,6 @@ import org.springframework.data.domain.*;
 public class RecordingServiceFileImpl implements RecordingService {
     private static Logger log = LoggerFactory.getLogger(RecordingServiceFileImpl.class);
 
-    private static final Pattern PRESENTATION_ID_PATTERN = Pattern.compile("^[a-z0-9]{40}-[0-9]{13}\\.[0-9a-zA-Z]{3,4}$");
-
     private static String processDir = "/var/bigbluebutton/recording/process";
     private static String publishedDir = "/var/bigbluebutton/published";
     private static String unpublishedDir = "/var/bigbluebutton/unpublished";
@@ -65,16 +62,7 @@ public class RecordingServiceFileImpl implements RecordingService {
     private String captionsDir;
     private Boolean allowFetchAllRecordings;
     private String presentationBaseDir;
-    private String defaultServerUrl;
     private String defaultTextTrackUrl;
-
-    private void copyPresentationFile(File presFile, File dlownloadableFile) {
-        try {
-            FileUtils.copyFile(presFile, dlownloadableFile);
-        } catch (IOException ex) {
-            log.error("Failed to copy file: {}", ex);
-        }
-    }
 
     public void processMakePresentationDownloadableMsg(MakePresentationDownloadableMsg msg) {
         try {
@@ -269,21 +257,6 @@ public class RecordingServiceFileImpl implements RecordingService {
         return resultRecordings;
     }
 
-    private ArrayList<File> getAllRecordingsFor(String recordId) {
-        String[] format = getPlaybackFormats(publishedDir);
-        ArrayList<File> ids = new ArrayList<File>();
-
-        for (int i = 0; i < format.length; i++) {
-            List<File> recordings = getDirectories(publishedDir + File.separatorChar + format[i]);
-            for (int f = 0; f < recordings.size(); f++) {
-                if (recordId.equals(recordings.get(f).getName()))
-                    ids.add(recordings.get(f));
-            }
-        }
-
-        return ids;
-    }
-
     public boolean isRecordingExist(String recordId) {
         List<String> publishList = getAllRecordingIds(publishedDir);
         List<String> unpublishList = getAllRecordingIds(unpublishedDir);
@@ -351,19 +324,6 @@ public class RecordingServiceFileImpl implements RecordingService {
         return recs;
     }
 
-    private static void deleteRecording(String id, String path) {
-        String[] format = getPlaybackFormats(path);
-        for (String aFormat : format) {
-            List<File> recordings = getDirectories(path + File.separatorChar + aFormat);
-            for (File recording : recordings) {
-                if (recording.getName().equals(id)) {
-                    deleteDirectory(recording);
-                    createDirectory(recording);
-                }
-            }
-        }
-    }
-
     private static void createDirectory(File directory) {
         if (!directory.exists())
             directory.mkdirs();
@@ -424,10 +384,6 @@ public class RecordingServiceFileImpl implements RecordingService {
 
     public void setPresentationBaseDir(String dir) {
         presentationBaseDir = dir;
-    }
-
-    public void setDefaultServerUrl(String url) {
-        defaultServerUrl = url;
     }
 
     public void setDefaultTextTrackUrl(String url) {
@@ -692,18 +648,6 @@ public class RecordingServiceFileImpl implements RecordingService {
         }
     }
 
-
-    private Map<String,File> indexRecordings(List<File> recs) {
-        Map<String,File> indexedRecs = new HashMap<>();
-
-        Iterator<File> iterator = recs.iterator();
-        while (iterator.hasNext()) {
-            File rec = iterator.next();
-            indexedRecs.put(rec.getName(), rec);
-        }
-
-        return indexedRecs;
-    }
 
     private String getDestinationBaseDirectoryName(String state) {
         return getDestinationBaseDirectoryName(state, false);

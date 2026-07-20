@@ -164,7 +164,6 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
         <property name="recordingServiceHelper" ref="recordingServiceHelper"/>
         <property name="xmlService" ref="xmlService" />
         <property name="presentationBaseDir" value="${presentationDir}"/>
-        <property name="defaultServerUrl" value="${bigbluebutton.web.serverURL}"/>
         <property name="defaultTextTrackUrl" value="${defaultTextTrackUrl}"/>
     </bean>
 
