@@ -379,7 +379,7 @@ class ApiController {
       }
       if (createTime != meeting.getCreateTime()) {
         // BEGIN - backward compatibility
-        invalid("mismatchCreateTimeParam", "The createTime parameter submitted mismatches with the current meeting.", redirectClient, errorRedirectUrl);
+        invalid("mismatchCreateTimeParam", "The createTime parameter submitted mismatches with the current meeting.", redirectClient, errorRedirectUrl, true, meeting.getLogoutUrl());
         return
         // END - backward compatibility
 
@@ -578,7 +578,7 @@ class ApiController {
 
     if (hasReachedMaxParticipants(meeting, us)) {
       // BEGIN - backward compatibility
-      invalid("maxParticipantsReached", "The number of participants allowed for this meeting has been reached.", redirectClient, errorRedirectUrl)
+      invalid("maxParticipantsReached", "The number of participants allowed for this meeting has been reached.", redirectClient, errorRedirectUrl, true, us.logoutUrl)
       return
       // END - backward compatibility
 
@@ -635,7 +635,7 @@ class ApiController {
     // have it wait for approval.
     String destUrl = us.clientUrl
     if (guestStatusVal == GuestPolicy.DENY) {
-      invalid("guestDeniedAccess", "You have been denied access to this meeting based on the meeting's guest policy", redirectClient, errorRedirectUrl)
+      invalid("guestDeniedAccess", "You have been denied access to this meeting based on the meeting's guest policy", redirectClient, errorRedirectUrl, true, us.logoutUrl)
       return
     }
 
@@ -2101,7 +2101,7 @@ class ApiController {
   }
 
   //TODO: method added for backward compatibility, it will be removed in next versions after 0.8
-  private void invalid(key, msg, redirectResponse = false, errorRedirectUrl = "", useLogoutUrl = true) {
+  private void invalid(key, msg, redirectResponse = false, errorRedirectUrl = "", useLogoutUrl = true, meetingLogoutUrl = "") {
     // Note: This xml scheme will be DEPRECATED.
     log.debug CONTROLLER_NAME + "#invalid " + msg
     if (redirectResponse) {
@@ -2114,7 +2114,7 @@ class ApiController {
       JSONArray errorsJSONArray = new JSONArray(errors)
       log.debug "JSON Errors {}", errorsJSONArray.toString()
 
-      respondWithRedirect(errorsJSONArray, errorRedirectUrl, useLogoutUrl)
+      respondWithRedirect(errorsJSONArray, errorRedirectUrl, useLogoutUrl, meetingLogoutUrl)
     } else {
       response.addHeader("Cache-Control", "no-cache")
       withFormat {
@@ -2149,8 +2149,15 @@ class ApiController {
     return newURL;
   }
 
-  private void respondWithRedirect(errorsJSONArray, redirectUrl = "", useLogoutUrl = true) {
+  private void respondWithRedirect(errorsJSONArray, redirectUrl = "", useLogoutUrl = true, meetingLogoutUrl = "") {
     String uriString = paramsProcessorUtil.getDefaultLogoutUrl();
+
+    // The logoutURL stored on the meeting at create is not URL-validated, so
+    // only fall back to it when it can actually serve as a redirect target
+    if (useLogoutUrl && !StringUtils.isEmpty(meetingLogoutUrl)
+        && ServiceUtils.getValidationService().isValidURL(meetingLogoutUrl)) {
+      uriString = meetingLogoutUrl;
+    }
 
     if (useLogoutUrl && !StringUtils.isEmpty(params.logoutURL)) {
       try {
