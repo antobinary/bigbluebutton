@@ -32,8 +32,9 @@ Starting with BigBlueButton 2.3 many of the configuration files have local overr
 | /usr/local/bigbluebutton/bbb-webrtc-sfu/config/default.yml              | /etc/bigbluebutton/bbb-webrtc-sfu/production.yml | Arrays are merged by replacement                                                 |
 | /usr/local/bigbluebutton/bbb-pads/config/settings.json                  | /etc/bigbluebutton/bbb-pads.json                 | Arrays are merged by replacement                                                 |
 | /usr/share/bbb-shared-notes-server/config/default.yml                   | /etc/bigbluebutton/bbb-shared-notes-server.yml   |                                                  |
-| /usr/local/bigbluebutton/core/scripts/bigbluebutton.yml                 | /etc/bigbluebutton/recording/recording.yml       |
+| /usr/local/bigbluebutton/core/scripts/bigbluebutton.yml                 | /etc/bigbluebutton/recording/recording.yml       | Honored by all recording formats; re-read on every processing step, so changes do not require a restart |
 | /usr/local/bigbluebutton/core/scripts/presentation.yml                  | /etc/bigbluebutton/recording/presentation.yml    |
+| /usr/local/bigbluebutton/core/scripts/video.yml                         | /etc/bigbluebutton/recording/video.yml           | Individual `presets` are merged by key; other settings are replaced              |
 | /etc/cron.daily/bigbluebutton                                           | /etc/default/bigbluebutton-cron-config    | Only variables allowed in the override
 
 <br /><br />
@@ -65,6 +66,15 @@ services {
   sharedSecret="UsanRxRk938d02cTWfAqSM9Cvin7bnzsREfqFfzpf2U"
 }
 ```
+
+For the recording pipeline, `/etc/bigbluebutton/recording/recording.yml` overrides settings from `/usr/local/bigbluebutton/core/scripts/bigbluebutton.yml` for every recording format (presentation, video, screenshare, notes, podcast). For example, the following `recording.yml` makes published recording links use a different hostname and protocol:
+
+```yml
+playback_host: playback.example.com
+playback_protocol: https
+```
+
+The override is re-read on every recording processing step, so a change takes effect for the next recording without restarting the recording workers. The playback link in a recording's `metadata.xml` is regenerated at publish time, so links of an already-published recording can be corrected by rebuilding it: `bbb-record --rebuild <internal meeting ID>`.
 
 ## HTML5 Client
 
