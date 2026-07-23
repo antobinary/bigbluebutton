@@ -30,7 +30,7 @@ require 'fastimage' # require fastimage to get the image size of the slides (gem
 
 
 # This script lives in scripts/archive/steps while properties.yaml lives in scripts/
-bbb_props = YAML::load(File.open('../../core/scripts/bigbluebutton.yml'))
+bbb_props = BigBlueButton.read_props
 notes_props = YAML::load(File.open('notes.yml'))
 
 opts = Optimist::options do

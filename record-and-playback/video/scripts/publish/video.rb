@@ -128,8 +128,15 @@ captions.each do |caption|
                "#{publish_dir}/caption_#{caption['locale']}.vtt")
 end
 
-# Copy over metadata xml file
-FileUtils.cp("#{process_dir}/metadata.xml", "#{publish_dir}/metadata.xml")
+# Refresh the playback link from current props (honoring recording.yml
+# overrides) and write the updated metadata to the publish directory, rather
+# than copying the process-time metadata.xml with a possibly-stale link.
+link = metadata_xml.at_xpath('/recording/playback/link')
+if link
+  link.content = "#{props['playback_protocol']}://#{props['playback_host']}/playback/video/#{meeting_id}/"
+  logger.info("Refreshed playback link to #{link.content}")
+end
+File.write("#{publish_dir}/metadata.xml", metadata_xml.to_xml)
 
 # Get raw size of presentation files
 raw_dir = "#{recording_dir}/raw/#{meeting_id}"
