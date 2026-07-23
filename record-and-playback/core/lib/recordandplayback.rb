@@ -237,19 +237,16 @@ module BigBlueButton
     File.join(BigBlueButton.rap_core_path, 'scripts')
   end
 
-  def self.read_props
-    return @props if @props
-
-    filepathRecOverride = "/etc/bigbluebutton/recording/recording.yml"
-    hasOverride = File.file?(filepathRecOverride)
-    
+  # Do not cache the result: long-lived processes (e.g. the resque workers)
+  # must pick up changes to the override file without a restart.
+  def self.read_props(override_path: '/etc/bigbluebutton/recording/recording.yml')
     filepath = File.join(BigBlueButton.rap_scripts_path, 'bigbluebutton.yml')
-    @props = YAML::load(File.open(filepath))
-    if (hasOverride)
-      recOverrideProps = YAML::load(File.open(filepathRecOverride))
-      @props = @props.merge(recOverrideProps)
+    props = YAML.safe_load(File.read(filepath), aliases: true) || {}
+    if File.file?(override_path)
+      override_props = YAML.safe_load(File.read(override_path), aliases: true) || {}
+      props = props.merge(override_props)
     end
-    @props
+    props
   end
 
   def self.create_redis_publisher
