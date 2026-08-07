@@ -29,6 +29,11 @@ chmod 755 staging/usr/local/bigbluebutton/core/scripts/*/*.rb
 mkdir -p staging/var/bigbluebutton
 cp -r playback staging/var/bigbluebutton
 
+# The standalone legacy players (0.81/0.9.0) are shipped separately by the
+# optional bbb-playback-presentation-legacy deb, so they are not installed by default.
+rm -rf staging/var/bigbluebutton/playback/presentation/0.81 \
+       staging/var/bigbluebutton/playback/presentation/0.9.0
+
 mkdir -p staging/usr/share/bigbluebutton/nginx
 mv staging/usr/local/bigbluebutton/core/scripts/presentation.nginx staging/usr/share/bigbluebutton/nginx
 
