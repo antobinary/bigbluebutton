@@ -75,8 +75,6 @@ class ReceivedJsonMsgHandlerActor(
         routeGenericMsg[GetGuestsWaitingApprovalReqMsg](envelope, jsonNode)
       case GuestsWaitingApprovedMsg.NAME =>
         routeGenericMsg[GuestsWaitingApprovedMsg](envelope, jsonNode)
-      case UpdatePositionInWaitingQueueReqMsg.NAME =>
-        routeGenericMsg[UpdatePositionInWaitingQueueReqMsg](envelope, jsonNode)
       case SetGuestPolicyCmdMsg.NAME =>
         routeGenericMsg[SetGuestPolicyCmdMsg](envelope, jsonNode)
       case GetGuestPolicyReqMsg.NAME =>
@@ -156,8 +154,6 @@ class ReceivedJsonMsgHandlerActor(
       // Pads
       case PadGroupCreatedEvtMsg.NAME =>
         routePadMsg[PadGroupCreatedEvtMsg](envelope, jsonNode)
-      case PadCreateReqMsg.NAME =>
-        routeGenericMsg[PadCreateReqMsg](envelope, jsonNode)
       case PadCreatedEvtMsg.NAME =>
         routePadMsg[PadCreatedEvtMsg](envelope, jsonNode)
       case BNSharedNotesCreatedEvtMsg.NAME =>
@@ -174,8 +170,6 @@ class ReceivedJsonMsgHandlerActor(
         routePadMsg[PadUpdatedSysMsg](envelope, jsonNode)
       case PadContentSysMsg.NAME =>
         routePadMsg[PadContentSysMsg](envelope, jsonNode)
-      case PadUpdatePubMsg.NAME =>
-        routeGenericMsg[PadUpdatePubMsg](envelope, jsonNode)
       case PadPinnedReqMsg.NAME =>
         routeGenericMsg[PadPinnedReqMsg](envelope, jsonNode)
 

@@ -83,16 +83,6 @@ case class SetGuestPolicyCmdMsg(
 ) extends StandardMsg
 case class SetGuestPolicyCmdMsgBody(policy: String, setBy: String)
 
-/**
- * Message sent from the client when a new guest user appeared or one of the guest users
- * was accepted or denied. Present waiting users change positions in queue.
- */
-object UpdatePositionInWaitingQueueReqMsg { val NAME = "UpdatePositionInWaitingQueueReqMsg" }
-case class UpdatePositionInWaitingQueueReqMsg(
-    header: BbbClientMsgHeader,
-    body:   UpdatePositionInWaitingQueueReqMsgBody
-) extends StandardMsg
-case class UpdatePositionInWaitingQueueReqMsgBody(guests: Vector[GuestWaitingUP])
 case class GuestWaitingUP(intId: String, idx: String)
 
 /**

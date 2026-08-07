@@ -646,7 +646,6 @@ class MeetingActor(
 
       // Pads
       case m: PadGroupCreatedEvtMsg         => padsApp2x.handle(m, liveMeeting, msgBus)
-      case m: PadCreateReqMsg               => padsApp2x.handle(m, liveMeeting, msgBus)
       case m: PadCreatedEvtMsg              => padsApp2x.handle(m, liveMeeting, msgBus)
       case m: BNSharedNotesCreatedEvtMsg    => padsApp2x.handle(m, liveMeeting, msgBus)
       case m: BNSharedNotesUpdatedEvtMsg    => padsApp2x.handle(m, liveMeeting, msgBus)
@@ -657,7 +656,6 @@ class MeetingActor(
         padsApp2x.handle(m, liveMeeting, msgBus)
         updateUserLastActivity(m.body.userId)
       case m: PadContentSysMsg => padsApp2x.handle(m, liveMeeting, msgBus)
-      case m: PadUpdatePubMsg  => padsApp2x.handle(m, liveMeeting, msgBus)
       case m: PadPinnedReqMsg =>
         padsApp2x.handle(m, liveMeeting, msgBus)
         updateUserLastActivity(m.header.userId)
@@ -740,8 +738,7 @@ class MeetingActor(
       case m: GuestsWaitingApprovedMsg =>
         handleGuestsWaitingApprovedMsg(m)
         updateUserLastActivity(m.header.userId)
-      case m: GetGuestPolicyReqMsg               => handleGetGuestPolicyReqMsg(m)
-      case m: UpdatePositionInWaitingQueueReqMsg => handleUpdatePositionInWaitingQueueReqMsg(m)
+      case m: GetGuestPolicyReqMsg => handleGetGuestPolicyReqMsg(m)
       case m: SetPrivateGuestLobbyMessageCmdMsg =>
         handleSetPrivateGuestLobbyMessageCmdMsg(m)
         updateUserLastActivity(m.header.userId)

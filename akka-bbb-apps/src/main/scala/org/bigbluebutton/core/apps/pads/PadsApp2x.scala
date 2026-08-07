@@ -41,7 +41,6 @@ object PadsApp2x {
 
 class PadsApp2x(implicit val context: ActorContext)
   extends PadGroupCreatedEvtMsgHdlr
-  with PadCreateReqMsgHdlr
   with PadCreatedEvtMsgHdlr
   with BNSharedNotesCreatedEvtMsgHdlr
   with BNSharedNotesUpdatedEvtMsgHdlr
@@ -50,6 +49,5 @@ class PadsApp2x(implicit val context: ActorContext)
   with PadSessionDeletedSysMsgHdlr
   with PadUpdatedSysMsgHdlr
   with PadContentSysMsgHdlr
-  with PadUpdatePubMsgHdlr
   with PadPinnedReqMsgHdlr {
 }

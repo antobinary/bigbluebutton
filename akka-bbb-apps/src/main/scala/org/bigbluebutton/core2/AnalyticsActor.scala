@@ -182,7 +182,6 @@ class AnalyticsActor(val includeChat: Boolean) extends Actor with ActorLogging {
       case m: GuestsWaitingApprovedEvtMsg => logMessage(msg)
       case m: GuestWaitingLeftEvtMsg => logMessage(msg)
       case m: GuestsWaitingForApprovalEvtMsg => logMessage(msg)
-      case m: UpdatePositionInWaitingQueueReqMsg => logMessage(msg)
       case m: PosInWaitingQueueUpdatedRespMsg => logMessage(msg)
       case m: SetGuestPolicyCmdMsg => logMessage(msg)
       case m: GuestPolicyChangedEvtMsg => logMessage(msg)
@@ -215,7 +214,6 @@ class AnalyticsActor(val includeChat: Boolean) extends Actor with ActorLogging {
       case m: PadCreateGroupCmdMsg => logMessage(msg)
       case m: PadGroupCreatedEvtMsg => logMessage(msg)
       case m: PadGroupCreatedRespMsg => logMessage(msg)
-      case m: PadCreateReqMsg => logMessage(msg)
       case m: PadCreateCmdMsg => logMessage(msg)
       case m: PadCreatedEvtMsg => logMessage(msg)
       case m: BNSharedNotesCreatedEvtMsg => logMessage(msg)
@@ -229,7 +227,6 @@ class AnalyticsActor(val includeChat: Boolean) extends Actor with ActorLogging {
       case m: PadSessionDeletedEvtMsg => logMessage(msg)
       case m: PadUpdatedSysMsg => logMessage(msg)
       case m: PadUpdatedEvtMsg => logMessage(msg)
-      case m: PadUpdatePubMsg => logMessage(msg)
       case m: PadUpdateCmdMsg => logMessage(msg)
 
       // Breakouts
