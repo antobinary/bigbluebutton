@@ -50,6 +50,9 @@ interface NotesDropdownContainerGraphqlProps {
   handlePinSharedNotes: (pinned: boolean) => void;
   padId: string;
   isEtherpadSharedNotes: boolean;
+  // Set when the menu is rendered from the pinned (media area) header, where
+  // unpinning is already offered by the header's close button.
+  isPinned?: boolean;
 }
 
 interface NotesDropdownGraphqlProps extends NotesDropdownContainerGraphqlProps {
@@ -63,6 +66,7 @@ interface NotesDropdownGraphqlProps extends NotesDropdownContainerGraphqlProps {
 const NotesDropdownGraphql: React.FC<NotesDropdownGraphqlProps> = (props) => {
   const {
     amIPresenter, presentations, handlePinSharedNotes, isRTL, padId, presentationEnabled, isEtherpadSharedNotes,
+    isPinned,
   } = props;
   const [converterButtonDisabled, setConverterButtonDisabled] = useState(false);
   const intl = useIntl();
@@ -141,7 +145,7 @@ const NotesDropdownGraphql: React.FC<NotesDropdownGraphqlProps> = (props) => {
       }
     }
 
-    if (amIPresenter && NOTES_ARE_PINNABLE()) {
+    if (amIPresenter && NOTES_ARE_PINNABLE() && !isPinned) {
       menuItems.push(
         {
           key: uniqueId('notes-option-'),
@@ -189,7 +193,9 @@ const NotesDropdownGraphql: React.FC<NotesDropdownGraphqlProps> = (props) => {
 };
 
 const NotesDropdownContainerGraphql: React.FC<NotesDropdownContainerGraphqlProps> = (props) => {
-  const { handlePinSharedNotes, padId, isEtherpadSharedNotes } = props;
+  const {
+    handlePinSharedNotes, padId, isEtherpadSharedNotes, isPinned,
+  } = props;
   const { data: currentUserData } = useCurrentUser((user) => ({
     presenter: user.presenter,
   }));
@@ -214,6 +220,7 @@ const NotesDropdownContainerGraphql: React.FC<NotesDropdownContainerGraphqlProps
       presentationEnabled={isPresentationEnabled}
       padId={padId}
       isEtherpadSharedNotes={isEtherpadSharedNotes}
+      isPinned={isPinned}
     />
   );
 };

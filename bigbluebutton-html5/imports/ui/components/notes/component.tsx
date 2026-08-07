@@ -125,6 +125,14 @@ const NotesGraphql: React.FC<NotesGraphqlProps> = (props) => {
     return amIPresenter ? (
       <Styled.Header
         title={intl.formatMessage(intlMessages.title)}
+        customRightButton={(
+          <NotesDropdown
+            isEtherpadSharedNotes={sharedNotesEditor === 'etherpad'}
+            handlePinSharedNotes={handlePinSharedNotes}
+            padId={padId}
+            isPinned
+          />
+        )}
         rightButtonProps={{
           'aria-label': intl.formatMessage(intlMessages.unpinNotes),
           'data-test': 'unpinNotes',
