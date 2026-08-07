@@ -5,7 +5,7 @@ import * as Y from "yjs";
 import { Logger } from "../common/logger";
 import { exportDocumentToHtml } from "./handlers/exportDocumentToHtml";
 import { exportDocumentToMarkdown } from "./handlers/exportDocumentToMarkdown";
-import { exportHtmlToPdf } from "./handlers/exportDocumentToPdf";
+import { exportHtmlToPdf, toPdfOrientation } from "./handlers/exportDocumentToPdf";
 import { exportDocumentToJson } from "./handlers/exportDocumentToJson";
 import { exportDocumentToYjs } from "./handlers/exportDocumentToYjs";
 
@@ -124,6 +124,10 @@ const documentApi: DocumentApi = {
           const fullHtmlToBeConvertedToHtml = await exportDocumentToHtml(documentName);
           const pdfBuffer = await exportHtmlToPdf(fullHtmlToBeConvertedToHtml, {
             format: 'A4',
+            // `?orientation=landscape` is used by "convert notes to presentation",
+            // where a portrait page ends up as a tall, hard-to-read slide. A plain
+            // "export as PDF" download stays portrait.
+            orientation: toPdfOrientation(request.query.orientation),
             printBackground: true,
             margin: {
               top: '20mm',

@@ -30,7 +30,9 @@ async function convertAndUpload(
   if (isEtherpadEditor) {
     exportUrlString = Auth.authenticateURL(`${PADS_CONFIG.url}/p/${padId}/export/${extension}?${params}`);
   } else {
-    exportUrlString = Auth.authenticateURL(`https://${hocuspocusServerHostname}/hocuspocus/api/documents/${padId}/export/${extension}?${params}`);
+    // Landscape: the PDF becomes a slide here, and a portrait page renders as a
+    // tall, narrow slide that is hard to read in the presentation area.
+    exportUrlString = Auth.authenticateURL(`https://${hocuspocusServerHostname}/hocuspocus/api/documents/${padId}/export/${extension}?${params}&orientation=landscape`);
   }
   const exportUrl = Auth.authenticateURL(exportUrlString);
 

@@ -81,8 +81,21 @@ async function inlineEmojiImages(html: string): Promise<string> {
   return result;
 }
 
+export type PdfOrientation = 'Portrait' | 'Landscape';
+
+/**
+ * Narrow arbitrary (request-supplied) input to a wkhtmltopdf orientation.
+ * The result is interpolated into the conversion command, so only these two
+ * literals may ever reach the shell — anything else falls back to Portrait.
+ */
+export function toPdfOrientation(value: unknown): PdfOrientation {
+  return String(value).toLowerCase() === 'landscape' ? 'Landscape' : 'Portrait';
+}
+
 interface PdfExportOptions {
   format?: 'A4' | 'Letter';
+  /** Page orientation. Defaults to Portrait, matching wkhtmltopdf's own default. */
+  orientation?: PdfOrientation;
   printBackground?: boolean;
   margin?: {
     top?: string;
@@ -99,9 +112,12 @@ interface PdfExportOptions {
  */
 export async function exportHtmlToPdf(
   htmlContent: string,
-  _options: PdfExportOptions = {}
+  options: PdfExportOptions = {}
 ): Promise<Buffer> {
   const { workDir, runnerScript, timeout } = config.commandExecution;
+  // Re-narrow rather than trusting the caller's typing: this value ends up in
+  // the shell command below.
+  const orientation = toPdfOrientation(options.orientation);
 
   if (!fs.existsSync(workDir)) {
     fs.mkdirSync(workDir, { recursive: true });
@@ -130,6 +146,7 @@ export async function exportHtmlToPdf(
           --encoding utf-8 \
           --dpi 96 \
           --page-size A4 \
+          --orientation ${orientation} \
           --margin-top 0mm \
           --margin-bottom 0mm \
           --margin-left 0mm \
