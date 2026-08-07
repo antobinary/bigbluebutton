@@ -165,12 +165,12 @@ export async function createMeetingWithModules(
 export function getJoinURL({ meetingID, fullName, options }: GetJoinUrlProp): string {
   const { isModerator, joinParameter, skipSessionDetailsModal } = options || {};
 
-  const pw = isModerator ? parameters.moderatorPW : parameters.attendeePW;
+  const role = isModerator ? 'MODERATOR' : 'VIEWER';
   const shouldSkipSessionDetailsModal = skipSessionDetailsModal
     ? '&userdata-bbb_show_session_details_on_join=false'
     : ''; // default value in settings.yml is true
   const baseQuery = `fullName=${fullName}&meetingID=${meetingID}`
-    + `&password=${pw}${shouldSkipSessionDetailsModal}`; // prettier-ignore
+    + `&role=${role}${shouldSkipSessionDetailsModal}`; // prettier-ignore
   const query = joinParameter !== undefined ? `${baseQuery}&${joinParameter}` : baseQuery;
   const apiCall = `join${query}${parameters.secret}`;
   const checksum = getChecksum(apiCall, parameters.secret!);

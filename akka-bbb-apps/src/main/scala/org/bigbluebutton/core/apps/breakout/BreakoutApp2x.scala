@@ -71,8 +71,7 @@ object BreakoutRoomsUtil extends SystemConfiguration {
       breakoutMeetingId:   String,
       avatarURL:           String,
       webcamBackgroundURL: String,
-      role:                String,
-      password:            String
+      role:                String
   ): (collection.immutable.Map[String, String], collection.immutable.Map[String, String]) = {
     val moderator = role == "MODERATOR"
     val params = collection.immutable.HashMap(
@@ -83,7 +82,7 @@ object BreakoutRoomsUtil extends SystemConfiguration {
       "avatarURL" -> urlEncode(avatarURL),
       "webcamBackgroundURL" -> urlEncode(webcamBackgroundURL),
       "userdata-bbb_parent_room_moderator" -> urlEncode(moderator.toString()),
-      "password" -> urlEncode(password),
+      "role" -> urlEncode(role),
       "redirect" -> urlEncode("true")
     )
 
