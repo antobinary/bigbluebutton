@@ -109,6 +109,94 @@ const fixCursorAtOriginExtension = Extension.create({
   },
 });
 
+// TODO: remove once BlockNote's URL detector stops treating U+FFFC as an
+// ordinary URL character (BlockNote's linkDetector.ts matches URLs with
+// `[^\s]+`, and U+FFFC is not whitespace).
+//
+// When paste rules run, @tiptap/core flattens each textblock with
+// `textBetween(..., undefined, '￼')`, so every leaf node — a hard break in
+// particular — becomes an OBJECT REPLACEMENT CHARACTER. Pasting
+// `<p>https://example.org/x<br>* next line</p>` (what a chat client puts on the
+// clipboard for two lines of one message) therefore autolinks
+// `https://example.org/x￼*` as a single URL: the visible link keeps the
+// right text but its href gains `%EF%BF%BC*` and no longer resolves, and the
+// link mark bleeds onto the text after the break.
+//
+// Repair it after the fact: drop the broken mark, and give the run that really
+// spells out the URL a link with the href truncated at the first U+FFFC.
+const OBJECT_REPLACEMENT_CHARACTER = '￼';
+const repairBrokenLinksPluginKey = new PluginKey('bbbRepairBrokenLinks');
+type BrokenLinkRun = { href: string; nodes: { from: number; to: number; text: string }[] };
+const repairBrokenLinksExtension = Extension.create({
+  name: 'bbbRepairBrokenLinks',
+  addProseMirrorPlugins() {
+    return [
+      new Plugin({
+        key: repairBrokenLinksPluginKey,
+        appendTransaction(transactions, _oldState, newState) {
+          if (!transactions.some((transaction) => transaction.docChanged)) return null;
+          const linkType = newState.schema.marks.link;
+          if (!linkType) return null;
+
+          // Adjacent text nodes carrying the same broken href form one run.
+          const runs: BrokenLinkRun[] = [];
+          let currentRun: BrokenLinkRun | null = null;
+          let currentRunEnd = -1;
+
+          // Leaf nodes the link bled onto (the hard break itself) carry the mark
+          // too, and would otherwise be left behind as an empty <a>.
+          const strayLeaves: { from: number; to: number }[] = [];
+
+          newState.doc.descendants((node, pos) => {
+            if (!node.isInline) return;
+            const href = node.marks.find((mark) => mark.type === linkType)?.attrs?.href;
+            if (typeof href !== 'string' || !href.includes(OBJECT_REPLACEMENT_CHARACTER)) {
+              currentRun = null;
+              return;
+            }
+            if (!node.isText) {
+              strayLeaves.push({ from: pos, to: pos + node.nodeSize });
+              currentRun = null;
+              return;
+            }
+            const entry = { from: pos, to: pos + node.nodeSize, text: node.text ?? '' };
+            if (currentRun !== null && currentRun.href === href && currentRunEnd === pos) {
+              currentRun.nodes.push(entry);
+            } else {
+              currentRun = { href, nodes: [entry] };
+              runs.push(currentRun);
+            }
+            currentRunEnd = entry.to;
+          });
+
+          if (runs.length === 0 && strayLeaves.length === 0) return null;
+
+          const { tr } = newState;
+          strayLeaves.forEach(({ from, to }) => tr.removeMark(from, to, linkType));
+          runs.forEach(({ href, nodes }) => {
+            const cleanHref = href.split(OBJECT_REPLACEMENT_CHARACTER)[0];
+            let offset = 0;
+            let stillMatching = cleanHref.length > 0;
+            nodes.forEach(({ from, to, text }) => {
+              tr.removeMark(from, to, linkType);
+              // Re-link only while the run keeps spelling out the cleaned URL;
+              // everything past the break was never part of the link.
+              if (stillMatching && cleanHref.substr(offset, text.length) === text) {
+                tr.addMark(from, to, linkType.create({ href: cleanHref }));
+                offset += text.length;
+              } else {
+                stillMatching = false;
+              }
+            });
+          });
+
+          return tr.steps.length > 0 ? tr : null;
+        },
+      }),
+    ];
+  },
+});
+
 // TODO: remove this workaround once y-prosemirror's cursor decoration can set `marks: []`
 // (the upstream-correct fix is `marks: []` on the cursor `Decoration.widget` in
 // y-prosemirror/src/plugins/cursor-plugin.js; related: https://github.com/yjs/y-prosemirror/issues/174).
@@ -289,7 +377,12 @@ function BlockNoteApp(props: BlockNoteAppProps): React.ReactElement {
       },
     },
     _tiptapOptions: {
-      extensions: [maxDocumentCharsExtension, fixCursorAtOriginExtension, escapeBlurExtension],
+      extensions: [
+        maxDocumentCharsExtension,
+        fixCursorAtOriginExtension,
+        escapeBlurExtension,
+        repairBrokenLinksExtension,
+      ],
     },
     pasteHandler: ({ event, defaultPasteHandler }) => {
       try {
