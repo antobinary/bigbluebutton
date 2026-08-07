@@ -4,7 +4,9 @@ import { ELEMENT_WAIT_EXTRA_LONG_TIME, ELEMENT_WAIT_LONGER_TIME, ELEMENT_WAIT_TI
 import { elements as e } from '../../core/elements';
 import { MultiUsers } from '../../user/multiusers';
 import {
+  enableMarkdownNotesOptions,
   getBlockNoteEditorLocator,
+  getBlockNoteLinkLocator,
   getBlockNoteReadOnlyLocator,
   hasNoUnreadNotesIndicator,
   startSharedNotesBlockNote,
@@ -448,5 +450,125 @@ export class BlockNoteSharedNotes extends MultiUsers {
     await modNotesEditor.click();
     await this.modPage.page.keyboard.type('New content');
     await this.userPage.hasNotificationIcon(e.sharedNotesSidebarButton, 'should display the unread indicator again after new edits');
+  }
+
+  // Regression for the shared-notes options menu disappearing while the notes are
+  // pinned to the whiteboard: the pinned (media area) header used to render only
+  // the unpin button, so export/import/convert were unreachable until unpinning.
+  async optionsMenuStaysAvailableWhilePinned() {
+    const { sharedNotesEnabled } = this.modPage.settings || {};
+
+    if (!sharedNotesEnabled) {
+      await this.modPage.hasElement(e.messagesSidebarButton, 'should display the public chat button');
+      await this.modPage.wasRemoved(e.sharedNotesSidebarButton, 'should not display the shared notes button');
+      return;
+    }
+
+    await enableMarkdownNotesOptions(this.modPage);
+    await startSharedNotesBlockNote(this.modPage);
+
+    await this.modPage.waitAndClick(e.notesOptions);
+    await this.modPage.waitAndClick(e.pinNotes);
+    await this.modPage.hasElement(e.unpinNotes, 'should display the unpin notes button once pinned');
+
+    await this.modPage.hasElement(
+      e.notesOptions,
+      'should keep the notes options menu reachable while the notes are pinned',
+    );
+    await this.modPage.waitAndClick(e.notesOptions);
+    await this.modPage.hasElement(e.exportNotesAsPDF, 'should offer "export as PDF" while pinned');
+    await this.modPage.hasElement(e.exportNotesAsMarkdown, 'should offer "export as Markdown" while pinned');
+    await this.modPage.hasElement(e.sendNotesToWhiteboard, 'should offer "convert and upload" while pinned');
+    await this.modPage.wasRemoved(e.pinNotes, 'should not offer "pin notes" when the notes are already pinned');
+
+    await this.modPage.press('Escape');
+    await this.modPage.waitAndClick(e.unpinNotes);
+    await this.modPage.hasElement(e.notesOptions, 'should still display the notes options menu after unpinning');
+  }
+
+  // Regression for link hrefs picking up U+FFFC (%EF%BF%BC) plus the start of the
+  // following line when the pasted content puts a soft line break right after a
+  // URL — what a chat client's clipboard HTML looks like for a multi-line message.
+  async pastedLinkSurvivesSoftLineBreak() {
+    const { sharedNotesEnabled } = this.modPage.settings || {};
+
+    if (!sharedNotesEnabled) {
+      await this.modPage.hasElement(e.messagesSidebarButton, 'should display the public chat button');
+      await this.modPage.wasRemoved(e.sharedNotesSidebarButton, 'should not display the shared notes button');
+      return;
+    }
+
+    const url = 'https://bigbluebutton.org/support';
+
+    await startSharedNotesBlockNote(this.modPage);
+    const editorLocator = getBlockNoteEditorLocator(this.modPage);
+    await editorLocator.click();
+
+    // Paste through a real ClipboardEvent so the whole BlockNote paste pipeline
+    // (and its link paste rules) runs exactly as it does for a manual Ctrl+V.
+    await editorLocator.evaluate((editorElement, pastedUrl) => {
+      const clipboardData = new DataTransfer();
+      clipboardData.setData('text/html', `<p>${pastedUrl}<br>* next line</p>`);
+      const target = editorElement.querySelector('[contenteditable="true"]') ?? editorElement;
+      target.dispatchEvent(
+        new ClipboardEvent('paste', {
+          clipboardData,
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    }, url);
+
+    const linkLocator = getBlockNoteLinkLocator(this.modPage);
+    await expect(linkLocator.first(), 'should autolink the pasted URL').toBeVisible({
+      timeout: ELEMENT_WAIT_TIME,
+    });
+
+    await expect(async () => {
+      const hrefs = await linkLocator.evaluateAll((anchors) =>
+        anchors.map((anchor) => anchor.getAttribute('href') ?? ''),
+      );
+      expect(hrefs, 'should produce exactly one link').toHaveLength(1);
+      expect(hrefs[0], 'href should not absorb the line break or the next line').toBe(url);
+    }, 'pasted link should keep a clean href across a soft line break').toPass({
+      timeout: ELEMENT_WAIT_TIME,
+    });
+  }
+
+  // Regression for "convert notes to presentation" producing a portrait slide:
+  // the PDF that becomes the presentation must be landscape (width > height).
+  async convertsNotesToLandscapePresentation() {
+    const { sharedNotesEnabled } = this.modPage.settings || {};
+
+    if (!sharedNotesEnabled) {
+      await this.modPage.hasElement(e.messagesSidebarButton, 'should display the public chat button');
+      await this.modPage.wasRemoved(e.sharedNotesSidebarButton, 'should not display the shared notes button');
+      return;
+    }
+
+    await startSharedNotesBlockNote(this.modPage);
+    const editorLocator = getBlockNoteEditorLocator(this.modPage);
+    await editorLocator.click();
+    await editorLocator.pressSequentially('landscape check');
+
+    await this.modPage.waitAndClick(e.notesOptions);
+    const [pdfResponse] = await Promise.all([
+      this.modPage.page.context().waitForEvent('response', {
+        predicate: (response: Response) => response.url().includes('/export/pdf'),
+        timeout: ELEMENT_WAIT_EXTRA_LONG_TIME,
+      }),
+      this.modPage.waitAndClick(e.sendNotesToWhiteboard),
+    ]);
+
+    await expect(pdfResponse.url(), 'convert-and-upload should ask for a landscape PDF').toContain(
+      'orientation=landscape',
+    );
+
+    const pdf = (await pdfResponse.body()).toString('latin1');
+    const mediaBox = /\/MediaBox\s*\[\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*\]/.exec(pdf);
+    expect(mediaBox, 'should be able to read the page size out of the generated PDF').not.toBeNull();
+    const width = Number(mediaBox![3]) - Number(mediaBox![1]);
+    const height = Number(mediaBox![4]) - Number(mediaBox![2]);
+    expect(width, `page should be landscape, got ${width} x ${height}`).toBeGreaterThan(height);
   }
 }

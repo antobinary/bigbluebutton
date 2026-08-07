@@ -70,4 +70,22 @@ test.describe.parallel('Shared Notes - BlockNote', { tag: '@ci' }, () => {
     await initializePages(sharedNotes, browser, { isMultiUser: true, createParameter: CREATE_PARAMETER, testInfo });
     await sharedNotes.unreadNotesIndicator();
   });
+
+  test('Options menu stays available while notes are pinned', async ({ browser, context }, testInfo) => {
+    const sharedNotes = new BlockNoteSharedNotes(browser, context);
+    await initializePages(sharedNotes, browser, { createParameter: CREATE_PARAMETER, testInfo });
+    await sharedNotes.optionsMenuStaysAvailableWhilePinned();
+  });
+
+  test('Pasted link keeps a clean href across a soft line break', async ({ browser, context }, testInfo) => {
+    const sharedNotes = new BlockNoteSharedNotes(browser, context);
+    await initializePages(sharedNotes, browser, { createParameter: CREATE_PARAMETER, testInfo });
+    await sharedNotes.pastedLinkSurvivesSoftLineBreak();
+  });
+
+  test('Convert notes to presentation produces a landscape slide', async ({ browser, context }, testInfo) => {
+    const sharedNotes = new BlockNoteSharedNotes(browser, context);
+    await initializePages(sharedNotes, browser, { createParameter: CREATE_PARAMETER, testInfo });
+    await sharedNotes.convertsNotesToLandscapePresentation();
+  });
 });
