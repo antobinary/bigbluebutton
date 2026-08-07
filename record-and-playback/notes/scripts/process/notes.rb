@@ -38,7 +38,7 @@ end
 meeting_id = opts[:meeting_id]
 
 # This script lives in scripts/archive/steps while properties.yaml lives in scripts/
-props = YAML::load(File.open('../../core/scripts/bigbluebutton.yml'))
+props = BigBlueButton.read_props
 notes_props = YAML::load(File.open('notes.yml'))
 format = notes_props['format']
 

@@ -37,7 +37,7 @@ if playback != 'screenshare'
 end
 
 # Load parameters and set up paths
-props = YAML::load(File.open(File.expand_path('../../bigbluebutton.yml', __FILE__)))
+props = BigBlueButton.read_props
 screenshare_props = YAML::load(File.open(File.expand_path('../../screenshare.yml', __FILE__)))
 
 process_dir = "#{props['recording_dir']}/process/screenshare/#{meeting_id}"
@@ -81,8 +81,16 @@ captions.each do |caption|
                "#{publish_dir}/caption_#{caption['locale']}.vtt")
 end
 
-# Copy over metadata xml file
-FileUtils.cp("#{process_dir}/metadata.xml", "#{publish_dir}/metadata.xml")
+# Refresh the playback link from current props (honoring recording.yml
+# overrides) and write the updated metadata to the publish directory, rather
+# than copying the process-time metadata.xml with a possibly-stale link.
+metadata_xml = Nokogiri::XML(File.open("#{process_dir}/metadata.xml"))
+link = metadata_xml.at_xpath('/recording/playback/link')
+if link
+  link.content = "#{props['playback_protocol']}://#{props['playback_host']}/recording/screenshare/#{meeting_id}/"
+  logger.info "Refreshed playback link to #{link.content}"
+end
+File.write("#{publish_dir}/metadata.xml", metadata_xml.to_xml)
 
 # Copy over css and js support files
 FileUtils.cp_r("#{process_dir}/css", publish_dir)
