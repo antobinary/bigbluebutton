@@ -3,12 +3,6 @@ package org.bigbluebutton.common2.msgs
 /**
  * Message sent by client to get list of guests waiting for approval.
  */
-object GetGuestsWaitingApprovalReqMsg { val NAME = "GetGuestsWaitingApprovalReqMsg" }
-case class GetGuestsWaitingApprovalReqMsg(
-    header: BbbClientMsgHeader,
-    body:   GetGuestsWaitingApprovalReqMsgBody
-) extends StandardMsg
-case class GetGuestsWaitingApprovalReqMsgBody(requesterId: String)
 
 /**
  * Message sent to client in response to request for list of guests waiting for approval.
@@ -83,18 +77,10 @@ case class SetGuestPolicyCmdMsg(
 ) extends StandardMsg
 case class SetGuestPolicyCmdMsgBody(policy: String, setBy: String)
 
-case class GuestWaitingUP(intId: String, idx: String)
-
 /**
  * Message sent to bbb-web when a new guest user appeared or one of the guest users
  * was accepted, denied or left the guest lobby. A change in the position in waiting queue is notified.
  */
-object PosInWaitingQueueUpdatedRespMsg { val NAME = "PosInWaitingQueueUpdatedRespMsg" }
-case class PosInWaitingQueueUpdatedRespMsg(
-    header: BbbClientMsgHeader,
-    body:   PosInWaitingQueueUpdatedRespMsgBody
-) extends BbbCoreMsg
-case class PosInWaitingQueueUpdatedRespMsgBody(guests: Vector[GuestWaitingUP])
 
 /**
  * Message sent to all clients that guest policy has been changed.
@@ -149,19 +135,7 @@ case class PrivateGuestLobbyMsgChangedEvtMsgBody(guestId: String, message: Strin
 /**
  * Message from user to get the guest policy.
  */
-object GetGuestPolicyReqMsg { val NAME = "GetGuestPolicyReqMsg" }
-case class GetGuestPolicyReqMsg(
-    header: BbbClientMsgHeader,
-    body:   GetGuestPolicyReqMsgBody
-) extends StandardMsg
-case class GetGuestPolicyReqMsgBody(requestedBy: String)
 
 /**
  * Sent to client as response to query for guest policy.
  */
-object GetGuestPolicyRespMsg { val NAME = "GetGuestPolicyRespMsg" }
-case class GetGuestPolicyRespMsg(
-    header: BbbClientMsgHeader,
-    body:   GetGuestPolicyRespMsgBody
-) extends StandardMsg
-case class GetGuestPolicyRespMsgBody(policy: String)
