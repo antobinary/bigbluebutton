@@ -225,7 +225,6 @@ class UsersApp(
   with SetUserSpeechOptionsMsgHdlr
   with LogoutAndEndMeetingCmdMsgHdlr
   with SetRecordingStatusCmdMsgHdlr
-  with RecordAndClearPreviousMarkersCmdMsgHdlr
   with GetRecordingStatusReqMsgHdlr
   with AssignPresenterReqMsgHdlr
   with ChangeUserPinStateReqMsgHdlr
@@ -235,7 +234,6 @@ class UsersApp(
   with ChangeUserRaiseHandReqMsgHdlr
   with ChangeUserAwayReqMsgHdlr
   with EjectUserFromMeetingCmdMsgHdlr
-  with EjectUserFromMeetingSysMsgHdlr
   with MuteUserCmdMsgHdlr {
 
   val log = Logging(context.system, getClass)

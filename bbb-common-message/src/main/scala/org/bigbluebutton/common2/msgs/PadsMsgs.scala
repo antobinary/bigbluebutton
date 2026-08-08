@@ -21,11 +21,6 @@ object PadGroupCreatedRespMsg { val NAME = "PadGroupCreatedRespMsg" }
 case class PadGroupCreatedRespMsg(header: BbbClientMsgHeader, body: PadGroupCreatedRespMsgBody) extends BbbCoreMsg
 case class PadGroupCreatedRespMsgBody(externalId: String, model: String, name: String)
 
-// client -> apps
-object PadCreateReqMsg { val NAME = "PadCreateReqMsg" }
-case class PadCreateReqMsg(header: BbbClientMsgHeader, body: PadCreateReqMsgBody) extends StandardMsg
-case class PadCreateReqMsgBody(externalId: String, name: String)
-
 // apps -> shared-notes-server
 object BNSharedNotesCreateCmdMsg { val NAME = "BNSharedNotesCreateCmdMsg" }
 case class BNSharedNotesCreateCmdMsg(header: BbbCoreHeaderWithMeetingId, body: BNSharedNotesCreateCmdMsgBody) extends BbbCoreMsg
@@ -111,15 +106,7 @@ object PadTailEvtMsg { val NAME = "PadTailEvtMsg" }
 case class PadTailEvtMsg(header: BbbCoreHeaderWithMeetingId, body: PadTailEvtMsgBody) extends BbbCoreMsg
 case class PadTailEvtMsgBody(externalId: String, tail: String)
 
-// client -> apps
-object PadUpdatePubMsg { val NAME = "PadUpdatePubMsg" }
-case class PadUpdatePubMsg(header: BbbClientMsgHeader, body: PadUpdatePubMsgBody) extends StandardMsg
-case class PadUpdatePubMsgBody(externalId: String, text: String, transcript: Boolean)
-
 // apps -> pads
-object PadUpdateCmdMsg { val NAME = "PadUpdateCmdMsg" }
-case class PadUpdateCmdMsg(header: BbbCoreHeaderWithMeetingId, body: PadUpdateCmdMsgBody) extends BbbCoreMsg
-case class PadUpdateCmdMsgBody(groupId: String, name: String, text: String)
 
 // pads -> apps
 object PadCapturePubMsg { val NAME = "PadCapturePubMsg" }
