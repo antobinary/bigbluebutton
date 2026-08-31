@@ -28,8 +28,8 @@ export class MultiUsers {
     this.context = context;
   }
 
-  async initPages(page: PlaywrightPage, testInfo: TestInfo) {
-    await this.initModPage(page, { testInfo });
+  async initPages(page: PlaywrightPage, testInfo: TestInfo, options: InitExtraPageOptionsProps = {}) {
+    await this.initModPage(page, { testInfo, ...options });
     await this.initUserPage(this.context, { testInfo });
   }
 

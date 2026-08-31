@@ -12,7 +12,9 @@ test.describe.parallel('Recording', { tag: '@ci' }, () => {
     const context = await browser.newContext();
     const page = await context.newPage();
     const recording = new Recording(browser, context);
-    await recording.initModPage(page, { createParameter: c.recordMeeting });
+    // recordMeeting types into the Etherpad notes UI; pin the editor so the
+    // suite also passes on servers whose default sharedNotesEditor is blockNote
+    await recording.initModPage(page, { createParameter: `${c.recordMeeting}&sharedNotesEditor=etherpad` });
     generatedRecordingPlaybackUrl = await recording.recordMeeting();
   });
 

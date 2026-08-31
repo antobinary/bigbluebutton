@@ -192,7 +192,9 @@ test.describe.parallel('Breakout', { tag: '@ci' }, () => {
 
     test('Export breakout room shared notes', async ({ browser, context, page }, testInfo) => {
       const join = new Join(browser, context);
-      await join.initPages(page, testInfo);
+      // exportBreakoutNotes drives the Etherpad notes UI; pin the editor so the
+      // test also passes on servers whose default sharedNotesEditor is blockNote
+      await join.initPages(page, testInfo, { createParameter: 'sharedNotesEditor=etherpad' });
       await join.create(true);
       await join.exportBreakoutNotes();
     });
