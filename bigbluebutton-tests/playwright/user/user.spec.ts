@@ -228,7 +228,9 @@ test.describe.parallel('User', { tag: '@ci' }, () => {
       // https://docs.bigbluebutton.org/3.0/testing/release-testing/#shared-notes-1
       test('Lock Edit Shared Notes', async ({ browser, context, page }, testInfo) => {
         const lockViewers = new LockViewers(browser, context);
-        await lockViewers.initPages(page, testInfo);
+        // lockEditSharedNotes drives the Etherpad notes UI; pin the editor so the
+        // test also passes on servers whose default sharedNotesEditor is blockNote
+        await lockViewers.initPages(page, testInfo, { createParameter: 'sharedNotesEditor=etherpad' });
         await lockViewers.lockEditSharedNotes();
       });
 
