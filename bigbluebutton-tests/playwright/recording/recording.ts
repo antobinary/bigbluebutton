@@ -12,7 +12,7 @@ import { MultiUsers } from '../user/multiusers';
 export class Recording extends MultiUsers {
   public playbackPage!: Page;
 
-  async getRecordingsWithRetry(maxAttempts = 5, delayMs = 5000) {
+  async getRecordingsWithRetry(maxAttempts = 12, delayMs = 10000) {
     await this.modPage.page.waitForTimeout(5000); // minimum wait time expected before first attempt
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       const { data } = await getRecordings(this.modPage.meetingId);
@@ -26,13 +26,27 @@ export class Recording extends MultiUsers {
         Array.isArray(response.recordings) &&
         response.recordings.length > 0
       ) {
-        return { response };
-      }
-
-      if (attempt < maxAttempts) {
+        // Servers with extra playback packages (notes, podcast, ...) publish each format
+        // independently, and getRecordings lists a recording as soon as its FIRST format is
+        // out. Keep polling until the presentation format itself is published, and return it
+        // directly so callers don't assume it is format[0].
+        type PlaybackFormat = { type?: string[]; url?: string[] };
+        const formats: PlaybackFormat[] = response.recordings[0]?.recording?.[0]?.playback?.[0]?.format ?? [];
+        const presentationFormat = formats.find((format) => format?.type?.[0] === 'presentation');
+        if (presentationFormat) {
+          return { response, presentationFormat };
+        }
+        console.log(
+          `getRecordings (attempt ${attempt}/${maxAttempts}): recording found but presentation format not` +
+            ` published yet (got: ${formats.map((format) => format?.type?.[0]).join(', ') || 'none'})`,
+        );
+      } else if (attempt < maxAttempts) {
         console.log(
           `getRecordings (attempt ${attempt}/${maxAttempts}): No recordings found yet, retrying in ${delayMs}ms`,
         );
+      }
+
+      if (attempt < maxAttempts) {
         await this.modPage.page.waitForTimeout(delayMs);
       }
     }
@@ -93,7 +107,7 @@ export class Recording extends MultiUsers {
     await this.modPage.hasElement(e.meetingEndedModal, 'should display the meeting ended modal for the moderator');
 
     // request recording API endpoint with retry logic
-    const { response } = await this.getRecordingsWithRetry();
+    const { response, presentationFormat } = await this.getRecordingsWithRetry();
     const recordings = response?.recordings?.[0];
     const recordingData = recordings?.recording?.[0];
     if (!recordingData) {
@@ -101,8 +115,9 @@ export class Recording extends MultiUsers {
     }
     expect(response?.returncode?.[0], 'getRecordings API call should return "SUCCESS"').toEqual('SUCCESS');
     expect(recordingData?.metadata?.[0]?.isBreakout?.[0], 'metadata.isBreakout should not be true').toEqual('false');
-    // validate recording format
-    const playbackData = recordingData?.playback?.[0]?.format?.[0];
+    // validate recording format — selected by type, not position: servers with extra
+    // playback packages installed return several formats in arbitrary order
+    const playbackData = presentationFormat;
     expect(playbackData?.type?.[0], 'playback type should be presentation').toEqual('presentation');
     // validate playback URL
     const playbackUrl = playbackData?.url?.[0];
