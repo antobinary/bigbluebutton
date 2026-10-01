@@ -1,0 +1,38 @@
+name: Verify published packages
+# Is the newest build in the apt repo made from the tip of its release branch?
+# Only lines whose package versions embed the git sha can be checked.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "23 */2 * * *"
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - branch: v4.0.x-release
+            repo: https://ubuntu.bigbluebutton.org/noble-40-prerelease
+            dist: bigbluebutton-noble
+    steps:
+      - name: Compare the meta-package's build sha with the branch tip
+        env:
+          BRANCH: ${{ matrix.branch }}
+          REPO: ${{ matrix.repo }}
+          DIST: ${{ matrix.dist }}
+          UPSTREAM: https://github.com/${{ github.repository }}
+        run: |
+          tip="$(git ls-remote "$UPSTREAM" "refs/heads/$BRANCH" | cut -f1)"
+          [ -n "$tip" ] || { echo "::error::no branch $BRANCH at $UPSTREAM"; exit 1; }
+          curl -fsS "$REPO/dists/$DIST/main/binary-amd64/Packages.gz" | gunzip > Packages
+          built="$(awk -v RS='' '$0 ~ /(^|\n)Package: bigbluebutton\n/' Packages \
+                   | grep -oE 'git\.local-build-[0-9a-f]+' | head -1 | sed 's/.*-//')"
+          [ -n "$built" ] || { echo "::error::$BRANCH: the bigbluebutton meta-package version at $REPO carries no git sha"; exit 1; }
+          case "$tip" in
+            "$built"*) echo "$BRANCH: published build $built is the branch tip" ;;
+            *) echo "::error::$BRANCH tip is ${tip::10} but the newest published build is $built (a build may still be in flight; if this persists, the tip was never built)"
+               exit 1 ;;
+          esac
