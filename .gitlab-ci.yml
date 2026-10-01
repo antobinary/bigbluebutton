@@ -1,3 +1,11 @@
+# No GitLab runs this pipeline. Packages are built by the GitHub Actions
+# workflow in the packaging repository, whose build/ scripts read two values
+# from this file so they are kept in one place:
+#   default.image                               build/setup.sh
+#   get_external_dependencies.artifacts.paths   build/get_external_dependencies.sh
+# Keep those current. The stages and jobs around them describe a pipeline
+# nothing executes.
+
 # set up stages
 #
 
