@@ -1,0 +1,40 @@
+name: Trigger package build
+# Tell the package-build workflow (in the packaging repo) to build THIS commit
+# on every push to a release branch, instead of leaving it to build whatever
+# the branch tip is when it next runs.
+on:
+  push:
+    branches:
+      - "v[3-9].*.x-release"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  # A superseded dispatch is harmless; a cancelled one is a missed build.
+  group: trigger-package-build-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  dispatch:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Dispatch build-packages for exactly this commit
+        env:
+          BUILD_REPO: ${{ vars.PACKAGE_BUILD_REPO }}
+          TOKEN: ${{ secrets.PACKAGE_BUILD_DISPATCH_TOKEN }}
+          REF: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
+        run: |
+          [ -n "$BUILD_REPO" ] || { echo "::error::repository variable PACKAGE_BUILD_REPO is not set (owner/name)"; exit 1; }
+          payload="$(jq -nc --arg ref "$REF" --arg sha "$SHA" \
+            '{event_type: "build-packages", client_payload: {ref: $ref, sha: $sha}}')"
+          code="$(curl -sS -o /tmp/resp -w '%{http_code}' -X POST \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -d "$payload" \
+            "https://api.github.com/repos/$BUILD_REPO/dispatches")"
+          if [ "$code" = 204 ]; then
+            echo "dispatched build-packages to $BUILD_REPO for $REF @ $SHA"
+          else
+            echo "::error::dispatch to $BUILD_REPO failed with HTTP $code: $(cat /tmp/resp)"
+            exit 1
+          fi
