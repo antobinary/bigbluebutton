@@ -8,6 +8,17 @@ cd "$(dirname $0)"
 source package-names.inc.sh
 cd ..
 
+# INTENDED_SHA names the commit the build was asked for. Building anything
+# else would publish the wrong packages under that request, so stop here.
+if [ -n "${INTENDED_SHA:-}" ]; then
+	HEAD_SHA="$(git rev-parse HEAD)"
+	if [ "$HEAD_SHA" != "$INTENDED_SHA" ]; then
+		echo "change_detection: checked out $HEAD_SHA but the build was asked for $INTENDED_SHA" >&2
+		exit 1
+	fi
+	echo "change_detection: building the requested commit $INTENDED_SHA"
+fi
+
 REQ_JSON=""
 
 for DEBNAME in "${!DEBNAME_TO_SOURCEDIR[@]}"
