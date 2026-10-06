@@ -302,6 +302,7 @@ The deprecated REST endpoint `/api/rest/clientSettings` has been removed. Client
 #### Other removed configuration
 
 - `public.stats.log` was removed and replaced by `public.stats.logMediaStats` (see [Client-side WebRTC stats logging](#client-side-webrtc-stats-logging)).
+- `captions` is no longer a valid `disabledFeatures` value. It has had no effect since BBB 3.0, when typed captions moved to a plugin. Use `liveTranscription` to disable automatic transcription.
 
 ### Changes to events.xml
 
@@ -314,12 +315,15 @@ The deprecated REST endpoint `/api/rest/clientSettings` has been removed. Client
 - `lockSettingsDisableNote` is no longer recognized; use `lockSettingsDisableNotes` instead. The singular property was renamed in BBB 2.5.
 - `clientLogoutTimerInMinutes` was removed. It was never consumed by the HTML5 client; its last reader, the `/enter` endpoint, was removed before BBB 4.0.
   - If you customized `/usr/share/bbb-web/WEB-INF/classes/spring/resources.xml` in place, also remove the `<property name="clientLogoutTimerInMinutes" .../>` entry - bbb-web will fail to start (`NotWritablePropertyException`) otherwise. The `bbb-conf --check` retired-property warning only scans `/etc/bigbluebutton/bbb-web.properties`, not `resources.xml`.
+- `enteredUsersTimeout` was removed. It set how long bbb-web tracked users who had called the `/enter` endpoint without joining; that endpoint was removed in BBB 3.0, so nothing has been tracked since. A leftover value in `/etc/bigbluebutton/bbb-web.properties` is ignored, and `bbb-conf --check` lists it for removal.
+  - If you customized `/usr/share/bbb-web/WEB-INF/classes/spring/resources.xml` in place, also remove the `enteredUserCleanupTimerTask` bean and the `<property name="enteredUserCleanupTimerTask" .../>` and `<property name="enteredUsersTimeout" .../>` entries - bbb-web will fail to start otherwise.
 
 #### Value changed
 
 - `defaultMeetingLayout` default changed from `CUSTOM_LAYOUT` to `UNIFIED_LAYOUT`. Accepted values are now `UNIFIED_LAYOUT` (default), plus the hybrid/niche options `CAMERAS_ONLY`, `PARTICIPANTS_AND_CHAT_ONLY`, `PRESENTATION_ONLY`, and `MEDIA_ONLY`. The previous values `CUSTOM_LAYOUT`, `SMART_LAYOUT`, `PRESENTATION_FOCUS`, and `VIDEO_FOCUS` are no longer accepted.
 - `html5PluginSdkVersion` bumped from `0.1.17` to `1.0.0-beta.2`. Plugins whose `requiredSdkVersion` only covers the `0.x` SDK no longer load; see [Plugin SDK 1.0 pre-release](#plugin-sdk-10-pre-release).
 - `disabledFeatures` accepts a new value: `pinChatMessage` (alongside the existing chat-related options).
+- `disabledFeatures` no longer lists `captions` as an option. It has had no effect since BBB 3.0, when typed captions moved to a plugin. A server that still sets it in `bbb-web.properties` keeps working: the value is accepted and ignored. Use `liveTranscription` to disable automatic transcription.
 - `sharedNotesEditor` was removed: BlockNote is the only shared-notes editor (it first became the default in 4.0.0-beta.4; see [Promoted BlockNote shared notes as default](#promoted-blocknote-shared-notes-as-default) and [Removed Etherpad](#removed-etherpad)).
 - `cameraBridge`, `screenShareBridge`, and `audioBridge` default changed from `bbb-webrtc-sfu` to `livekit` (see [LiveKit is the default media framework](#livekit-is-the-default-media-framework)).
 
