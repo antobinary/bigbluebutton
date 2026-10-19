@@ -541,7 +541,7 @@ export const elements = {
   connectionDataContainer: networkDataContainer,
   avatarsWrapperAvatar: 'div[data-test="avatarsWrapperAvatar"]',
   guestPolicyLabel: 'li[data-test="guestPolicyLabel"]',
-  downloadUserNamesList: 'li[data-test="downloadUserNamesList"]',
+  downloadUserNamesList: 'button[data-test="downloadUserNamesList"]',
   joinMeetingDemoPage: 'div[class^="join-meeting"]',
   askModerator: 'li[data-test="askModerator"]',
   alwaysAccept: 'li[data-test="alwaysAccept"]',

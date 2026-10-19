@@ -337,11 +337,11 @@ test.describe.parallel('User', { tag: '@ci' }, () => {
         await lockViewers.hideUserListSuppressesJoinNotification();
       });
 
-      // @known-issue: with the hide-user-list lock active, user-LEAVE toast
-      // notifications stop arriving for everyone (moderators included) while
-      // join toasts and plain leave notifications work - suspected 4.0 client
-      // regression, reproduced consistently; the assertion here is correct
-      test('Hide user list suppresses leave notification for locked viewer', { tag: '@known-issue' }, async ({ browser, context, page }, testInfo) => {
+      test('Hide user list suppresses leave notification for locked viewer', async ({
+        browser,
+        context,
+        page,
+      }, testInfo) => {
         const lockViewers = new LockViewers(browser, context);
         await lockViewers.initModPage(page, { testInfo });
         await lockViewers.hideUserListSuppressesLeaveNotification();
@@ -356,19 +356,15 @@ test.describe.parallel('User', { tag: '@ci' }, () => {
         },
       );
 
-      // @known-issue: with the hide-user-list lock active, user-LEAVE toast
-      // notifications stop arriving for everyone (moderators included) while
-      // join toasts and plain leave notifications work - suspected 4.0 client
-      // regression, reproduced consistently; the assertion here is correct
-      test(
-        'Hide user list leave notification is shown only to moderator and unlocked viewer',
-        { tag: '@known-issue' },
-        async ({ browser, context, page }, testInfo) => {
-          const lockViewers = new LockViewers(browser, context);
-          await lockViewers.initModPage(page, { testInfo });
-          await lockViewers.hideUserListLeaveNotificationVisibleForUnlockedAndModOnly();
-        },
-      );
+      test('Hide user list leave notification is shown only to moderator and unlocked viewer', async ({
+        browser,
+        context,
+        page,
+      }, testInfo) => {
+        const lockViewers = new LockViewers(browser, context);
+        await lockViewers.initModPage(page, { testInfo });
+        await lockViewers.hideUserListLeaveNotificationVisibleForUnlockedAndModOnly();
+      });
 
       test(
         'Hide user list join notification is visible to locked viewer when a moderator joins',
@@ -379,19 +375,15 @@ test.describe.parallel('User', { tag: '@ci' }, () => {
         },
       );
 
-      // @known-issue: with the hide-user-list lock active, user-LEAVE toast
-      // notifications stop arriving for everyone (moderators included) while
-      // join toasts and plain leave notifications work - suspected 4.0 client
-      // regression, reproduced consistently; the assertion here is correct
-      test(
-        'Hide user list leave notification is visible to locked viewer when a moderator leaves',
-        { tag: '@known-issue' },
-        async ({ browser, context, page }, testInfo) => {
-          const lockViewers = new LockViewers(browser, context);
-          await lockViewers.initModPage(page, { testInfo });
-          await lockViewers.hideUserListModeratorLeaveNotificationVisibleToAll();
-        },
-      );
+      test('Hide user list leave notification is visible to locked viewer when a moderator leaves', async ({
+        browser,
+        context,
+        page,
+      }, testInfo) => {
+        const lockViewers = new LockViewers(browser, context);
+        await lockViewers.initModPage(page, { testInfo });
+        await lockViewers.hideUserListModeratorLeaveNotificationVisibleToAll();
+      });
 
       // Regression tests for PR #25921: with hideUserList active a locked viewer keeps
       // receiving the voice state of moderators, and only of moderators.
@@ -413,9 +405,7 @@ test.describe.parallel('User', { tag: '@ci' }, () => {
     });
 
     // https://docs.bigbluebutton.org/3.0/testing/release-testing/#saving-usernames
-    // blocked: clicking downloadUserNamesList produces no download event and no
-    // client error on 4.0 - needs interactive debugging of the GET_USER_NAMES flow
-    test('Save user names', { tag: '@known-issue' }, async ({ browser, context, page }, testInfo) => {
+    test('Save user names', async ({ browser, context, page }, testInfo) => {
       const multiusers = new MultiUsers(browser, context);
       await multiusers.initPages(page, testInfo);
       await multiusers.saveUserNames();
