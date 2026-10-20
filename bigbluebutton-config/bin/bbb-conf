@@ -1093,6 +1093,18 @@ check_state() {
       echo "#"
     fi
 
+    BIGBLUEBUTTON_UID=$(id -u bigbluebutton)
+    if [ "$(loginctl show-user bigbluebutton -p Linger --value 2>/dev/null)" != "yes" ] || [ ! -d /run/user/$BIGBLUEBUTTON_UID ]; then
+      echo
+      echo "#"
+      echo "# Warning: Lingering is not enabled for the user bigbluebutton, or /run/user/$BIGBLUEBUTTON_UID"
+      echo "# does not exist.  Presentation conversion fails whenever the systemd user manager of"
+      echo "# bigbluebutton is not running.  To fix, run the command"
+      echo "#"
+      echo "#   sudo loginctl enable-linger bigbluebutton"
+      echo "#"
+    fi
+
     FREESWITCH_SIP=$(ss -anlt4 | grep :5066 | grep -v tcp6 | grep LISTEN | sed 's/ [ ]*/ /g' | cut -d' ' -f4 | sed 's/:5066//g')
     WEBRTC_SFU_SIP_IP=$(echo "$WEBRTC_SFU_CONFIG" | yq-go e '.freeswitch.sip_ip' -)
 

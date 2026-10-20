@@ -90,6 +90,12 @@ EOF
   echo "Drop-in created sucessfuly: $DROPIN_FILE"
   systemctl daemon-reexec
 
+  if ! loginctl enable-linger bigbluebutton 2>/dev/null; then
+    echo "loginctl enable-linger failed, recording lingering for bigbluebutton in /var/lib/systemd/linger"
+    mkdir -p /var/lib/systemd/linger
+    touch /var/lib/systemd/linger/bigbluebutton
+  fi
+
   # Restart bbb-web to deploy new 
   startService bbb-web.service || echo "bbb-web.service could not be registered or started"
 }
