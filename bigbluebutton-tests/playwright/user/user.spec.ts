@@ -360,7 +360,7 @@ test.describe.parallel('User', { tag: '@ci' }, () => {
 
       // https://docs.bigbluebutton.org/3.0/testing/release-testing/#microphone
       test('Lock Share microphone', { tag: '@media' }, async ({ browser, context, page, browserName }, testInfo) => {
-        test.skip(browserName === 'firefox', 'It only workss in manual testing');
+        test.skip(browserName === 'firefox', 'Selects the fake "default" microphone, which only Chromium lists');
         const lockViewers = new LockViewers(browser, context);
         await lockViewers.initPages(page, testInfo);
         await lockViewers.lockShareMicrophone();
