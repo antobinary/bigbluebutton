@@ -1,0 +1,43 @@
+name: akka-apps - plain SQL binds every value
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - "akka-bbb-apps/src/main/scala/org/bigbluebutton/core/db/**"
+      - ".github/workflows/akka-plain-sql-bind-check.yml"
+  push:
+    paths:
+      - "akka-bbb-apps/src/main/scala/org/bigbluebutton/core/db/**"
+      - ".github/workflows/akka-plain-sql-bind-check.yml"
+permissions:
+  contents: read
+jobs:
+  plain-sql-bind-check:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout PR's source merged into its target branch
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v5
+        with:
+          ref: refs/pull/${{ github.event.number }}/merge
+          fetch-depth: 1
+      - name: Checkout commit/branch
+        if: github.event_name != 'pull_request'
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 1
+      - name: No literal splice (#$) in Slick plain SQL under core/db
+        run: |
+          dir=akka-bbb-apps/src/main/scala/org/bigbluebutton/core/db
+          if [ ! -d "$dir" ]; then
+            echo "::error::$dir not found; update the path in this workflow"
+            exit 1
+          fi
+          if hits=$(grep -rnF --include='*.scala' '#$' "$dir"); then
+            echo "$hits" | while IFS=: read -r file line _; do
+              echo "::error file=$file,line=$line::Literal splice (#\$) in plain SQL. Use a bound value (\$x / \${x}) instead."
+            done
+            exit 1
+          fi
+          echo "No literal splice under $dir"
