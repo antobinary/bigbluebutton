@@ -4,6 +4,7 @@ import { API } from './api';
 import { APIBreakout } from './breakout';
 import { APIChecksum } from './checksum';
 import { APIDisabledFeatures } from './disabledFeatures';
+import { APIGetJoinUrl } from './getJoinUrl';
 import { APIJoin } from './join';
 import { APILifecycle } from './lifecycle';
 
@@ -156,6 +157,11 @@ test.describe.parallel('API', () => {
     test('maxParticipantsReached', async ({ browser, context, page, request }, testInfo) => {
       const join = new APIJoin(browser, context);
       await join.testMaxParticipants(page, testInfo, request);
+    });
+
+    test('getJoinUrlSignsFixedParameterSet', async ({ browser, context, page, request }, testInfo) => {
+      const getJoinUrl = new APIGetJoinUrl(browser, context);
+      await getJoinUrl.testSignedParameterSet(page, testInfo, request);
     });
   });
 
