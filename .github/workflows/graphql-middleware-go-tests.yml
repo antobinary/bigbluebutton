@@ -1,0 +1,45 @@
+name: Go - test bbb-graphql-middleware
+on:
+  push:
+    branches:
+      - "develop"
+      - "v[3-9].*.x-release"
+      - "v[3-9].*.x-develop"
+    paths:
+      - "bbb-graphql-middleware/**"
+      - ".github/workflows/graphql-middleware-go-tests.yml"
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - "bbb-graphql-middleware/**"
+      - ".github/workflows/graphql-middleware-go-tests.yml"
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  go-tests:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: bbb-graphql-middleware
+    steps:
+      - name: Checkout PR's source merged into its target branch
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v5
+        with:
+          ref: refs/pull/${{ github.event.number }}/merge
+      - name: Checkout commit/branch
+        if: github.event_name != 'pull_request'
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.ref }}
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: bbb-graphql-middleware/go.mod
+          cache-dependency-path: bbb-graphql-middleware/go.sum
+      - name: go vet
+        run: go vet ./...
+      - name: go test
+        run: go test -race ./...
