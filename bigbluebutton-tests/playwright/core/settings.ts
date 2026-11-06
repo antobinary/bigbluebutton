@@ -2,6 +2,7 @@ import type { Page } from '@playwright/test';
 
 export interface Settings {
   reactionsButton?: boolean;
+  helpLink?: string;
   sharedNotesEnabled?: boolean;
   directLeaveButton?: boolean;
   // Audio
@@ -60,6 +61,7 @@ export async function generateSettingsData(page: Page): Promise<Settings | undef
 
     return {
       reactionsButton: settingsData.app?.reactionsButton?.enabled,
+      helpLink: settingsData.app?.helpLink,
       sharedNotesEnabled: settingsData.notes?.enabled,
       directLeaveButton: settingsData.app?.defaultSettings?.application?.directLeaveButton,
       // Audio

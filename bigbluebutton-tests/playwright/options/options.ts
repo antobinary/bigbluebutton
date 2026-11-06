@@ -20,11 +20,21 @@ export class Options extends MultiUsers {
 
   async openHelp() {
     if (!this.modPage.context) throw new Error('Moderator page context is not initialized');
+    const helpLink = this.modPage.settings?.helpLink;
+    expect(helpLink, 'public.app.helpLink should be configured').toBeTruthy();
 
+    // the help page is an external site; answer the request here so the test checks that the
+    // client opens the configured link, not whether that site is up
+    const isHelpLink = (url: URL) => url.href === helpLink;
+    await this.modPage.context.route(isHelpLink, (route) =>
+      route.fulfill({ contentType: 'text/html', body: '<title>Help stand-in</title>' }),
+    );
     await openAboutModal(this.modPage);
     const newPage = await this.modPage.handleNewTab(e.helpLinkButton, this.modPage.context);
-    await expect(newPage, 'should the help page to display the title Tutorials').toHaveTitle(/Tutorials/);
+    await expect(newPage, 'should open the configured help link in a new tab').toHaveURL(helpLink as string);
+    await expect(newPage, 'should load the help page in the new tab').toHaveTitle('Help stand-in');
     await newPage.close();
+    await this.modPage.context.unroute(isHelpLink);
     await this.modPage.hasElement(e.whiteboard, 'should the whiteboard be open on the main meeting');
   }
 
