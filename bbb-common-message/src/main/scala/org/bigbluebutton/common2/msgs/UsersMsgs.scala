@@ -147,9 +147,6 @@ case class SetRecordingStatusCmdMsgBody(recording: Boolean, setBy: String)
 /**
  * Sent by user to start recording mark and ignore previous marks
  */
-object RecordAndClearPreviousMarkersCmdMsg { val NAME = "RecordAndClearPreviousMarkersCmdMsg" }
-case class RecordAndClearPreviousMarkersCmdMsg(header: BbbClientMsgHeader, body: RecordAndClearPreviousMarkersCmdMsgBody) extends StandardMsg
-case class RecordAndClearPreviousMarkersCmdMsgBody(recording: Boolean, setBy: String)
 
 /**
  * Sent to all users about start recording mark.
@@ -168,16 +165,10 @@ case class UpdateWebcamsOnlyForModeratorCmdMsgBody(webcamsOnlyForModerator: Bool
 /**
  * Sent by user to get the value of webcamsOnlyForModerator mark.
  */
-object GetWebcamsOnlyForModeratorReqMsg { val NAME = "GetWebcamsOnlyForModeratorReqMsg" }
-case class GetWebcamsOnlyForModeratorReqMsg(header: BbbClientMsgHeader, body: GetWebcamsOnlyForModeratorReqMsgBody) extends StandardMsg
-case class GetWebcamsOnlyForModeratorReqMsgBody(requestedBy: String)
 
 /**
  * Sent to user as response to get webcamsOnlyForModerator mark.
  */
-object GetWebcamsOnlyForModeratorRespMsg { val NAME = "GetWebcamsOnlyForModeratorRespMsg" }
-case class GetWebcamsOnlyForModeratorRespMsg(header: BbbClientMsgHeader, body: GetWebcamsOnlyForModeratorRespMsgBody) extends BbbCoreMsg
-case class GetWebcamsOnlyForModeratorRespMsgBody(webcamsOnlyForModerator: Boolean, requestedBy: String)
 
 /**
  * Sent to all users about webcam only for moderator value.
@@ -189,9 +180,6 @@ case class WebcamsOnlyForModeratorChangedEvtMsgBody(webcamsOnlyForModerator: Boo
 /**
  * Sent by user to get status of screenshare (meant for late joiners).
  */
-object GetScreenshareStatusReqMsg { val NAME = "GetScreenshareStatusReqMsg" }
-case class GetScreenshareStatusReqMsg(header: BbbClientMsgHeader, body: GetScreenshareStatusReqMsgBody) extends StandardMsg
-case class GetScreenshareStatusReqMsgBody(requestedBy: String)
 
 /**
  * Sent from client about a user changing RaiseHand.
@@ -345,9 +333,6 @@ case class UserLockedInMeetingEvtMsgBody(userId: String, locked: Boolean, locked
 /**
  * Sent by client to lock users.
  */
-object LockUsersInMeetingCmdMsg { val NAME = "LockUsersInMeetingCmdMsg" }
-case class LockUsersInMeetingCmdMsg(header: BbbClientMsgHeader, body: LockUsersInMeetingCmdMsgBody) extends StandardMsg
-case class LockUsersInMeetingCmdMsgBody(lock: Boolean, lockedBy: String, except: Vector[String])
 
 /**
  * Sent by client to set user lock setting.
@@ -424,9 +409,6 @@ case class UserLeaveReqMsgBody(userId: String, sessionId: String, loggedOut: Boo
 /**
  * Sent from client to add user to the presenter group of a meeting.
  */
-object AddUserToPresenterGroupCmdMsg { val NAME = "AddUserToPresenterGroupCmdMsg" }
-case class AddUserToPresenterGroupCmdMsg(header: BbbClientMsgHeader, body: AddUserToPresenterGroupCmdMsgBody) extends StandardMsg
-case class AddUserToPresenterGroupCmdMsgBody(userId: String, requesterId: String)
 
 /**
  * Sent to all clients about a user added to the presenter group of a meeting
@@ -438,9 +420,6 @@ case class UserAddedToPresenterGroupEvtMsgBody(userId: String, requesterId: Stri
 /**
  * Sent from client to remove user from the presenter group of a meeting.
  */
-object RemoveUserFromPresenterGroupCmdMsg { val NAME = "RemoveUserFromPresenterGroupCmdMsg" }
-case class RemoveUserFromPresenterGroupCmdMsg(header: BbbClientMsgHeader, body: RemoveUserFromPresenterGroupCmdMsgBody) extends StandardMsg
-case class RemoveUserFromPresenterGroupCmdMsgBody(userId: String, requesterId: String)
 
 /**
  * Sent to all clients about a user removed from the presenter group of a meeting
@@ -452,9 +431,6 @@ case class UserRemovedFromPresenterGroupEvtMsgBody(userId: String, requesterId: 
 /**
  * Sent from client to request the presenter group of a meeting.
  */
-object GetPresenterGroupReqMsg { val NAME = "GetPresenterGroupReqMsg" }
-case class GetPresenterGroupReqMsg(header: BbbClientMsgHeader, body: GetPresenterGroupReqMsgBody) extends StandardMsg
-case class GetPresenterGroupReqMsgBody(requesterId: String)
 
 /**
  * Sent to all clients about the members of the presenter group of a meeting
