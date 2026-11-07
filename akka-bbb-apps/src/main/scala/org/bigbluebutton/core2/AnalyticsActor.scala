@@ -27,11 +27,6 @@ class AnalyticsActor(val includeChat: Boolean) extends Actor with ActorLogging {
     }
   }
 
-  def traceMessage(msg: BbbCommonEnvCoreMsg): Unit = {
-    val json = JsonUtil.toJson(msg)
-    log.info(" -- trace -- " + json)
-  }
-
   def handleBbbCommonEnvCoreMsg(msg: BbbCommonEnvCoreMsg): Unit = {
 
     msg.core match {
@@ -177,8 +172,6 @@ class AnalyticsActor(val includeChat: Boolean) extends Actor with ActorLogging {
       case m: GuestPolicyChangedEvtMsg => logMessage(msg)
       case m: SetGuestLobbyMessageCmdMsg => logMessage(msg)
       case m: SetPrivateGuestLobbyMessageCmdMsg => logMessage(msg)
-
-      // System
 
       // Recording
       case m: RecordingChapterBreakSysMsg => logMessage(msg)

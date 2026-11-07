@@ -83,7 +83,6 @@ trait AppsTestFixtures {
   val defaultProps = DefaultProps(meetingProp, breakoutProps, durationProps, password, recordProp, welcomeProp, voiceProp,
     usersProp, metadataProp)
 
-  val chatModel = new ChatModel()
   val layouts = new Layouts()
   val wbModel = new WhiteboardModel()
   val presModel = new PresentationModel()
@@ -98,7 +97,6 @@ trait AppsTestFixtures {
   val deskshareModel = new ScreenshareModel
 
   def newLiveMeeting(): LiveMeeting = {
-    val chatModel = new ChatModel()
     val layouts = new Layouts()
     val wbModel = new WhiteboardModel()
     val presModel = new PresentationModel()
@@ -113,7 +111,7 @@ trait AppsTestFixtures {
 
     // We extract the meeting handlers into this class so it is
     // easy to test.
-    new LiveMeeting(defaultProps, meetingStatux2x, deskshareModel, chatModel, layouts,
+    new LiveMeeting(defaultProps, meetingStatux2x, deskshareModel, layouts,
       registeredUsers, polls2x, wbModel, presModel, webcams, voiceUsers, users2x, guestsWaiting)
   }
 }
