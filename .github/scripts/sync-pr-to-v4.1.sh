@@ -34,7 +34,6 @@ SOURCE_LABELS=${SOURCE_LABELS:-[]}
 
 BOT_EMAIL='41898282+github-actions[bot]@users.noreply.github.com'
 NEEDS_MAINTAINER='sync: needs maintainer'
-CONFLICT_LABEL='status: conflict'
 SKIP_LABEL='no-sync-4.1'
 # Pull requests that merge a whole line or release ("Merge v4.0.x-release (v4.0.4) into
 # v4.0.x-develop", "Merge 4.0.0 rc.2 into ...", branch merge-v4.0.x-release-4.0.4-into-...) are not
@@ -60,19 +59,8 @@ summary() {
   log "$*"
 }
 
-ensure_label() {
-  local name=$1 color=$2 description=$3
-  gh api "repos/$REPO/labels/$(jq -rn --arg s "$name" '$s|@uri')" --silent 2>/dev/null && return 0
-  gh api "repos/$REPO/labels" -f name="$name" -f color="$color" -f description="$description" --silent ||
-    log "could not create the label '$name'"
-}
-
 add_label() {
   local number=$1 name=$2
-  case $name in
-    "$NEEDS_MAINTAINER") ensure_label "$name" d93f0b 'The automatic v4.0 to v4.1 sync needs a maintainer' ;;
-    "$CONFLICT_LABEL") ensure_label "$name" b60205 'This pull request has conflicts' ;;
-  esac
   jq -n --arg l "$name" '{labels: [$l]}' > "$TMP/labels.json"
   gh api "repos/$REPO/issues/$number/labels" --input "$TMP/labels.json" --silent ||
     log "could not add the label '$name' to #$number"
@@ -105,46 +93,6 @@ A maintainer needs to take a look. Details: $RUN_URL"
   add_label "$SYNC_PR" "$NEEDS_MAINTAINER"
   summary "Left open: #$SYNC_PR, $reason"
   exit 0
-}
-
-# Glob of a GitHub paths filter (*, **, ?) to an anchored extended regex.
-glob_to_regex() {
-  local glob=$1 out='' c i=0
-  while [ "$i" -lt "${#glob}" ]; do
-    c=${glob:i:1}
-    if [ "${glob:i:3}" = '**/' ]; then out+='(.*/)?'; i=$((i + 3)); continue; fi
-    if [ "${glob:i:2}" = '**' ]; then out+='.*'; i=$((i + 2)); continue; fi
-    case $c in
-      '*') out+='[^/]*' ;;
-      '?') out+='[^/]' ;;
-      [.+^\$\(\)\|\{\}\[\]\\]) out+="\\$c" ;;
-      *) out+=$c ;;
-    esac
-    i=$((i + 1))
-  done
-  printf '^%s$' "$out"
-}
-
-# True when every changed file is ignored by the pull_request paths-ignore of the CI workflow on the
-# target branch: a pull request touching only those files never gets that run on its own.
-only_paths_ignored() {
-  local workflow="$WORK_DIR/.github/workflows/$CI_WORKFLOW" pattern file matched
-  local -a regexes=()
-  [ -f "$workflow" ] || return 1
-  while IFS= read -r pattern; do
-    [ -n "$pattern" ] || continue
-    case $pattern in '!'*) return 1 ;; esac
-    regexes+=("$(glob_to_regex "$pattern")")
-  done < <(yq '.on.pull_request.paths-ignore[]' "$workflow" 2>/dev/null || true)
-  [ "${#regexes[@]}" -gt 0 ] || return 1
-  while IFS= read -r file; do
-    matched=false
-    for pattern in "${regexes[@]}"; do
-      if [[ $file =~ $pattern ]]; then matched=true; break; fi
-    done
-    [ "$matched" = true ] || return 1
-  done < "$TMP/changed-files"
-  return 0
 }
 
 time_left() { [ "$(date +%s)" -lt "$DEADLINE" ]; }
@@ -180,205 +128,135 @@ if [[ $SOURCE_PR_TITLE =~ $LINE_MERGE_RE || $SOURCE_HEAD_REF =~ $LINE_MERGE_RE ]
   summary "Skipped: #$N merges a whole line or release; it reaches $TARGET_BRANCH through the line merge."
   exit 0
 fi
-# An open sync pull request means an earlier run got that far. It is resumed (tests and merge) only
-# when it is exactly what an earlier run left: not a draft, no maintainer label, and every commit on
-# its branch made by this workflow. Anything else stays with the maintainers; a second pull request
-# is never opened.
-resume=false
-gh api "repos/$REPO/pulls?state=open&head=${REPO%%/*}:$SYNC_BRANCH" --jq '.[0] // {}' > "$TMP/existing.json"
-existing=$(jq -r '.number // empty' "$TMP/existing.json")
+# An open sync pull request means an earlier run got that far: it stays with the maintainers, and a
+# second pull request is never opened.
+existing=$(gh api "repos/$REPO/pulls?state=open&head=${REPO%%/*}:$SYNC_BRANCH" --jq '.[0].number // empty')
 if [ -n "$existing" ]; then
-  if jq -e --arg a "$NEEDS_MAINTAINER" --arg b "$CONFLICT_LABEL" \
-       '(.draft | not) and ([.labels[].name] | index($a) == null and index($b) == null)' "$TMP/existing.json" > /dev/null &&
-     gh api "repos/$REPO/compare/$TARGET_BRANCH...$SYNC_BRANCH" > "$TMP/compare.json" &&
-     jq -e --arg email "$BOT_EMAIL" '(.ahead_by > 0) and (.ahead_by == (.commits | length))
-       and all(.commits[]; .commit.committer.email == $email)' "$TMP/compare.json" > /dev/null; then
-    resume=true
-    SYNC_PR=$existing
-    HEAD_SHA=$(jq -r '.head.sha' "$TMP/existing.json")
-    jq -r '.files[].filename' "$TMP/compare.json" > "$TMP/changed-files"
-    if ! gh api --paginate "repos/$REPO/issues/$N/comments" --jq '.[].body' | grep -qF "in #$SYNC_PR."; then
-      comment "$N" "Ported to \`$TARGET_BRANCH\` in #$SYNC_PR."
-    fi
-    summary "Resuming #$SYNC_PR, the port of #$N left by an earlier run."
-  else
-    summary "Skipped: the port of #$N is already open as #$existing and is in the hands of a maintainer."
-    exit 0
-  fi
+  summary "Skipped: the port of #$N is already open as #$existing."
+  exit 0
 fi
 
-if [ "$resume" = false ]; then
-  # --- Which commits does it bring? ----------------------------------------------------------------
+# --- Which commits does it bring? ----------------------------------------------------------------
 
-  cd "$WORK_DIR"
-  git config user.name 'github-actions[bot]'
-  git config user.email "$BOT_EMAIL"
+cd "$WORK_DIR"
+git config user.name 'github-actions[bot]'
+git config user.email "$BOT_EMAIL"
 
-  pr_commits=$(gh api "repos/$REPO/pulls/$N" --jq '.commits')
-  depth=$(( pr_commits + 1 ))
-  [ "$depth" -ge 2 ] || depth=2
-  git fetch --no-tags --quiet --depth="$depth" "$GIT_REMOTE" "$MERGE_SHA" "+refs/heads/$TARGET_BRANCH:refs/remotes/$GIT_REMOTE/$TARGET_BRANCH"
+pr_commits=$(gh api "repos/$REPO/pulls/$N" --jq '.commits')
+depth=$(( pr_commits + 1 ))
+[ "$depth" -ge 2 ] || depth=2
+git fetch --no-tags --quiet --depth="$depth" "$GIT_REMOTE" "$MERGE_SHA" "+refs/heads/$TARGET_BRANCH:refs/remotes/$GIT_REMOTE/$TARGET_BRANCH"
 
-  parents=$(git rev-list --parents -n 1 "$MERGE_SHA" | wc -w)
-  parents=$(( parents - 1 ))
-  mode=squash
-  note=''
-  draft=false
-  pick=("$MERGE_SHA")
-  if [ "$parents" -ge 2 ]; then
-    mode=merge-commit
-    pick=(-m 1 "$MERGE_SHA")
-  elif [ "$pr_commits" -gt 1 ]; then
-    if ! prev_prs=$(gh api "repos/$REPO/commits/$(git rev-parse "$MERGE_SHA~1")/pulls" --jq '.[].number'); then
-      fail_on_source "could not tell from the GitHub API whether #$N was merged by rebase."
-    fi
-    if grep -qx "$N" <<< "$prev_prs"; then
-      # Merged by rebase: the pull request's commits sit one after the other on the source branch.
-      mode=rebase
-      range=()
-      for sha in $(git rev-list --reverse "$MERGE_SHA~$pr_commits..$MERGE_SHA"); do
-        if ! gh api "repos/$REPO/commits/$sha/pulls" --jq '.[].number' | grep -x "$N" > /dev/null; then
-          mode=rebase-unverified
-          break
-        fi
-        range+=("$sha")
-      done
-      if [ "$mode" = rebase ]; then
-        pick=("${range[@]}")
-      else
-        draft=true
-        note="#$N was merged by rebase with $pr_commits commits, but not all of the last $pr_commits commits on \`$SOURCE_BRANCH\` belong to it, so only its last commit was ported. A maintainer needs to check what is missing."
-      fi
-    fi
+parents=$(git rev-list --parents -n 1 "$MERGE_SHA" | wc -w)
+parents=$(( parents - 1 ))
+mode=squash
+draft=false
+pick=("$MERGE_SHA")
+if [ "$parents" -ge 2 ]; then
+  mode=merge-commit
+  pick=(-m 1 "$MERGE_SHA")
+elif [ "$pr_commits" -gt 1 ]; then
+  if ! prev_prs=$(gh api "repos/$REPO/commits/$(git rev-parse "$MERGE_SHA~1")/pulls" --jq '.[].number'); then
+    fail_on_source "could not tell from the GitHub API whether #$N was merged by rebase."
   fi
-  log "Porting #$N ($mode): ${pick[*]}"
+  if grep -qx "$N" <<< "$prev_prs"; then
+    # Merged by rebase: its commits sit one after the other on the source branch, and MERGE_SHA is
+    # only the last of them.
+    fail_on_source "it was merged by rebase with $pr_commits commits, and only pull requests merged with a merge commit or a squash are ported."
+  fi
+fi
+log "Porting #$N ($mode): ${pick[*]}"
 
-  # --- Cherry-pick onto the sync branch ------------------------------------------------------------
+# --- Cherry-pick onto the sync branch ------------------------------------------------------------
 
-  git checkout --quiet -B "$SYNC_BRANCH" "$GIT_REMOTE/$TARGET_BRANCH"
-  conflicts=()
-  export GIT_EDITOR=true
-  if ! git cherry-pick -x "${pick[@]}" > "$TMP/cherry-pick.log" 2>&1; then
-    # Keep going through the whole list; conflicts are committed with their markers so a maintainer
-    # can resolve them on the sync branch.
-    rounds=0
-    while [ -e "$(git rev-parse --git-path CHERRY_PICK_HEAD)" ] || [ -e "$(git rev-parse --git-path sequencer)" ]; do
-      rounds=$((rounds + 1))
-      if [ "$rounds" -gt 1000 ]; then
-        cat "$TMP/cherry-pick.log" >&2
-        fail_on_source "the cherry-pick did not complete."
-      fi
-      mapfile -t unmerged < <(git diff --name-only --diff-filter=U)
-      if [ "${#unmerged[@]}" -gt 0 ]; then
-        conflicts+=("${unmerged[@]}")
-        git add -A
-        if git cherry-pick --continue >> "$TMP/cherry-pick.log" 2>&1; then break; fi
-        continue
-      fi
-      # Nothing unmerged: the commit is already on the target branch.
-      if git cherry-pick --skip >> "$TMP/cherry-pick.log" 2>&1; then break; fi
-    done
-    if [ "$rounds" -eq 0 ]; then
-      # Failed without leaving a cherry-pick in progress: not a conflict.
+git checkout --quiet -B "$SYNC_BRANCH" "$GIT_REMOTE/$TARGET_BRANCH"
+conflicts=()
+export GIT_EDITOR=true
+if ! git cherry-pick -x "${pick[@]}" > "$TMP/cherry-pick.log" 2>&1; then
+  if [ ! -e "$(git rev-parse --git-path CHERRY_PICK_HEAD)" ]; then
+    # Failed without leaving a cherry-pick in progress: not a conflict.
+    cat "$TMP/cherry-pick.log" >&2
+    fail_on_source "the cherry-pick failed."
+  fi
+  # Conflicts are committed with their markers so a maintainer can resolve them on the sync branch.
+  # With nothing unmerged the commit is already on the target branch, and the pick is skipped; so is
+  # one whose conflicts leave nothing to commit.
+  mapfile -t conflicts < <(git diff --name-only --diff-filter=U | sort -u)
+  [ "${#conflicts[@]}" -eq 0 ] || git add -A
+  if [ "${#conflicts[@]}" -eq 0 ] || ! git cherry-pick --continue >> "$TMP/cherry-pick.log" 2>&1; then
+    if ! git cherry-pick --skip >> "$TMP/cherry-pick.log" 2>&1; then
       cat "$TMP/cherry-pick.log" >&2
-      fail_on_source "the cherry-pick failed."
+      fail_on_source "the cherry-pick did not complete."
     fi
   fi
-  cat "$TMP/cherry-pick.log" >&2
+fi
+cat "$TMP/cherry-pick.log" >&2
 
-  mapfile -t conflicts < <(printf '%s\n' "${conflicts[@]+"${conflicts[@]}"}" | sed '/^$/d' | sort -u)
-  if [ -z "$(git rev-list "$GIT_REMOTE/$TARGET_BRANCH..HEAD")" ]; then
-    if [ "${#conflicts[@]}" -gt 0 ]; then
-      # A conflict that leaves nothing to commit (a deletion of a file that the target branch changed,
-      # for example): there is no branch to open as a draft, so the source pull request gets the notice.
-      # shellcheck disable=SC2016 # literal backticks: markdown code spans
-      conflict_list=$(printf '`%s` ' "${conflicts[@]}")
-      fail_on_source "the cherry-pick conflicted in ${conflict_list}and left no change to open a pull request with."
-    fi
-    comment "$N" "This change is already on \`$TARGET_BRANCH\`; nothing to port."
-    summary "Nothing to port: #$N is already on $TARGET_BRANCH."
-    exit 0
-  fi
-  if [ "$mode" = rebase ] && [ "${#conflicts[@]}" -eq 0 ] &&
-     [ "$(git rev-list --count "$GIT_REMOTE/$TARGET_BRANCH..HEAD")" -gt 1 ]; then
-    # The tests started by dispatch decide what to run from HEAD^1..HEAD only, so a rebase port goes
-    # in as one commit that lists the commits it brings.
-    {
-      printf '%s (#%s)\n\n' "$SOURCE_PR_TITLE" "$N"
-      for sha in "${pick[@]}"; do
-        git log -1 --format='- %s%n  (cherry picked from commit %H)' "$sha"
-      done
-    } > "$TMP/squash-message"
-    git reset --quiet --soft "$GIT_REMOTE/$TARGET_BRANCH"
-    git commit --quiet --author="$(git log -1 --format='%an <%ae>' "$MERGE_SHA")" -F "$TMP/squash-message"
-  fi
-  git diff --name-only "$GIT_REMOTE/$TARGET_BRANCH" HEAD > "$TMP/changed-files"
-  HEAD_SHA=$(git rev-parse HEAD)
-  [ "${#conflicts[@]}" -eq 0 ] || draft=true
-
-  if ! git push --force --quiet "$GIT_REMOTE" "HEAD:refs/heads/$SYNC_BRANCH" 2> "$TMP/push.log"; then
-    cat "$TMP/push.log" >&2
-    reason="pushing the \`$SYNC_BRANCH\` branch was refused."
-    # shellcheck disable=SC2016 # literal backticks of git's message
-    if grep -q 'without `workflows` permission' "$TMP/push.log"; then
-      reason="the change touches \`.github/workflows/\`, and the token of this workflow may not push workflow changes. A \`SYNC_TOKEN\` secret with that permission lets the sync handle these changes."
-    fi
-    fail_on_source "$reason"
-  fi
-
-  # --- Open the sync pull request ------------------------------------------------------------------
-
-  title="[4.1] $SOURCE_PR_TITLE (#$N)"
-  title=${title:0:250}
-  {
-    # shellcheck disable=SC2016 # literal backticks: markdown code spans
-    printf 'Automatic port of #%s (by `%s`) from `%s` to `%s`.\n\n' "$N" "$SOURCE_AUTHOR" "$SOURCE_BRANCH" "$TARGET_BRANCH"
-    printf -- '- Source commit: %s (%s)\n' "$MERGE_SHA" "$mode"
-    printf -- '- Sync run: %s\n' "$RUN_URL"
-    if [ "${#conflicts[@]}" -gt 0 ]; then
-      printf '\nThe cherry-pick had conflicts in these files. They are committed with their conflict markers and need to be resolved on this branch:\n\n'
-      # shellcheck disable=SC2016
-      printf -- '- `%s`\n' "${conflicts[@]}"
-    fi
-    if [ -n "$note" ]; then printf '\n%s\n' "$note"; fi
-    if [ "$draft" = true ]; then
-      printf '\nThis pull request needs a maintainer and is not merged automatically.\n'
-    else
-      printf '\nThis pull request is merged automatically when the automated tests pass and it is mergeable; otherwise it stays open for a maintainer.\n'
-    fi
-  } > "$TMP/body.md"
-  jq -n --arg title "$title" --rawfile body "$TMP/body.md" --arg head "$SYNC_BRANCH" --arg base "$TARGET_BRANCH" \
-    --argjson draft "$draft" '{title: $title, body: $body, head: $head, base: $base, draft: $draft}' > "$TMP/pr.json"
-  if ! SYNC_PR=$(gh api "repos/$REPO/pulls" --input "$TMP/pr.json" --jq '.number'); then
-    fail_on_source "the sync pull request for the \`$SYNC_BRANCH\` branch could not be opened."
-  fi
-  comment "$N" "Ported to \`$TARGET_BRANCH\` in #$SYNC_PR."
-  summary "Opened #$SYNC_PR ($mode) for #$N."
-
+if [ -z "$(git rev-list "$GIT_REMOTE/$TARGET_BRANCH..HEAD")" ]; then
   if [ "${#conflicts[@]}" -gt 0 ]; then
-    add_label "$SYNC_PR" "$CONFLICT_LABEL"
-    add_label "$SYNC_PR" "$NEEDS_MAINTAINER"
-    comment "$N" "The port to \`$TARGET_BRANCH\` (#$SYNC_PR) has conflicts and needs a maintainer to resolve them."
-    summary "Left open as draft: conflicts in ${conflicts[*]}"
-    exit 0
+    # A conflict that leaves nothing to commit (a deletion of a file that the target branch changed,
+    # for example): there is no branch to open as a draft, so the source pull request gets the notice.
+    # shellcheck disable=SC2016 # literal backticks: markdown code spans
+    conflict_list=$(printf '`%s` ' "${conflicts[@]}")
+    fail_on_source "the cherry-pick conflicted in ${conflict_list}and left no change to open a pull request with."
+  fi
+  comment "$N" "This change is already on \`$TARGET_BRANCH\`; nothing to port."
+  summary "Nothing to port: #$N is already on $TARGET_BRANCH."
+  exit 0
+fi
+HEAD_SHA=$(git rev-parse HEAD)
+[ "${#conflicts[@]}" -eq 0 ] || draft=true
+
+if ! git push --force --quiet "$GIT_REMOTE" "HEAD:refs/heads/$SYNC_BRANCH" 2> "$TMP/push.log"; then
+  cat "$TMP/push.log" >&2
+  reason="pushing the \`$SYNC_BRANCH\` branch was refused."
+  # shellcheck disable=SC2016 # literal backticks of git's message
+  if grep -q 'without `workflows` permission' "$TMP/push.log"; then
+    reason="the change touches \`.github/workflows/\`, and the token of this workflow may not push workflow changes. A \`SYNC_TOKEN\` secret with that permission lets the sync handle these changes."
+  fi
+  fail_on_source "$reason"
+fi
+
+# --- Open the sync pull request ------------------------------------------------------------------
+
+title="[4.1] $SOURCE_PR_TITLE (#$N)"
+title=${title:0:250}
+{
+  # shellcheck disable=SC2016 # literal backticks: markdown code spans
+  printf 'Automatic port of #%s (by `%s`) from `%s` to `%s`.\n\n' "$N" "$SOURCE_AUTHOR" "$SOURCE_BRANCH" "$TARGET_BRANCH"
+  printf -- '- Source commit: %s (%s)\n' "$MERGE_SHA" "$mode"
+  printf -- '- Sync run: %s\n' "$RUN_URL"
+  if [ "${#conflicts[@]}" -gt 0 ]; then
+    printf '\nThe cherry-pick had conflicts in these files. They are committed with their conflict markers and need to be resolved on this branch:\n\n'
+    # shellcheck disable=SC2016
+    printf -- '- `%s`\n' "${conflicts[@]}"
   fi
   if [ "$draft" = true ]; then
-    add_label "$SYNC_PR" "$NEEDS_MAINTAINER"
-    comment "$N" "The port to \`$TARGET_BRANCH\` (#$SYNC_PR) is incomplete and needs a maintainer: $note"
-    summary "Left open as draft: $note"
-    exit 0
+    printf '\nThis pull request needs a maintainer and is not merged automatically.\n'
+  else
+    printf '\nThis pull request is merged automatically when the automated tests pass and it is mergeable; otherwise it stays open for a maintainer.\n'
   fi
+} > "$TMP/body.md"
+jq -n --arg title "$title" --rawfile body "$TMP/body.md" --arg head "$SYNC_BRANCH" --arg base "$TARGET_BRANCH" \
+  --argjson draft "$draft" '{title: $title, body: $body, head: $head, base: $base, draft: $draft}' > "$TMP/pr.json"
+if ! SYNC_PR=$(gh api "repos/$REPO/pulls" --input "$TMP/pr.json" --jq '.number'); then
+  fail_on_source "the sync pull request for the \`$SYNC_BRANCH\` branch could not be opened."
+fi
+comment "$N" "Ported to \`$TARGET_BRANCH\` in #$SYNC_PR."
+summary "Opened #$SYNC_PR ($mode) for #$N."
+
+if [ "${#conflicts[@]}" -gt 0 ]; then
+  add_label "$SYNC_PR" "$NEEDS_MAINTAINER"
+  comment "$N" "The port to \`$TARGET_BRANCH\` (#$SYNC_PR) has conflicts and needs a maintainer to resolve them."
+  summary "Left open as draft: conflicts in ${conflicts[*]}"
+  exit 0
 fi
 
 # --- Automated tests -----------------------------------------------------------------------------
 
-paths_ignored=false
-if only_paths_ignored; then paths_ignored=true; fi
-log "Changed files all in the CI paths-ignore: $paths_ignored"
 run_id=''
-if [ "$TOKEN_KIND" != sync ] || [ "$paths_ignored" = true ]; then
-  # Pull requests opened with GITHUB_TOKEN start no workflow, and the pull_request trigger skips
-  # changes that only touch ignored paths: start the tests explicitly.
+if [ "$TOKEN_KIND" != sync ]; then
+  # Pull requests opened with GITHUB_TOKEN start no workflow: start the tests explicitly.
   run_id=$(dispatch_ci) || leave_open "the automated tests could not be started."
 else
   window_end=$(( $(date +%s) + PR_RUN_WINDOW_SECONDS ))
@@ -456,9 +334,6 @@ while time_left; do
   sleep "$POLL_SECONDS"
 done
 state=$(jq -r '.mergeable_state' "$TMP/sync-pr.json")
-if jq -e --arg l "$CONFLICT_LABEL" '[.labels[].name] | index($l) != null' "$TMP/sync-pr.json" > /dev/null; then
-  leave_open "it has the '$CONFLICT_LABEL' label."
-fi
 # mergeable_state "unstable" only says that some check is not green, and the checks were verified
 # above; it is also what an empty check suite leaves behind (pull requests opened with GITHUB_TOKEN
 # get an "action_required" suite without runs). Conflicts, branch protection or a stale base still
