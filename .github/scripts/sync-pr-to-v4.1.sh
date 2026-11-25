@@ -171,6 +171,12 @@ if [ -z "$(git rev-list "$GIT_REMOTE/$TARGET_BRANCH..HEAD")" ]; then
   exit 0
 fi
 [ "${#conflicts[@]}" -eq 0 ] || draft=true
+if [ "$mode" = merge-commit ]; then
+  # cherry-pick -m 1 keeps the author of the merge commit, the person who merged, and its "Merge
+  # pull request" subject. The change is the pull request's: the author of its head commit, its title.
+  printf '%s (#%s)\n\n(cherry picked from commit %s)\n' "$SOURCE_PR_TITLE" "$N" "$MERGE_SHA" > "$TMP/message"
+  git commit --quiet --amend --author="$(git log -1 --format='%an <%ae>' "$MERGE_SHA^2")" -F "$TMP/message"
+fi
 
 if ! git push --force --quiet "$GIT_REMOTE" "HEAD:refs/heads/$SYNC_BRANCH" 2> "$TMP/push.log"; then
   cat "$TMP/push.log" >&2
@@ -195,6 +201,9 @@ title=${title:0:250}
     printf '\nThe cherry-pick had conflicts in these files. They are committed with their conflict markers and need to be resolved on this branch:\n\n'
     # shellcheck disable=SC2016
     printf -- '- `%s`\n' "${conflicts[@]}"
+    # shellcheck disable=SC2016
+    printf '\nTo resolve them in a checkout of your own instead, redo the pick on `%s` and push the result to this branch:\n\n' "$TARGET_BRANCH"
+    printf '    git cherry-pick -x %s\n' "${pick[*]}"
   fi
   if [ "$draft" = true ]; then
     printf '\nThis pull request needs a maintainer to resolve the conflicts.\n'
