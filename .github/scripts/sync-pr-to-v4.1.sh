@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Ports one pull request merged into v4.0.x-develop to v4.1.x-develop: cherry-picks its change onto a
-# sync/v4.1/pr-<N> branch, opens a pull request for it, runs the automated tests on it and merges it
-# when the tests pass and the pull request is mergeable. Anything else leaves the pull request open
-# for a maintainer, with the reason in a comment and the "sync: needs maintainer" label.
+# sync/v4.1/pr-<N> branch, opens a pull request for it and starts the automated tests on it. A
+# maintainer merges it. A port with conflicts is opened as a draft with the "sync: needs maintainer"
+# label, and a change that cannot be ported at all is reported on its own pull request.
 #
 # Run by .github/workflows/sync-v4.0-into-v4.1.yml. Everything about the source pull request comes in
 # through the environment and is only ever used quoted: nothing from it is evaluated or executed.
@@ -18,15 +18,12 @@
 #   RUN_URL           link to this workflow run
 # Optional (env):
 #   SOURCE_BRANCH (v4.0.x-develop), TARGET_BRANCH (v4.1.x-develop), CI_WORKFLOW (automated-tests.yml),
-#   CI_DEADLINE_SECONDS (18000), PR_RUN_WINDOW_SECONDS (600), POLL_SECONDS (60), GIT_REMOTE (origin)
+#   GIT_REMOTE (origin)
 set -euo pipefail
 
 SOURCE_BRANCH=${SOURCE_BRANCH:-v4.0.x-develop}
 TARGET_BRANCH=${TARGET_BRANCH:-v4.1.x-develop}
 CI_WORKFLOW=${CI_WORKFLOW:-automated-tests.yml}
-CI_DEADLINE_SECONDS=${CI_DEADLINE_SECONDS:-18000}
-PR_RUN_WINDOW_SECONDS=${PR_RUN_WINDOW_SECONDS:-600}
-POLL_SECONDS=${POLL_SECONDS:-60}
 GIT_REMOTE=${GIT_REMOTE:-origin}
 SOURCE_HEAD_REPO=${SOURCE_HEAD_REPO:-}
 SOURCE_HEAD_REF=${SOURCE_HEAD_REF:-}
@@ -48,7 +45,6 @@ LINE_BRANCH_RE='^v[0-9]+\.[0-9]+\.x-(release|develop)$'
 
 N=$SOURCE_PR_NUMBER
 SYNC_BRANCH="sync/v4.1/pr-$N"
-DEADLINE=$(( $(date +%s) + CI_DEADLINE_SECONDS ))
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
 
@@ -73,8 +69,9 @@ comment() {
     log "could not comment on #$number"
 }
 
-# The sync could not even produce its pull request (push, creation or merge refused): the source
-# pull request carries the notice and the job fails, so the run shows up as failed.
+# The sync could not produce its pull request (the change cannot be ported as it is, or the push or
+# the creation was refused): the source pull request carries the notice and the job fails, so the
+# run shows up as failed.
 fail_on_source() {
   local reason=$1
   comment "$N" "The automatic port of this change to \`$TARGET_BRANCH\` failed: $reason
@@ -82,37 +79,6 @@ A maintainer needs to port it by hand. Details: $RUN_URL"
   add_label "$N" "$NEEDS_MAINTAINER"
   summary "Failed: $reason"
   exit 1
-}
-
-# The sync pull request exists but cannot be merged automatically: it stays open for a maintainer.
-leave_open() {
-  local reason=$1
-  comment "$SYNC_PR" "Not merged automatically: $reason
-A maintainer needs to take a look. Details: $RUN_URL"
-  comment "$N" "The port of this change to \`$TARGET_BRANCH\` (#$SYNC_PR) was not merged automatically: $reason"
-  add_label "$SYNC_PR" "$NEEDS_MAINTAINER"
-  summary "Left open: #$SYNC_PR, $reason"
-  exit 0
-}
-
-time_left() { [ "$(date +%s)" -lt "$DEADLINE" ]; }
-
-dispatch_ci() {
-  local response run_id
-  response=$(gh api -X POST "repos/$REPO/actions/workflows/$CI_WORKFLOW/dispatches" \
-    -f ref="$SYNC_BRANCH" -f 'inputs[jobs]=all' -F return_run_details=true) || return 1
-  run_id=$(jq -r '.workflow_run_id // empty' <<< "$response")
-  while [ -z "$run_id" ] && time_left; do
-    sleep "$POLL_SECONDS"
-    run_id=$(gh api "repos/$REPO/actions/workflows/$CI_WORKFLOW/runs?event=workflow_dispatch&head_sha=$HEAD_SHA" \
-      --jq '.workflow_runs[0].id // empty' || true)
-  done
-  printf '%s' "$run_id"
-}
-
-find_pull_request_run() {
-  gh api "repos/$REPO/actions/workflows/$CI_WORKFLOW/runs?event=pull_request&head_sha=$HEAD_SHA" \
-    --jq '.workflow_runs[0].id // empty'
 }
 
 # --- Should this pull request be ported? ---------------------------------------------------------
@@ -204,7 +170,6 @@ if [ -z "$(git rev-list "$GIT_REMOTE/$TARGET_BRANCH..HEAD")" ]; then
   summary "Nothing to port: #$N is already on $TARGET_BRANCH."
   exit 0
 fi
-HEAD_SHA=$(git rev-parse HEAD)
 [ "${#conflicts[@]}" -eq 0 ] || draft=true
 
 if ! git push --force --quiet "$GIT_REMOTE" "HEAD:refs/heads/$SYNC_BRANCH" 2> "$TMP/push.log"; then
@@ -232,9 +197,9 @@ title=${title:0:250}
     printf -- '- `%s`\n' "${conflicts[@]}"
   fi
   if [ "$draft" = true ]; then
-    printf '\nThis pull request needs a maintainer and is not merged automatically.\n'
+    printf '\nThis pull request needs a maintainer to resolve the conflicts.\n'
   else
-    printf '\nThis pull request is merged automatically when the automated tests pass and it is mergeable; otherwise it stays open for a maintainer.\n'
+    printf '\nA maintainer merges this pull request once its tests have passed.\n'
   fi
 } > "$TMP/body.md"
 jq -n --arg title "$title" --rawfile body "$TMP/body.md" --arg head "$SYNC_BRANCH" --arg base "$TARGET_BRANCH" \
@@ -254,104 +219,19 @@ fi
 
 # --- Automated tests -----------------------------------------------------------------------------
 
-run_id=''
+# A pull request opened with GITHUB_TOKEN starts no workflow, so the tests are started here; one
+# opened with a SYNC_TOKEN starts its own checks. Their result and the merge are a maintainer's.
 if [ "$TOKEN_KIND" != sync ]; then
-  # Pull requests opened with GITHUB_TOKEN start no workflow: start the tests explicitly.
-  run_id=$(dispatch_ci) || leave_open "the automated tests could not be started."
-else
-  window_end=$(( $(date +%s) + PR_RUN_WINDOW_SECONDS ))
-  run_id=$(find_pull_request_run || true)
-  while [ -z "$run_id" ] && [ "$(date +%s)" -lt "$window_end" ] && time_left; do
-    sleep "$POLL_SECONDS"
-    run_id=$(find_pull_request_run || true)
-  done
-  if [ -z "$run_id" ]; then
-    log "No pull_request run of $CI_WORKFLOW appeared; starting one."
-    run_id=$(dispatch_ci) || leave_open "the automated tests could not be started."
+  if response=$(gh api -X POST "repos/$REPO/actions/workflows/$CI_WORKFLOW/dispatches" \
+       -f ref="$SYNC_BRANCH" -f 'inputs[jobs]=all' -F return_run_details=true); then
+    run_id=$(jq -r '.workflow_run_id // empty' <<< "$response" 2> /dev/null || true)
+    tests_url="https://github.com/$REPO/actions/workflows/$CI_WORKFLOW?query=$(jq -rn --arg q "branch:$SYNC_BRANCH" '$q|@uri')"
+    [ -z "$run_id" ] || tests_url="https://github.com/$REPO/actions/runs/$run_id"
+    comment "$SYNC_PR" "Automated tests started on \`$SYNC_BRANCH\`: $tests_url"
+    summary "Started the automated tests for #$SYNC_PR: $tests_url"
+  else
+    comment "$SYNC_PR" "The automated tests could not be started on \`$SYNC_BRANCH\`. A maintainer needs to start them. Details: $RUN_URL"
+    add_label "$SYNC_PR" "$NEEDS_MAINTAINER"
+    summary "The automated tests could not be started for #$SYNC_PR."
   fi
 fi
-[ -n "$run_id" ] || leave_open "the automated tests run did not appear in time."
-ci_url="https://github.com/$REPO/actions/runs/$run_id"
-log "Waiting for $ci_url"
-
-# The polls below tolerate failed API calls: a run that was just started can answer 404 for a moment.
-conclusion=''
-while time_left; do
-  if info=$(gh api "repos/$REPO/actions/runs/$run_id" --jq '"\(.status) \(.conclusion // "")"'); then
-    read -r status conclusion <<< "$info" || true
-    [ "$status" = completed ] && break
-  fi
-  conclusion=''
-  sleep "$POLL_SECONDS"
-done
-[ -n "$conclusion" ] || leave_open "the automated tests ($ci_url) did not finish in time."
-[ "$conclusion" = success ] || leave_open "the automated tests ended in \`$conclusion\` ($ci_url)."
-
-# Every check run and commit status on the head commit, not only that run: never green with none or
-# with some pending. Check suites without runs (an app that never reported, a workflow waiting for
-# approval) have no check run and do not count. Statuses are read first and check runs after them,
-# so the check runs are the later snapshot; every page of check runs is read, and a list shorter
-# than the reported total is read again.
-checks_ok=false
-while time_left; do
-  if ! gh api "repos/$REPO/commits/$HEAD_SHA/status" > "$TMP/status.json" ||
-     ! gh api --paginate "repos/$REPO/commits/$HEAD_SHA/check-runs?per_page=100" > "$TMP/check-pages.json"; then
-    sleep "$POLL_SECONDS"; continue
-  fi
-  jq -s '{total_count: .[0].total_count, check_runs: [.[].check_runs[]]}' "$TMP/check-pages.json" > "$TMP/checks.json"
-  total=$(jq '.total_count' "$TMP/checks.json")
-  listed=$(jq '.check_runs | length' "$TMP/checks.json")
-  if [ "$listed" -ne "$total" ]; then
-    log "Read $listed of $total check runs; reading them again."
-    sleep "$POLL_SECONDS"; continue
-  fi
-  pending=$(jq '[.check_runs[] | select(.status != "completed")] | length' "$TMP/checks.json")
-  failed=$(jq -r '[.check_runs[] | select(.status == "completed" and (.conclusion | IN("success", "neutral", "skipped") | not)) | .name] | join(", ")' "$TMP/checks.json")
-  # The combined state covers every status context; the list on the page (30 at most) only names them.
-  status_count=$(jq '.total_count' "$TMP/status.json")
-  status_state=$(jq -r '.state' "$TMP/status.json")
-  [ -z "$failed" ] || leave_open "these checks did not pass: $failed."
-  if [ "$status_count" -gt 0 ] && { [ "$status_state" = failure ] || [ "$status_state" = error ]; }; then
-    failed_statuses=$(jq -r '[.statuses[] | select(.state == "failure" or .state == "error") | .context] | join(", ")' "$TMP/status.json")
-    leave_open "the commit statuses ended in \`$status_state\` (${failed_statuses:-see the commit})."
-  fi
-  statuses_done=false
-  if [ "$status_count" -eq 0 ] || [ "$status_state" = success ]; then statuses_done=true; fi
-  if [ "$total" -gt 0 ] && [ "$pending" -eq 0 ] && [ "$statuses_done" = true ]; then checks_ok=true; break; fi
-  sleep "$POLL_SECONDS"
-done
-[ "$checks_ok" = true ] || leave_open "the checks did not finish in time."
-
-# --- Merge check ---------------------------------------------------------------------------------
-
-mergeable=null
-echo '{}' > "$TMP/sync-pr.json"
-while time_left; do
-  if gh api "repos/$REPO/pulls/$SYNC_PR" > "$TMP/sync-pr.json"; then
-    mergeable=$(jq -r '.mergeable' "$TMP/sync-pr.json")
-  fi
-  [ "$mergeable" != null ] && break
-  sleep "$POLL_SECONDS"
-done
-state=$(jq -r '.mergeable_state' "$TMP/sync-pr.json")
-# mergeable_state "unstable" only says that some check is not green, and the checks were verified
-# above; it is also what an empty check suite leaves behind (pull requests opened with GITHUB_TOKEN
-# get an "action_required" suite without runs). Conflicts, branch protection or a stale base still
-# keep the pull request open.
-case $state in clean | unstable | has_hooks) state_ok=true ;; *) state_ok=false ;; esac
-if [ "$mergeable" != true ] || [ "$state_ok" != true ]; then
-  leave_open "the merge check is not green (mergeable: $mergeable, state: $state)."
-fi
-
-# The merge answer is the confirmation; the pull request is read again only when that answer is
-# missing or not a confirmed merge.
-merged=$(gh api -X PUT "repos/$REPO/pulls/$SYNC_PR/merge" -f merge_method=merge -f sha="$HEAD_SHA" --jq '.merged' || true)
-if [ "$merged" != true ]; then
-  merged=$(gh api "repos/$REPO/pulls/$SYNC_PR" --jq '.merged' || true)
-fi
-if [ "$merged" != true ]; then
-  comment "$SYNC_PR" "The tests passed, but merging this pull request was refused. A maintainer needs to merge it. Details: $RUN_URL"
-  add_label "$SYNC_PR" "$NEEDS_MAINTAINER"
-  fail_on_source "merging the sync pull request #$SYNC_PR was refused."
-fi
-summary "Merged #$SYNC_PR into $TARGET_BRANCH."
