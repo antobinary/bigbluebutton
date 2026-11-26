@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 # Ports one pull request merged into v4.0.x-develop to v4.1.x-develop: cherry-picks its change onto a
 # sync/v4.1/pr-<N> branch and opens a pull request for it, which starts its own checks. A maintainer
-# merges it, or .github/scripts/sync-merge-green-port.sh when the optional merge workflow is enabled
-# (repository variable SYNC_V41_AUTO_MERGE=true). A port with conflicts opens as a draft with the
-# "sync: needs maintainer" label; anything that cannot be ported is reported on the source pull
-# request with the same label.
+# merges it. A port with conflicts opens as a draft with the "sync: needs maintainer" label; anything
+# that cannot be ported is reported on the source pull request with the same label.
 #
 # Run by .github/workflows/sync-v4.0-into-v4.1.yml. Everything about the source pull request comes in
 # through the environment and is only ever used quoted: nothing from it is evaluated or executed.
@@ -186,9 +184,9 @@ draft=false
     printf '\nThe cherry-pick had conflicts in these files. Review each listed file: the conflicts are committed with their markers where git could write them. A file listed without markers (for example one deleted on one side and changed on the other) needs the pick redone with the command below.\n\n'
     printf -- '- `%s`\n' "${conflicts[@]}"
     printf '\nTo redo the port with a merge tool, start from `%s` and run:\n\n```\n%s\n```\n' "$TARGET_BRANCH" "$redo"
-    printf '\nThis pull request needs a maintainer and is not merged automatically.\n'
+    printf '\nThis pull request needs a maintainer to resolve the conflicts.\n'
   else
-    printf '\nA maintainer merges this pull request once its tests have passed. If the optional merge workflow is enabled in this repository, it merges it automatically when a run of `Automated tests` on its head has passed, every other check is green and it is mergeable.\n'
+    printf '\nA maintainer merges this pull request once its tests have passed.\n'
   fi
 } > "$TMP/body.md"
 jq -n --arg title "$title" --rawfile body "$TMP/body.md" --arg head "$SYNC_BRANCH" --arg base "$TARGET_BRANCH" \
